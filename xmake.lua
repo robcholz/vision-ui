@@ -1,6 +1,6 @@
-set_project("U8G2Simulator")
+set_project("vision_ui")
 set_languages("c99", "cxx23")
-add_rules("mode.debug", "mode.release")
+add_rules("mode.debug")
 
 add_requires("libsdl >=2.0", { configs = { shared = true } })
 

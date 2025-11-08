@@ -10,8 +10,13 @@
 
 #include "astra_ui_core.h"
 
+void* astra_font;
+
 void astra_set_font(void* _font) {
-    if (_font != astra_font) oled_set_font(_font);
+    if (_font != astra_font) {
+        oled_set_font(_font);
+        astra_font = _font;
+    }
 }
 
 astra_info_bar_t astra_info_bar = {0, 1, 0 - 2 * INFO_BAR_HEIGHT, 0 - 2 * INFO_BAR_HEIGHT, 80, 80, false, 0, 1};
@@ -20,38 +25,38 @@ void astra_push_info_bar(char* _content, const uint16_t _span) {
     //设定显示时间的概念，超过了显示时间，就将ytrg设为初始位置，如果在显示时间之内，有新的消息涌入，则y和ytrg都不变，继续显示，且显示时间清零
     //只有显示时间到了的时候，才会复位
 
-    astra_info_bar.time = get_ticks();
+    astra_info_bar.time = get_ticks_ms();
     astra_info_bar.content = _content;
     astra_info_bar.span = _span;
     astra_info_bar.is_running = false; //每次进入该函数都代表有新的消息涌入，所以需要重置is_running
 
     //展开弹窗 收回弹窗和同步时间戳需要在循环中进行 所以移到了drawer中
     if (!astra_info_bar.is_running) {
-        astra_info_bar.time_start = get_ticks();
+        astra_info_bar.time_start = get_ticks_ms();
         astra_info_bar.y_info_bar_trg = 0;
         astra_info_bar.is_running = true;
     }
 
-    // astra_set_font(u8g2_font_my_chinese); todo
+    astra_set_font(astra_font);
     astra_info_bar.w_info_bar_trg = oled_get_UTF8_width(astra_info_bar.content) + INFO_BAR_OFFSET;
 }
 
 astra_pop_up_t astra_pop_up = {0, 1, 0 - 2 * POP_UP_HEIGHT, 0 - 2 * POP_UP_HEIGHT, 80, 80, false, 0, 1};
 
 void astra_push_pop_up(char* _content, const uint16_t _span) {
-    astra_pop_up.time = get_ticks();
+    astra_pop_up.time = get_ticks_ms();
     astra_pop_up.content = _content;
     astra_pop_up.span = _span;
     astra_pop_up.is_running = false;
 
     //弹出
     if (!astra_pop_up.is_running) {
-        astra_pop_up.time_start = get_ticks();
+        astra_pop_up.time_start = get_ticks_ms();
         astra_pop_up.y_pop_up_trg = 20;
         astra_pop_up.is_running = true;
     }
 
-    // astra_set_font(u8g2_font_my_chinese); todo
+    astra_set_font(astra_font);
     astra_pop_up.w_pop_up_trg = oled_get_UTF8_width(astra_pop_up.content) + POP_UP_OFFSET;
 }
 
@@ -86,7 +91,6 @@ astra_list_item_t* astra_get_root_list() {
         memset(_astra_list_root_item, 0, sizeof(astra_list_item_t));
         _astra_list_root_item->type = list_item;
         _astra_list_root_item->content = "root";
-        _astra_list_root_item->parent = NULL;
     }
     return _astra_list_root_item;
 }
@@ -99,19 +103,16 @@ astra_list_item_t* astra_new_list_item(char* _content) {
     return _astra_list_item;
 }
 
-astra_list_item_t* astra_new_switch_item(char* _content, bool* _value, void (*_init_function)(), void (*_exit_function)()) {
+astra_list_item_t* astra_new_switch_item(char* _content, bool* _value) {
     astra_switch_item_t* _astra_switch_item = malloc(sizeof(astra_switch_item_t));
     memset(_astra_switch_item, 0, sizeof(astra_switch_item_t));
     _astra_switch_item->base_item.type = switch_item;
     _astra_switch_item->base_item.content = _content;
     _astra_switch_item->value = _value;
-    _astra_switch_item->init_function = _init_function;
-    _astra_switch_item->exit_function = _exit_function;
     return (astra_list_item_t*) _astra_switch_item;
 }
 
-astra_list_item_t* astra_new_slider_item(char* _content, int16_t* _value, uint8_t _step, int16_t _min, int16_t _max,
-                                         void (*_init_function)(), void (*_exit_function)()) {
+astra_list_item_t* astra_new_slider_item(char* _content, int16_t* _value, uint8_t _step, int16_t _min, int16_t _max) {
     astra_slider_item_t* _astra_slider_item = malloc(sizeof(astra_slider_item_t));
     memset(_astra_slider_item, 0, sizeof(astra_slider_item_t));
     _astra_slider_item->base_item.type = slider_item;
@@ -120,8 +121,6 @@ astra_list_item_t* astra_new_slider_item(char* _content, int16_t* _value, uint8_
     _astra_slider_item->value_step = _step;
     _astra_slider_item->value_min = _min;
     _astra_slider_item->value_max = _max;
-    _astra_slider_item->init_function = _init_function;
-    _astra_slider_item->exit_function = _exit_function;
     return (astra_list_item_t*) _astra_slider_item;
 }
 
@@ -143,9 +142,7 @@ astra_selector_t* astra_get_selector() {
 }
 
 bool astra_bind_item_to_selector(astra_list_item_t* _item) {
-    if (_item == NULL) {
-        return false;
-    }
+    if (_item == NULL) return false;
 
     //找item在父节点中的序号
     uint8_t _temp_index = 0;
@@ -169,8 +166,6 @@ bool astra_bind_item_to_selector(astra_list_item_t* _item) {
     return true;
 }
 
-bool astra_refresh_list_value = true;
-
 void astra_selector_go_next_item() {
     if (astra_selector.selected_item->type == slider_item && astra_to_slider_item(astra_selector.selected_item)->is_confirmed) {
         astra_slider_item_t* _selected_slider_item = astra_to_slider_item(astra_selector.selected_item);
@@ -181,8 +176,6 @@ void astra_selector_go_next_item() {
     }
 
     if (astra_selector.selected_item->type == user_item && astra_to_user_item(astra_selector.selected_item)->in_user_item) return;
-
-    astra_refresh_list_value = true;
 
     //到达最末端
     if (astra_selector.selected_index == astra_selector.selected_item->parent->child_num - 1) {
@@ -204,8 +197,6 @@ void astra_selector_go_prev_item() {
     }
 
     if (astra_selector.selected_item->type == user_item && astra_to_user_item(astra_selector.selected_item)->in_user_item) return;
-
-    astra_refresh_list_value = true;
 
     //到达最前端
     if (astra_selector.selected_index == 0) {
@@ -241,8 +232,6 @@ void astra_selector_jump_to_selected_item() {
     if (astra_selector.selected_item->type == switch_item) {
         astra_switch_item_t* _selected_switch_item = astra_to_switch_item(astra_selector.selected_item);
         *_selected_switch_item->value = !*_selected_switch_item->value;
-        if (_selected_switch_item->exit_function)
-            _selected_switch_item->exit_function();
         return;
     }
 
@@ -255,16 +244,13 @@ void astra_selector_jump_to_selected_item() {
         }
         if (_selected_slider_item->is_confirmed) {
             //如果已选中且又长按确认键 直接退出即可 因为在选中之后 对于值的改变是实时生效的
-            if (_selected_slider_item->exit_function)
-                _selected_slider_item->exit_function();
+            astra_push_pop_up("ok.", 1000);
             _selected_slider_item->is_confirmed = false;
             return;
         }
     }
 
     if (astra_selector.selected_item->child_num == 0) return;
-
-    astra_refresh_list_value = true;
 
     //给选择的item的子item坐标清零 做动画
     for (uint8_t i = 0; i < astra_selector.selected_item->child_num; i++)
@@ -279,6 +265,7 @@ void astra_selector_exit_current_item() {
         //如果已选中又长按退出键
         astra_slider_item_t* _selected_slider_item = astra_to_slider_item(astra_selector.selected_item);
 
+        astra_push_pop_up("canceled.", 1000);
         _selected_slider_item->is_confirmed = false;
         *_selected_slider_item->value = _selected_slider_item->value_backup;
         return;
@@ -294,8 +281,6 @@ void astra_selector_exit_current_item() {
         _selected_user_item->user_item_looping = false;
         return;
     }
-
-    astra_refresh_list_value = true;
 
     if (astra_selector.selected_item->parent->layer == 0 && in_astra) {
         if (ALLOW_EXIT_ASTRA_UI_BY_USER) in_astra = false;
@@ -327,7 +312,7 @@ bool astra_push_item_to_list(astra_list_item_t* _parent, astra_list_item_t* _chi
     _child->layer = _parent->layer + 1;
     _child->child_num = 0;
 
-    // astra_set_font(u8g2_font_my_chinese); todo
+    astra_set_font(astra_font);
     if (_parent->child_num == 0) _child->y_list_item_trg = oled_get_str_height() + LIST_FONT_TOP_MARGIN - 1;
     else _child->y_list_item_trg = _parent->child_list_item[_parent->child_num - 1]->y_list_item_trg + LIST_ITEM_SPACING;
 

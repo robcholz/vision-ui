@@ -22,11 +22,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <u8g2.h>
 #include <u8x8.h>
 
+#include <SDL_events.h>
 #include <SDL_timer.h>
 
 static u8g2_t* s_u8g2 = NULL;
 
-uint32_t get_ticks(void) {
+static int getKey() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT)
+            return SDLK_ESCAPE;
+        if (event.type == SDL_KEYDOWN)
+            return event.key.keysym.sym;
+    }
+    return -1;
+}
+
+enum UIAction vision_ui_get_ui_action(void) {
+    switch (getKey()) {
+        case SDLK_UP:
+            return UIActionGoPrev;
+        case SDLK_DOWN:
+            return UIActionGoNext;
+        case SDLK_ESCAPE:
+            return UIActionExit;
+        case SDLK_SPACE:
+            return UIActionEnter;
+        default:
+            return UIActionNone;
+    }
+}
+
+uint32_t get_ticks_ms(void) {
     return SDL_GetTicks();
 }
 

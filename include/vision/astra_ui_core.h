@@ -10,13 +10,12 @@
 
 #ifdef __cplusplus
 extern "C" {
+
 #endif
 
 extern bool in_astra;
 
-extern void ad_astra();
-
-extern bool astra_is_in_user_item();
+extern void vision_ui_render_init();
 
 extern void astra_refresh_info_bar();
 
@@ -35,6 +34,8 @@ extern void astra_refresh_list_item_position();
 extern void astra_refresh_selector_position();
 
 extern void astra_refresh_main_core_position();
+
+extern void vision_ui_render_loop();
 
 extern void astra_ui_widget_core();
 

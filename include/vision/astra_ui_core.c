@@ -3,39 +3,38 @@
 //
 
 #include "astra_ui_core.h"
-#include <math.h>
-#include <stdbool.h>
+
 #include <stdio.h>
+#include <tgmath.h>
+
 #include "astra_ui_drawer.h"
-#include "u8x8.h"
+#include "astra_ui_draw_driver.h"
 
 bool in_astra = false;
 
-/**
- * @brief 进入astra ui lite
- *
- * @note 需要运行在循环中
- * @note 可以通过按键等传感器进行触发 当in_astra为true时进入astra ui lite
- */
-void ad_astra() {
-    if (in_astra) return;
+static bool vision_ui_start() {
+    /**自行修改**/
+    if (in_astra) {
+        return true;
+    }
     static int64_t _key_press_span = 0;
     static uint32_t _key_start_time = 0;
     static bool _key_clicked = false;
     static char _msg[100] = {};
+
     if (true) {
         if (!_key_clicked) {
             _key_clicked = true;
-            _key_start_time = get_ticks();
+            _key_start_time = get_ticks_ms();
             //变量上限是0xFFFF 65535
         }
-        if (get_ticks() - _key_start_time > 1000 && _key_clicked) {
-            _key_press_span = get_ticks() - _key_start_time;
+        if (get_ticks_ms() - _key_start_time > 1000 && _key_clicked) {
+            _key_press_span = get_ticks_ms() - _key_start_time;
             if (_key_press_span <= 2500) {
                 sprintf(_msg, "继续长按%.2f秒进入.", (2500 - _key_press_span) / 1000.0f);
                 astra_push_info_bar(_msg, 2000);
             } else if (_key_press_span > 2500) {
-                astra_push_info_bar("玩得开心! :p", 2000);
+                astra_push_info_bar("have fun! :p", 2000);
                 in_astra = true;
                 astra_init_list();
                 _key_clicked = false;
@@ -50,29 +49,23 @@ void ad_astra() {
             _key_press_span = 0;
         }
     }
+    return false;
 }
 
-bool astra_is_in_user_item() {
-    return (astra_selector.selected_item->type == user_item && astra_to_user_item(astra_selector.selected_item)->in_user_item)
-               ? true
-               : false;
-}
-
-void astra_animation(float* pos, float target, float speed) {
-    // 安全保护：speed 限制在 (0, 1]，表示每帧前进比例
-    if (speed <= 0.0f) speed = 0.05f;
-    if (speed > 1.0f) speed = 1.0f;
-
-    float diff = target - *pos;
-
-    // 若接近目标则直接收敛
-    if (fabsf(diff) < 0.5f) {
-        *pos = target;
-        return;
+void vision_ui_render_init() {
+    bool init = false;
+    while (!init) {
+        oled_clear_buffer();
+        init = vision_ui_start();
+        oled_send_buffer();
     }
+}
 
-    // 指数逼近（类似 ease-out）
-    *pos += diff * speed;
+void astra_animation(float* _pos, float _posTrg, float _speed) {
+    if (*_pos != _posTrg) {
+        if (fabs(*_pos - _posTrg) <= 1.0f) *_pos = _posTrg;
+        else *_pos += (_posTrg - *_pos) / (100.0f - _speed) / 1.0f;
+    }
 }
 
 void astra_refresh_info_bar() {
@@ -93,7 +86,7 @@ void astra_refresh_camera_position() {
     if (astra_camera.selector->y_selector_trg + astra_camera.y_camera_trg < 0) //向上超出屏幕 需要向上移动
         astra_camera.y_camera_trg = 0 - astra_camera.selector->y_selector_trg + LIST_FONT_TOP_MARGIN;
 
-    astra_animation(&astra_camera.x_camera, astra_camera.x_camera_trg, 96);
+    astra_animation(&astra_camera.x_camera, astra_camera.x_camera_trg, 95);
     astra_animation(&astra_camera.y_camera, astra_camera.y_camera_trg, 96);
 }
 
@@ -126,19 +119,40 @@ void astra_refresh_list_item_position() {
 }
 
 void astra_refresh_selector_position() {
-    // astra_set_font(u8g2_font_my_chinese); todo
+    astra_set_font(astra_font);
     astra_selector.y_selector_trg = astra_selector.selected_item->y_list_item_trg - oled_get_str_height() + 1;
     if (astra_selector.selected_item->type == switch_item || astra_selector.selected_item->type == slider_item)
         astra_selector.w_selector_trg = OLED_WIDTH - 18;
     else astra_selector.w_selector_trg = oled_get_UTF8_width(astra_selector.selected_item->content) + 12;
     astra_selector.h_selector_trg = 15;
-    astra_animation(&astra_selector.y_selector, astra_selector.y_selector_trg, 92);
+    astra_animation(&astra_selector.y_selector, astra_selector.y_selector_trg, 91);
     astra_animation(&astra_selector.w_selector, astra_selector.w_selector_trg, 92);
     astra_animation(&astra_selector.h_selector, astra_selector.h_selector_trg, 93);
 }
 
 void astra_refresh_main_core_position() {
     astra_refresh_list_item_position();
+}
+
+void vision_ui_render_loop() {
+    switch (vision_ui_get_ui_action()) {
+        case UIActionGoPrev:
+            astra_selector_go_prev_item();
+            break;
+        case UIActionGoNext:
+            astra_selector_go_next_item();
+            break;
+        case UIActionExit:
+            astra_selector_exit_current_item();
+            break;
+        case UIActionEnter:
+            astra_selector_jump_to_selected_item();
+            break;
+        default:
+            break;
+    }
+    astra_ui_widget_core(); // 弹窗处理函数
+    astra_ui_main_core(); // 核心处理函数
 }
 
 void astra_ui_widget_core() {
@@ -150,33 +164,37 @@ void astra_ui_main_core() {
     if (!in_astra) return;
 
     //切换in user item的逻辑
-    if (astra_selector.selected_item->type == user_item && !astra_to_user_item(astra_selector.selected_item)->in_user_item) {
-        astra_user_item_t* _selected_user_item = astra_to_user_item(astra_selector.selected_item);
-
-        if (_selected_user_item->entering_user_item && astra_exit_animation_status == 1) {
-            if (_selected_user_item->init_function != NULL)
-                _selected_user_item->init_function();
-            _selected_user_item->in_user_item = 1;
+    if (astra_exit_animation_status == 1) {
+        if (astra_selector.selected_item->type == user_item) {
+            astra_user_item_t* _selected_user_item = astra_to_user_item(astra_selector.selected_item);
+            if (_selected_user_item->entering_user_item)
+                _selected_user_item->in_user_item = 1;
+            else if (_selected_user_item->exiting_user_item) {
+                if (_selected_user_item->user_item_inited && _selected_user_item->user_item_looping)
+                    _selected_user_item->exit_function();
+                _selected_user_item->in_user_item = 0;
+            }
         }
     }
 
     //渲染的逻辑
     if (astra_selector.selected_item->type == user_item && astra_to_user_item(astra_selector.selected_item)->in_user_item) {
         astra_user_item_t* _selected_user_item = astra_to_user_item(astra_selector.selected_item);
+        //初始化
+        if (!_selected_user_item->user_item_inited) {
+            if (_selected_user_item->init_function != NULL)
+                _selected_user_item->init_function();
+            _selected_user_item->user_item_inited = true;
+        }
 
         if (_selected_user_item->loop_function != NULL) {
+            _selected_user_item->user_item_looping = true;
             _selected_user_item->loop_function();
         }
-
-        if (_selected_user_item->exiting_user_item && astra_exit_animation_status == 1) {
-            if (_selected_user_item->exit_function != NULL)
-                _selected_user_item->exit_function();
-            _selected_user_item->in_user_item = 0;
-        }
     } else {
-        astra_refresh_camera_position();
         astra_refresh_main_core_position();
         astra_refresh_selector_position();
+        astra_refresh_camera_position();
         astra_draw_list();
     }
 

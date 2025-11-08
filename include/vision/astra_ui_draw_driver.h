@@ -7,17 +7,26 @@
 
 #include <stdint.h>
 
-#define OLED_HEIGHT 160
-#define OLED_WIDTH 240
+#define OLED_HEIGHT 64
+#define OLED_WIDTH 128
 
 #ifdef __cplusplus
 extern "C" {
 
 
-
 #endif
 
-extern uint32_t get_ticks(void);
+enum UIAction {
+    UIActionNone,
+    UIActionGoPrev,
+    UIActionGoNext,
+    UIActionEnter,
+    UIActionExit,
+};
+
+extern enum UIAction vision_ui_get_ui_action(void);
+
+extern uint32_t get_ticks_ms(void);
 
 extern void delay(uint32_t ms);
 
