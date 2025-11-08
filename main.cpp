@@ -1,32 +1,37 @@
-#include "u8x8.h"
+#include <u8g2.h>
+#include <vision/astra_ui_core.h>
+#include <vision/astra_ui_item.h>
 
-u8x8_t u8x8;
+u8g2_t u8g2;
 
-int main()
-{
-    u8x8_Setup_SDL_128x64(&u8x8);
-    u8x8_InitDisplay(&u8x8);
+int main() {
+    // 1) 初始化 u8g2（SDL 128x64）
+    u8g2_SetupBuffer_SDL_128x64(&u8g2, U8G2_R0);
+    u8g2_InitDisplay(&u8g2);
+    u8g2_SetPowerSave(&u8g2, 0);
 
-    u8x8_SetFont(&u8x8, u8x8_font_amstrad_cpc_extended_f);
+    vision_ui_bind_driver(&u8g2);
 
-    u8x8_DrawString(&u8x8, 0, 0, "Hello World!");
+    bool test_bool = false; // 开关项的变量
 
-    u8x8_Draw1x2String(&u8x8, 0, 1, "Hello World!");
-
-    u8x8_Draw2x2String(&u8x8, 0, 3, "Hello World!");
-
-
-    while( u8g_sdl_get_key() < 0 )
-        ;
-
-    u8x8_ClearDisplay(&u8x8);
-    u8x8_SetFont(&u8x8, u8x8_font_7x14_1x2_f );
-    u8x8_Draw1x2String(&u8x8, 0, 0, "Hello World!");
-    u8x8_Draw2x2String(&u8x8, 0, 4, "Hello World!");
-
-    while( u8g_sdl_get_key() < 0 )
-        ;
+    // Astra UI初始化
+    astra_init_core(); // 初始化核心函数
+    astra_list_item_t* setting_list_item = astra_new_list_item("列表"); // 定义列表项
+    astra_push_item_to_list(astra_get_root_list(), setting_list_item); // 创建列表项
+    astra_push_item_to_list(astra_get_root_list(),
+                            astra_new_switch_item("开关", &test_bool, []() {
+                                                  }, []() {
+                                                  })); // 开关项
+    while (true) {
+        astra_ui_widget_core();
+        astra_ui_main_core();
+        /* ----------------------------------- 主循环 ---------------------------------- */
+        oled_clear_buffer(); // 清空缓冲区
+        ad_astra(); // 入口函数，主要用于将in_astra置true进入菜单，也可以用其他函数，只要能将in_astra置true即可，如in_astra = ture;
+        astra_ui_widget_core(); // 弹窗处理函数
+        astra_ui_main_core(); // 核心处理函数
+        oled_send_buffer(); // 发送缓冲区
+    }
 
     return 0;
 }
-
