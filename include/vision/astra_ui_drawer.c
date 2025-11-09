@@ -277,13 +277,21 @@ void astra_draw_list_item() {
                 oled_draw_V_line(4 + _x_list_item, _y_list_item, 3);
 
                 //开关控件指示器部分
-                oled_draw_frame(OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - 7, _y_list_item - 2, 11, 7);
+                static const uint8_t FRAME_WIDTH = 1;
+                const uint16_t box_padding = FRAME_WIDTH + (LIST_ITEM_SPACING - LIST_ITEM_SWITCH_BOX_WIDTH) / 2;
+                const uint16_t frame_x = OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - 7;
+                const uint16_t frame_y = _y_list_item - box_padding;
+                oled_draw_frame(frame_x, frame_y, LIST_ITEM_SWITCH_BOX_WIDTH,
+                                LIST_ITEM_SWITCH_BOX_WIDTH);
                 if (*astra_to_switch_item(astra_selector.selected_item->parent->child_list_item[i])->value == true) {
-                    oled_draw_box(OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - 1, _y_list_item, 3, 3);
-                    oled_draw_pixel(OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - 4, _y_list_item + 1);
+                    const uint16_t CHECKED_SWITCH_BOX_WIDTH =
+                            LIST_ITEM_SWITCH_BOX_WIDTH - FRAME_WIDTH * 2 - FRAME_WIDTH * 2 * LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE;
+                    oled_draw_box(frame_x + FRAME_WIDTH * (1 + LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE),
+                                  frame_y + FRAME_WIDTH * (1 + LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE),
+                                  CHECKED_SWITCH_BOX_WIDTH,
+                                  CHECKED_SWITCH_BOX_WIDTH);
                 } else {
-                    oled_draw_box(OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - 5, _y_list_item, 3, 3);
-                    oled_draw_pixel(OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN, _y_list_item + 1);
+                    // do nothing
                 }
             }
         } else if (astra_selector.selected_item->parent->child_list_item[i]->type == slider_item) {
