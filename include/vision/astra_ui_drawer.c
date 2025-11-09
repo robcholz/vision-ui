@@ -259,19 +259,19 @@ void astra_draw_list_appearance() {
 void astra_draw_list_item() {
     //selector内包含的item的parent即是当前正在被绘制的页面
     for (unsigned char i = 0; i < astra_selector.selected_item->parent->child_num; i++) {
+        astra_list_item_t* _list_item = astra_selector.selected_item->parent->child_list_item[i];
         int16_t _x_list_item = astra_camera.x_camera + LIST_ITEM_LEFT_MARGIN;
-        int16_t _y_list_item = astra_selector.selected_item->parent->child_list_item[i]->y_list_item + astra_camera.y_camera -
-                               oled_get_str_height() / 2;
+        int16_t _y_list_item = _list_item->y_list_item + astra_camera.y_camera - oled_get_str_height() / 2;
 
         oled_set_draw_color(1);
         //绘制开头的指示器
-        if (astra_selector.selected_item->parent->child_list_item[i]->type == list_item) {
+        if (_list_item->type == list_item) {
             if (_y_list_item + 2 > LIST_INFO_BAR_HEIGHT && _y_list_item - 2 < SCREEN_HEIGHT) {
                 oled_draw_H_line(2 + _x_list_item, _y_list_item - 2, 4);
                 oled_draw_H_line(2 + _x_list_item, _y_list_item, 5);
                 oled_draw_H_line(2 + _x_list_item, _y_list_item + 2, 3);
             }
-        } else if (astra_selector.selected_item->parent->child_list_item[i]->type == switch_item) {
+        } else if (_list_item->type == switch_item) {
             if (_y_list_item + 7 > LIST_INFO_BAR_HEIGHT && _y_list_item + 1 < SCREEN_HEIGHT) {
                 oled_draw_circle(4 + _x_list_item, _y_list_item + 1, 3);
                 oled_draw_V_line(4 + _x_list_item, _y_list_item, 3);
@@ -283,7 +283,7 @@ void astra_draw_list_item() {
                 const uint16_t frame_y = _y_list_item - box_padding;
                 oled_draw_frame(frame_x, frame_y, LIST_ITEM_SWITCH_BOX_WIDTH,
                                 LIST_ITEM_SWITCH_BOX_WIDTH);
-                if (*astra_to_switch_item(astra_selector.selected_item->parent->child_list_item[i])->value == true) {
+                if (*astra_to_switch_item(_list_item)->value == true) {
                     const uint16_t CHECKED_SWITCH_BOX_WIDTH =
                             LIST_ITEM_SWITCH_BOX_WIDTH - FRAME_WIDTH * 2 - FRAME_WIDTH * 2 * LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE;
                     oled_draw_box(frame_x + FRAME_WIDTH * (1 + LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE),
@@ -294,7 +294,7 @@ void astra_draw_list_item() {
                     // do nothing
                 }
             }
-        } else if (astra_selector.selected_item->parent->child_list_item[i]->type == slider_item) {
+        } else if (_list_item->type == slider_item) {
             if (_y_list_item + 5 > LIST_INFO_BAR_HEIGHT && _y_list_item - 2 < SCREEN_HEIGHT) {
                 oled_draw_V_line(3 + _x_list_item, _y_list_item - 1, 5);
                 oled_draw_V_line(6 + _x_list_item, _y_list_item - 1, 5);
@@ -303,13 +303,13 @@ void astra_draw_list_item() {
 
                 //滑块控件指示器部分
                 char _value_str[10] = {};
-                int16_t* _value = astra_to_slider_item(astra_selector.selected_item->parent->child_list_item[i])->value;
+                int16_t* _value = astra_to_slider_item(_list_item)->value;
                 sprintf(_value_str, "%d", *_value);
 
                 int16_t _x_value = OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - oled_get_str_width(_value_str) + 2;
 
                 //如果选中了就闪烁 否则就一直显示
-                if (astra_to_slider_item(astra_selector.selected_item->parent->child_list_item[i])->is_confirmed) {
+                if (astra_to_slider_item(_list_item)->is_confirmed) {
                     static uint32_t _last_tick = 0;
                     static bool _is_visiable = false;
                     uint32_t _ticks = get_ticks_ms();
@@ -334,9 +334,50 @@ void astra_draw_list_item() {
         }
 
         astra_set_font(astra_font);
-        if (_y_list_item + oled_get_str_height() / 2 > LIST_INFO_BAR_HEIGHT && _y_list_item - oled_get_str_height() / 2 < SCREEN_HEIGHT)
-            oled_draw_UTF8(10 + _x_list_item, _y_list_item + oled_get_str_height() / 2,
-                           astra_selector.selected_item->parent->child_list_item[i]->content);
+        const bool _is_visible = (_y_list_item + oled_get_str_height() / 2 > LIST_INFO_BAR_HEIGHT &&
+                                  _y_list_item - oled_get_str_height() / 2 < SCREEN_HEIGHT);
+        if (_is_visible) {
+            const int16_t text_x = LIST_TEXT_LEFT_PADDING + _x_list_item;
+            const int16_t text_y = _y_list_item + oled_get_str_height() / 2;
+            const int16_t text_right_limit = SCREEN_WIDTH - LIST_ITEM_RIGHT_MARGIN - LIST_TEXT_RIGHT_PADDING;
+            const int16_t visible_width = text_right_limit - text_x;
+
+            const int16_t text_width = oled_get_UTF8_width(_list_item->content);
+            int16_t scroll_offset = 0;
+            bool needs_clip = false;
+
+            if (visible_width > 0 && text_width > visible_width) {
+                needs_clip = true;
+                const uint32_t now = get_ticks_ms();
+                if (_list_item->text_scroll_anchor == 0)
+                    _list_item->text_scroll_anchor = now;
+
+                const uint32_t elapsed = now - _list_item->text_scroll_anchor;
+                if (elapsed > LIST_TEXT_SCROLL_PAUSE_MS) {
+                    const uint32_t animated_ms = (elapsed - LIST_TEXT_SCROLL_PAUSE_MS) % LIST_TEXT_SCROLL_PERIOD_MS;
+                    const float progress = (float) animated_ms / (float) LIST_TEXT_SCROLL_PERIOD_MS;
+                    const float triangle = (progress <= 0.5f) ? progress * 2.0f : (2.0f - progress * 2.0f);
+                    scroll_offset = (int16_t) lrintf((text_width - visible_width) * triangle);
+                }
+            } else {
+                _list_item->text_scroll_anchor = 0;
+            }
+
+            oled_set_draw_color(1);
+            if (needs_clip) {
+                const int16_t clip_x0 = text_x;
+                const int16_t clip_x1 = text_right_limit;
+                const int16_t clip_y1 = _y_list_item + LIST_ITEM_SPACING / 2;
+                const int16_t clip_y0 = clip_y1 - LIST_ITEM_SPACING;
+                oled_set_clip_window(clip_x0, clip_y0, clip_x1, clip_y1);
+                oled_draw_UTF8(text_x - scroll_offset, text_y, _list_item->content);
+                oled_reset_clip_window();
+            } else {
+                oled_draw_UTF8(text_x, text_y, _list_item->content);
+            }
+        } else {
+            _list_item->text_scroll_anchor = 0;
+        }
     }
 }
 

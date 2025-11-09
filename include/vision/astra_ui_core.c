@@ -86,6 +86,7 @@ void astra_refresh_camera_position() {
     if (astra_camera.selector->y_selector_trg + astra_camera.y_camera_trg < 0) //向上超出屏幕 需要向上移动
         astra_camera.y_camera_trg = 0 - astra_camera.selector->y_selector_trg + LIST_FONT_TOP_MARGIN;
 
+    astra_camera.x_camera_trg = 0;
     astra_animation(&astra_camera.x_camera, astra_camera.x_camera_trg, 95);
     astra_animation(&astra_camera.y_camera, astra_camera.y_camera_trg, 96);
 }

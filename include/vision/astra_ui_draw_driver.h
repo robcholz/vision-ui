@@ -74,6 +74,10 @@ extern void oled_set_font_mode(uint8_t mode);
 
 extern void oled_set_font_direction(uint8_t dir);
 
+extern void oled_set_clip_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1);
+
+extern void oled_reset_clip_window(void);
+
 extern void oled_clear_buffer(void);
 
 extern void oled_send_buffer(void);

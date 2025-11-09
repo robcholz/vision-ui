@@ -68,6 +68,11 @@ extern void astra_push_pop_up(char *_content, const uint16_t _span);
 #define LIST_ITEM_SWITCH_BOX_WIDTH 9
 #define LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE 1
 
+#define LIST_TEXT_LEFT_PADDING 10
+#define LIST_TEXT_RIGHT_PADDING 15
+#define LIST_TEXT_SCROLL_PAUSE_MS 800
+#define LIST_TEXT_SCROLL_PERIOD_MS 2600
+
 #define LIST_INFO_BAR_HEIGHT 3
 #define LIST_FONT_TOP_MARGIN 4
 
@@ -83,6 +88,7 @@ typedef struct astra_list_item_t
 {
   astra_list_item_type_t type;
   char *content;
+  uint32_t text_scroll_anchor;
 
   uint8_t layer;
   float y_list_item, y_list_item_trg;

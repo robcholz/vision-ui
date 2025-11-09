@@ -166,6 +166,14 @@ void oled_set_font_direction(uint8_t dir) {
     u8g2_SetFontDirection(s_u8g2, (uint8_t) (dir & 0x03));
 }
 
+void oled_set_clip_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1) {
+    u8g2_SetClipWindow(s_u8g2, x0, y0, x1, y1);
+}
+
+void oled_reset_clip_window(void) {
+    u8g2_SetMaxClipWindow(s_u8g2);
+}
+
 /* 缓冲区 */
 void oled_clear_buffer(void) {
     u8g2_ClearBuffer(s_u8g2);
