@@ -333,24 +333,32 @@ void astra_draw_list_item() {
 }
 
 void astra_draw_selector() {
-    int16_t _x_selector = astra_camera.x_camera + LIST_ITEM_LEFT_MARGIN;
-    int16_t _y_selector = astra_selector.y_selector + astra_camera.y_camera;
+    const int64_t x_selector = lrintf(astra_camera.x_camera) + LIST_ITEM_LEFT_MARGIN;
+    const int64_t y_selector = lrintf(astra_selector.y_selector + astra_camera.y_camera);
 
     oled_set_draw_color(2);
-    oled_draw_box(_x_selector, _y_selector,
+    oled_draw_box(x_selector, y_selector,
                   astra_selector.w_selector, astra_selector.h_selector);
 
-    //棋盘格过渡
+    const int64_t x0 = lrintf(astra_selector.w_selector) + x_selector;
+    const int16_t y0 = y_selector;
+#define SELECTOR_DECORATION_WIDTH 8
+    const int64_t h = lrintf(astra_selector.h_selector);
+
     oled_set_draw_color(1);
-    for (int16_t i = astra_selector.w_selector + _x_selector;
-         i <= astra_selector.w_selector + _x_selector + 7; i += 2) {
-        for (int16_t j = _y_selector;
-             j <= _y_selector + astra_selector.h_selector - 1; j++) {
-            if (j % 2 == 0)
-                oled_draw_pixel(i + 1, j);
-            if (j % 2 == 1)
-                oled_draw_pixel(i, j);
-        }
+    static const uint8_t TILE_8x8[SELECTOR_DECORATION_WIDTH] = {
+        0b01010101,
+        0b10101010,
+        0b01010101,
+        0b10101010,
+        0b01010101,
+        0b10101010,
+        0b01010101,
+        0b10101010,
+    };
+    for (int64_t y = 0; y < h; y += SELECTOR_DECORATION_WIDTH) {
+        const int64_t bh = (h - y > SELECTOR_DECORATION_WIDTH) ? SELECTOR_DECORATION_WIDTH : (h - y);
+        oled_draw_bMP(x0, y0 + y, 8, bh, TILE_8x8);
     }
 }
 
