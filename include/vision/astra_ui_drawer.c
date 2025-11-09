@@ -353,8 +353,9 @@ void astra_draw_list_item() {
                     _list_item->text_scroll_anchor = now;
 
                 const uint32_t elapsed = now - _list_item->text_scroll_anchor;
-                if (elapsed > LIST_TEXT_SCROLL_PAUSE_MS) {
-                    const uint32_t animated_ms = (elapsed - LIST_TEXT_SCROLL_PAUSE_MS) % LIST_TEXT_SCROLL_PERIOD_MS;
+                const uint32_t LIST_TEXT_SCROLL_PERIOD_MS = (text_width / LIST_WIDGET_SCROLL_SPEED_PX_S) * 1000;
+                if (elapsed > LIST_WIDGET_SCROLL_PAUSE_MS) {
+                    const uint32_t animated_ms = (elapsed - LIST_WIDGET_SCROLL_PAUSE_MS) % LIST_TEXT_SCROLL_PERIOD_MS;
                     const float progress = (float) animated_ms / (float) LIST_TEXT_SCROLL_PERIOD_MS;
                     const float triangle = (progress <= 0.5f) ? progress * 2.0f : (2.0f - progress * 2.0f);
                     scroll_offset = (int16_t) lrintf((text_width - visible_width) * triangle);

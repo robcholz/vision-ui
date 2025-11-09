@@ -70,8 +70,9 @@ extern void astra_push_pop_up(char *_content, const uint16_t _span);
 
 #define LIST_TEXT_LEFT_PADDING 10
 #define LIST_TEXT_RIGHT_PADDING 15
-#define LIST_TEXT_SCROLL_PAUSE_MS 800
-#define LIST_TEXT_SCROLL_PERIOD_MS 2600
+
+#define LIST_WIDGET_SCROLL_PAUSE_MS 1000
+#define LIST_WIDGET_SCROLL_SPEED_PX_S 15
 
 #define LIST_INFO_BAR_HEIGHT 3
 #define LIST_FONT_TOP_MARGIN 4
