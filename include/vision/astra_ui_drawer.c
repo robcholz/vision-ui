@@ -279,7 +279,7 @@ void astra_draw_list_item() {
                 //开关控件指示器部分
                 static const uint8_t FRAME_WIDTH = 1;
                 const uint16_t box_padding = FRAME_WIDTH + (LIST_ITEM_SPACING - LIST_ITEM_SWITCH_BOX_WIDTH) / 2;
-                const uint16_t frame_x = OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - 7;
+                const uint16_t frame_x = OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - SELECTOR_DECORATION_WIDTH-1;
                 const uint16_t frame_y = _y_list_item - box_padding;
                 oled_draw_frame(frame_x, frame_y, LIST_ITEM_SWITCH_BOX_WIDTH,
                                 LIST_ITEM_SWITCH_BOX_WIDTH);
@@ -337,7 +337,7 @@ void astra_draw_list_item() {
         const bool _is_visible = (_y_list_item + oled_get_str_height() / 2 > LIST_INFO_BAR_HEIGHT &&
                                   _y_list_item - oled_get_str_height() / 2 < SCREEN_HEIGHT);
         if (_is_visible) {
-            const int16_t text_x = LIST_TEXT_LEFT_PADDING + _x_list_item;
+            const int16_t text_x = LIST_TEXT_TO_HEADER_PADDING + _x_list_item;
             const int16_t text_y = _y_list_item + oled_get_str_height() / 2;
             const int16_t text_right_limit = SCREEN_WIDTH - LIST_ITEM_RIGHT_MARGIN - LIST_TEXT_RIGHT_PADDING;
             const int16_t visible_width = text_right_limit - text_x;
@@ -388,27 +388,27 @@ void astra_draw_selector() {
 
     oled_set_draw_color(2);
     oled_draw_box(x_selector, y_selector,
-                  astra_selector.w_selector, astra_selector.h_selector);
+                  astra_selector.w_selector_trg, astra_selector.h_selector);
 
     const int64_t x0 = lrintf(astra_selector.w_selector) + x_selector;
     const int16_t y0 = y_selector;
-#define SELECTOR_DECORATION_WIDTH 8
+
     const int64_t h = lrintf(astra_selector.h_selector);
 
     oled_set_draw_color(1);
-    static const uint8_t TILE_8x8[SELECTOR_DECORATION_WIDTH] = {
-        0b01010101,
-        0b10101010,
-        0b01010101,
-        0b10101010,
-        0b01010101,
-        0b10101010,
-        0b01010101,
-        0b10101010,
+    static const uint8_t TILE_8x8[SELECTOR_DECORATION_HEIGHT] = {
+        0b0101,
+        0b1010,
+        0b0101,
+        0b1010,
+        0b0101,
+        0b1010,
+        0b0101,
+        0b1010,
     };
-    for (int64_t y = 0; y < h; y += SELECTOR_DECORATION_WIDTH) {
-        const int64_t bh = (h - y > SELECTOR_DECORATION_WIDTH) ? SELECTOR_DECORATION_WIDTH : (h - y);
-        oled_draw_bMP(x0, y0 + y, 8, bh, TILE_8x8);
+    for (int64_t y = 0; y < h; y += SELECTOR_DECORATION_HEIGHT) {
+        const int64_t bh = (h - y > SELECTOR_DECORATION_HEIGHT) ? SELECTOR_DECORATION_HEIGHT : (h - y);
+        oled_draw_bMP(x0, y0 + y, SELECTOR_DECORATION_WIDTH, bh, TILE_8x8);
     }
 }
 

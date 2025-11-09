@@ -121,13 +121,14 @@ void astra_refresh_list_item_position() {
 
 void astra_refresh_selector_position() {
     astra_set_font(astra_font);
-    astra_selector.h_selector_trg = 15; // todo
+    astra_selector.h_selector_trg = LIST_ITEM_SPACING;
     const uint16_t top_padding = ((uint16_t) astra_selector.h_selector_trg - oled_get_str_height()) / 2;
     astra_selector.y_selector_trg = astra_selector.selected_item->y_list_item_trg - (float) oled_get_str_height() - (float) top_padding;
     if (astra_selector.selected_item->type == switch_item || astra_selector.selected_item->type == slider_item) {
-        astra_selector.w_selector_trg = OLED_WIDTH - 18;
+        astra_selector.w_selector_trg = SCREEN_WIDTH - LIST_ITEM_RIGHT_MARGIN + SELECTOR_TO_LIST_FOOTER_PADDING;
     } else {
-        astra_selector.w_selector_trg = oled_get_UTF8_width(astra_selector.selected_item->content) + 12;
+        astra_selector.w_selector_trg = oled_get_UTF8_width(astra_selector.selected_item->content) + LIST_ITEM_LEFT_MARGIN +
+                                        LIST_TEXT_TO_HEADER_PADDING;
     }
     astra_animation(&astra_selector.y_selector, astra_selector.y_selector_trg, 91);
     astra_animation(&astra_selector.w_selector, astra_selector.w_selector_trg, 92);
