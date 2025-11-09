@@ -283,13 +283,16 @@ void astra_selector_exit_current_item() {
     }
 
     if (astra_selector.selected_item->parent->layer == 0 && in_astra) {
-        if (ALLOW_EXIT_ASTRA_UI_BY_USER) in_astra = false;
+        if (ALLOW_EXIT_ASTRA_UI_BY_USER) {
+            in_astra = false;
+        }
         return;
     }
 
     //给选择的item的父item的父item的所有子item坐标清零 做动画
-    for (uint8_t i = 0; i < astra_selector.selected_item->parent->parent->child_num; i++)
+    for (uint8_t i = 0; i < astra_selector.selected_item->parent->parent->child_num; i++) {
         astra_selector.selected_item->parent->parent->child_list_item[i]->y_list_item = 0;
+    }
 
     //找到当前选择的item的父item在它的父item中的位置
     uint8_t _temp_index = 0;

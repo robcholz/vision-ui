@@ -205,3 +205,7 @@ void astra_ui_main_core() {
     if (!astra_exit_animation_finished)
         astra_draw_exit_animation();
 }
+
+extern bool vision_ui_is_exited() {
+    return !in_astra;
+}

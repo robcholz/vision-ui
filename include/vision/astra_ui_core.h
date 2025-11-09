@@ -41,6 +41,8 @@ extern void astra_ui_widget_core();
 
 extern void astra_ui_main_core();
 
+extern bool vision_ui_is_exited();
+
 #ifdef __cplusplus
 }
 #endif
