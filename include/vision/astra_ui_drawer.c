@@ -247,10 +247,16 @@ static void vision_ui_draw_text(const char* text,
 
     // 文本总宽度
     const int16_t text_width = oled_get_UTF8_width(text);
-    int16_t scroll_offset = 0;
+
+    const int16_t clip_x0 = x0 < 0 ? 0 : x0;
+    const int16_t clip_y0 = y0 < 0 ? 0 : y0;
+    const int16_t clip_x1 = x1 > SCREEN_WIDTH ? SCREEN_WIDTH : x1;
+    const int16_t clip_y1 = y1 > SCREEN_HEIGHT ? SCREEN_HEIGHT : y1;
+    const bool has_visible_area = clip_x0 < clip_x1 && clip_y0 < clip_y1;
 
     // 如果文本太长，需要滚动
     if (text_width > visible_width && visible_width > 0) {
+        int16_t scroll_offset = 0;
         const int16_t overflow = text_width - visible_width;
         const float speed_px_s = LIST_WIDGET_SCROLL_SPEED_PX_S; // px/s
         const uint32_t forward_ms = (uint32_t) (1000.f * overflow / speed_px_s + 0.5f);
@@ -271,14 +277,19 @@ static void vision_ui_draw_text(const char* text,
             scroll_offset = 0;
         }
 
-        // 绘制 + 裁剪到rect内
-        oled_set_clip_window(x0, y0, x1, y1);
-        oled_draw_UTF8(text_x - scroll_offset, text_y, text);
-        oled_reset_clip_window();
+        if (has_visible_area) {
+            oled_set_clip_window(clip_x0, clip_y0, clip_x1, clip_y1);
+            oled_draw_UTF8(text_x - scroll_offset, text_y, text);
+            oled_reset_clip_window();
+        }
     } else {
         // 不滚动，直接居中画
         *text_scroll_anchor = 0;
-        oled_draw_UTF8(text_x, text_y, text);
+        if (has_visible_area) {
+            oled_set_clip_window(clip_x0, clip_y0, clip_x1, clip_y1);
+            oled_draw_UTF8(text_x, text_y, text);
+            oled_reset_clip_window();
+        }
     }
 }
 
