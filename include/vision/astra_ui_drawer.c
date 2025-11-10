@@ -362,6 +362,8 @@ static void vision_ui_draw_list_header() {
             oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_switch_item);
         } else if (current_list_item->type == slider_item) {
             oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_slider_item);
+        } else if (current_list_item->type == title_item) {
+            // do nothing
         } else {
             oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_other_item);
         }

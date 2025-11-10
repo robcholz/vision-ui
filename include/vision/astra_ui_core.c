@@ -79,9 +79,8 @@ void astra_refresh_pop_up() {
 }
 
 void astra_refresh_camera_position() {
-    const float SELECTOR_HEIGHT = 15.f;
-    if (astra_camera.selector->y_selector_trg + SELECTOR_HEIGHT + astra_camera.y_camera_trg > SCREEN_HEIGHT) //向下超出屏幕 需要向下移动
-        astra_camera.y_camera_trg = SCREEN_HEIGHT - astra_camera.selector->y_selector_trg - SELECTOR_HEIGHT;
+    if (astra_camera.selector->y_selector_trg + LIST_SELECTOR_FIXED_HEIGHT + astra_camera.y_camera_trg > SCREEN_HEIGHT) //向下超出屏幕 需要向下移动
+        astra_camera.y_camera_trg = SCREEN_HEIGHT - astra_camera.selector->y_selector_trg - LIST_SELECTOR_FIXED_HEIGHT;
 
     if (astra_camera.selector->y_selector_trg + astra_camera.y_camera_trg < 0) //向上超出屏幕 需要向上移动
         astra_camera.y_camera_trg = 0 - astra_camera.selector->y_selector_trg + LIST_FONT_TOP_MARGIN;
@@ -121,15 +120,14 @@ void astra_refresh_list_item_position() {
 
 void astra_refresh_selector_position() {
     astra_set_font(astra_font);
-    astra_selector.h_selector_trg = LIST_ITEM_SPACING;
-    const uint16_t top_padding = ((uint16_t) astra_selector.h_selector_trg - oled_get_str_height()) / 2;
-    astra_selector.y_selector_trg = astra_selector.selected_item->y_list_item_trg - (float) oled_get_str_height() - (float) top_padding;
-    if (astra_selector.selected_item->type == switch_item || astra_selector.selected_item->type == slider_item) {
-        astra_selector.w_selector_trg = SCREEN_WIDTH - LIST_ITEM_RIGHT_MARGIN + SELECTOR_TO_LIST_FOOTER_PADDING;
-    } else {
-        astra_selector.w_selector_trg = oled_get_UTF8_width(astra_selector.selected_item->content) + LIST_ITEM_LEFT_MARGIN +
-                                        LIST_TEXT_TO_HEADER_PADDING;
-    }
+    astra_selector.h_selector_trg = LIST_FRAME_FIXED_HEIGHT;
+    astra_selector.y_selector_trg = astra_selector.selected_item->y_list_item_trg;
+    const uint16_t SELECTOR_MAX_WIDTH = LIST_HEADER_TO_LEFT_DISPLAY_PADDING + LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING +
+                                        LIST_TEXT_MAX_WIDTH + LIST_TEXT_TO_SELECTOR_PADDING;
+    const uint16_t selector_current_width = LIST_HEADER_TO_LEFT_DISPLAY_PADDING + LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING +
+                                            oled_get_UTF8_width(
+                                                astra_selector.selected_item->content) + LIST_TEXT_TO_SELECTOR_PADDING;
+    astra_selector.w_selector_trg = selector_current_width > SELECTOR_MAX_WIDTH ? SELECTOR_MAX_WIDTH : selector_current_width;
     astra_animation(&astra_selector.y_selector, astra_selector.y_selector_trg, 91);
     astra_animation(&astra_selector.w_selector, astra_selector.w_selector_trg, 92);
     astra_animation(&astra_selector.h_selector, astra_selector.h_selector_trg, 93);

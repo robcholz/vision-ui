@@ -90,13 +90,10 @@ astra_list_item_t* astra_get_root_list() {
         _astra_list_root_item = malloc(sizeof(astra_list_item_t));
         memset(_astra_list_root_item, 0, sizeof(astra_list_item_t));
         _astra_list_root_item->type = list_item;
-        _astra_list_root_item->content = "root";
+        _astra_list_root_item->content = "Root";
+        astra_push_item_to_list(_astra_list_root_item, astra_new_title_item(_astra_list_root_item->content));
     }
     return _astra_list_root_item;
-}
-
-void vision_ui_set_list_name(astra_list_item_t* list, const char* name) {
-    list->content = name;
 }
 
 astra_list_item_t* astra_new_list_item(char* _content) {
@@ -104,6 +101,15 @@ astra_list_item_t* astra_new_list_item(char* _content) {
     memset(_astra_list_item, 0, sizeof(astra_list_item_t));
     _astra_list_item->type = list_item;
     _astra_list_item->content = _content;
+    astra_push_item_to_list(_astra_list_item, astra_new_title_item(_astra_list_item->content));
+    return _astra_list_item;
+}
+
+astra_list_item_t* astra_new_title_item(const char* title) {
+    astra_list_item_t* _astra_list_item = malloc(sizeof(astra_list_item_t));
+    memset(_astra_list_item, 0, sizeof(astra_list_item_t));
+    _astra_list_item->type = title_item;
+    _astra_list_item->content = title;
     return _astra_list_item;
 }
 
@@ -320,12 +326,18 @@ bool astra_push_item_to_list(astra_list_item_t* _parent, astra_list_item_t* _chi
     _child->child_num = 0;
 
     astra_set_font(astra_font);
-    if (_parent->child_num == 0) {
-        _child->y_list_item_trg = oled_get_str_height() + LIST_FONT_TOP_MARGIN - 1;
+    float next_y = LIST_TITLE_TO_DISPLAY_TOP_PADDING;
+    if (_parent->child_num > 0) {
+        astra_list_item_t* last_child = _parent->child_list_item[_parent->child_num - 1];
+        const uint8_t gap_after_last = (last_child->type == title_item)
+                                           ? LIST_TITLE_TO_FRAME_PADDING
+                                           : LIST_FRAME_BETWEEN_PADDING;
+        next_y = last_child->y_list_item_trg + LIST_FRAME_FIXED_HEIGHT + gap_after_last;
+    } else if (_child->type != title_item) {
+        // 没有标题时仍旧保留顶端 padding
+        next_y = LIST_TITLE_TO_DISPLAY_TOP_PADDING;
     }
-    else {
-        _child->y_list_item_trg = _parent->child_list_item[_parent->child_num - 1]->y_list_item_trg + LIST_ITEM_SPACING;
-    }
+    _child->y_list_item_trg = next_y;
 
     if (_parent->layer == 0 && _parent->child_num == 0) {
         astra_bind_item_to_selector(_child); //初始化并绑定selector

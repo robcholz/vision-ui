@@ -82,7 +82,10 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 #define SELECTOR_TO_LIST_FOOTER_PADDING 1
 
 // paddings
-#define LIST_FRAME_TO_DISPLAY_TOP_PADDING 3
+#define LIST_TITLE_TO_DISPLAY_TOP_PADDING 0
+#define LIST_TITLE_TO_FRAME_PADDING 4
+
+#define LIST_FRAME_BETWEEN_PADDING 2
 
 #define LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 8
 #define LIST_FOOTER_TO_LEFT_PADDING 10
@@ -90,11 +93,15 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 #define LIST_HEADER_TO_TEXT_PADDING 2
 #define LIST_HEADER_TO_LEFT_DISPLAY_PADDING 3
 
+#define LIST_TEXT_TO_SELECTOR_PADDING 3
+
 // fixed sizes
 #define LIST_FOOTER_MAX_HEIGHT 9
 #define LIST_FOOTER_MAX_WIDTH 20
 #define LIST_HEADER_MAX_WIDTH 7 // rect
 #define LIST_FRAME_FIXED_HEIGHT 15
+
+#define LIST_SELECTOR_FIXED_HEIGHT 15
 
 // fixed properties
 #define LIST_SCROLL_BAR_WIDTH 5
@@ -104,6 +111,7 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 
 typedef enum {
     list_item,
+    title_item,
     switch_item,
     slider_item,
     user_item,
@@ -140,6 +148,10 @@ typedef struct astra_slider_item_t {
     uint32_t text_scroll_anchor;
 } astra_slider_item_t;
 
+typedef struct vision_ui_title_item_t {
+    astra_list_item_t base_item;
+} vision_ui_title_item_t;
+
 typedef struct astra_user_item_t {
     astra_list_item_t base_item;
 
@@ -158,8 +170,6 @@ typedef struct astra_user_item_t {
 
 extern astra_list_item_t* astra_get_root_list();
 
-extern void vision_ui_set_list_name(astra_list_item_t* list, const char* name);
-
 extern astra_switch_item_t* astra_to_switch_item(astra_list_item_t* _astra_list_item);
 
 extern astra_slider_item_t* astra_to_slider_item(astra_list_item_t* _astra_list_item);
@@ -167,6 +177,8 @@ extern astra_slider_item_t* astra_to_slider_item(astra_list_item_t* _astra_list_
 extern astra_user_item_t* astra_to_user_item(astra_list_item_t* _astra_list_item);
 
 extern astra_list_item_t* astra_new_list_item(char* _content);
+
+extern astra_list_item_t* astra_new_title_item(const char* title);
 
 //正确用法：astra_push_item_to_list(astra_get_root_list(), astra_new_list_item(...));
 extern astra_list_item_t* astra_new_switch_item(char* _content, bool* _value);
