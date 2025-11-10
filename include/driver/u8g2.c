@@ -17,15 +17,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
+#include "u8g2.h"
+
 #include "vision/astra_ui_draw_driver.h"
 
 #include <u8g2.h>
-#include <u8x8.h>
 
 #include <SDL_events.h>
 #include <SDL_timer.h>
 
 static u8g2_t* s_u8g2 = NULL;
+
+uint8_t buffer[128*8];
 
 static int getKey() {
     SDL_Event event;
@@ -111,12 +114,10 @@ void oled_draw_box(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
 }
 
 void oled_draw_frame(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-    ;
     u8g2_DrawFrame(s_u8g2, x, y, w, h);
 }
 
 void oled_draw_R_frame(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r) {
-    ;
     u8g2_DrawRFrame(s_u8g2, x, y, w, h, r);
 }
 
@@ -203,4 +204,8 @@ void oled_send_area_buffer(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
     (void) h;
     u8g2_SendBuffer(s_u8g2); /* 回退全刷 */
 #endif
+}
+
+extern void* oled_get_raw_buffer_pointer() {
+    return buffer;
 }

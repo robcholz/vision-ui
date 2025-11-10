@@ -142,22 +142,23 @@ typedef struct astra_list_item_t {
 typedef struct astra_switch_item_t {
     astra_list_item_t base_item;
 
-    bool* value;
+    bool value;
 
-    void (*on_clicked)();
+    void (*on_changed)(bool value);
 } astra_switch_item_t;
 
 typedef struct astra_slider_item_t {
     astra_list_item_t base_item;
 
-    int16_t* value;
-    int16_t value_backup;
+    int16_t value;
     bool is_confirmed;
     uint8_t value_step;
     int16_t value_max;
     int16_t value_min;
 
     uint32_t text_scroll_anchor;
+
+    void (*on_changed)(int16_t value);
 } astra_slider_item_t;
 
 typedef struct vision_ui_title_item_t {
@@ -192,9 +193,10 @@ extern astra_list_item_t* astra_new_list_item(char* _content);
 
 extern astra_list_item_t* astra_new_title_item(const char* title);
 
-extern astra_list_item_t* astra_new_switch_item(char* _content, bool* _value, void (*on_clicked)());
+extern astra_list_item_t* astra_new_switch_item(char* _content, bool defaultValue, void (*on_changed)(bool value));
 
-extern astra_list_item_t* astra_new_slider_item(char* _content, int16_t* _value, uint8_t _step, int16_t _min, int16_t _max);
+extern astra_list_item_t* astra_new_slider_item(char* _content, int16_t defaultValue, uint8_t _step, int16_t _min, int16_t _max,
+                                                void (*on_changed)(int16_t value));
 
 extern astra_list_item_t* astra_new_user_item(char* _content, void (*_init_function)(), void (*_loop_function)(), void (*_exit_function)());
 

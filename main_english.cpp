@@ -4,6 +4,8 @@
 #include <vision/astra_ui_core.h>
 #include <vision/astra_ui_item.h>
 
+#include "driver/u8g2.h"
+
 #include "font/chinese.h"
 
 u8g2_t u8g2;
@@ -90,13 +92,12 @@ void test_user_item_exit_function() {
 }
 
 int main() {
-    u8g2_SetupBuffer_SDL_128x64(&u8g2, U8G2_R0);
+    u8x8_Setup_SDL_128x64(u8g2_GetU8x8(&u8g2));
+    u8g2_SetupBuffer(&u8g2, buffer, 8, u8g2_ll_hvline_vertical_top_lsb, U8G2_R0);
     u8g2_InitDisplay(&u8g2);
     u8g2_SetPowerSave(&u8g2, 0);
 
     vision_ui_bind_driver(&u8g2);
-
-    bool test_bool = false;
 
     astra_init_core();
 
@@ -105,27 +106,31 @@ int main() {
     astra_list_item_t* launcher_setting_list_item = astra_new_list_item("Board Settings");
 
     astra_push_item_to_list(astra_get_root_list(), launcher_setting_list_item);
-    bool screen_switch;
-    astra_push_item_to_list(astra_get_root_list(), astra_new_switch_item("Switch Screen", &screen_switch));
+    astra_push_item_to_list(astra_get_root_list(), astra_new_switch_item("Switch Screen", true, [](bool b) {
+    }));
     astra_push_item_to_list(astra_get_root_list(),
                             astra_new_user_item("Wiring Diagram...", test_user_item_init_function, test_user_item_loop_function,
                                                 test_user_item_exit_function));
     astra_push_item_to_list(astra_get_root_list(),
                             astra_new_user_item("About the Board...", test_user_item_init_function, test_user_item_loop_function,
                                                 test_user_item_exit_function));
+    astra_push_item_to_list(astra_get_root_list(),
+                            astra_new_switch_item("Test Alert", false, [](bool b) {
+                                astra_push_pop_up("Hello", 5000);
+                            }));
 
-    bool pulse_light = true;
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Heartbeat LED", &pulse_light));
-    bool key_flip;
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Reverse Keys", &key_flip));
-    int16_t p_mode = 1000;
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_slider_item("Display Style", &p_mode, 5, 1, 9999));
-    bool dark_mode;
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Invert Display", &dark_mode));
-    bool mcu_serial_channel;
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("MCU Serial Channel", &mcu_serial_channel));
-    bool external_serial_channel;
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("External Serial Channel", &external_serial_channel));
+    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Heartbeat LED", true, [](bool b) {
+    }));
+    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Reverse Keys", false, [](bool b) {
+    }));
+    astra_push_item_to_list(launcher_setting_list_item, astra_new_slider_item("Display Style", 1600, 5, 1, 9999, [](int16_t value) {
+    }));
+    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Invert Display", false, [](bool b) {
+    }));
+    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("MCU Serial Channel", false, [](bool b) {
+    }));
+    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("External Serial Channel", false, [](bool b) {
+    }));
 
     vision_ui_render_init();
 
@@ -134,21 +139,35 @@ int main() {
     float fps_timer = prev_ms;
     int frame_count = 0;
 
-    while (!vision_ui_is_exited()) {
-        prev_ms = current_ms;
-        current_ms = get_ticks_ms();
+    constexpr float target_ms = 1000.0f / 60.0f;
 
+    while (!vision_ui_is_exited()) {
+        const float frame_begin = get_ticks_ms();
+
+        // render
         oled_clear_buffer();
         vision_ui_render_loop();
         oled_send_buffer();
 
+        // pace to 120 fps (include render time)
+        float now_ms = get_ticks_ms();
+        float elapsed_ms = now_ms - frame_begin; // full frame so far
+        if (elapsed_ms < target_ms) {
+            // sleep the remainder (rounded; replace delay() with a microsecond sleep if you have one)
+            delay((uint32_t) lrintf(target_ms - elapsed_ms));
+            now_ms = get_ticks_ms(); // re-sample after sleep
+        }
+
+        // fps
         frame_count++;
-        if (current_ms - fps_timer >= 1000.0f) {
-            const float fps = (float) frame_count * 1000.0f / (current_ms - fps_timer);
+        if (now_ms - fps_timer >= 1000.0f) {
+            const float fps = (float) frame_count * 1000.0f / (now_ms - fps_timer);
             printf("FPS: %.1f\n", fps);
-            fps_timer = current_ms;
+            fps_timer = now_ms;
             frame_count = 0;
         }
+
+        prev_ms = frame_begin; // (optional) if you need per-frame dt later
     }
 
     return 0;

@@ -9,6 +9,8 @@
 
 #ifdef __cplusplus
 extern "C" {
+
+
 #endif
 
 enum UIAction {
@@ -78,6 +80,9 @@ extern void oled_clear_buffer(void);
 extern void oled_send_buffer(void);
 
 extern void oled_send_area_buffer(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+/// @attention this should be a full size buffer
+extern void* oled_get_raw_buffer_pointer();
 
 #ifdef __cplusplus
 }

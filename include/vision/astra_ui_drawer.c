@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "astra_ui_core.h"
 
@@ -120,6 +121,43 @@ void astra_draw_exit_animation() {
     }
 }
 
+typedef struct {
+    uint8_t total;
+    uint8_t col[3];
+} vision_ui_block3x3_t;
+
+static vision_ui_block3x3_t vision_ui_sample_block3x3(const uint8_t* buffer,
+                                                      uint16_t cx,
+                                                      uint16_t cy) {
+    vision_ui_block3x3_t sample = {0, {0, 0, 0}};
+    if (buffer == NULL) return sample;
+
+    const int16_t x_start = cx == 0 ? 0 : (int16_t) cx - 1;
+    const int16_t x_end = cx + 1 >= SCREEN_WIDTH ? SCREEN_WIDTH - 1 : (int16_t) cx + 1;
+    const int16_t y_start = cy == 0 ? 0 : (int16_t) cy - 1;
+    const int16_t y_end = cy + 1 >= SCREEN_HEIGHT ? SCREEN_HEIGHT - 1 : (int16_t) cy + 1;
+
+    for (int16_t y = y_start; y <= y_end; ++y) {
+        const uint16_t page = (uint16_t) y >> 3;
+        const uint8_t mask = (uint8_t) (1u << (y & 0x7));
+        const uint32_t row_offset = (uint32_t) page * SCREEN_WIDTH;
+        for (int16_t x = x_start; x <= x_end; ++x) {
+            if (buffer[row_offset + x] & mask) {
+                sample.total++;
+                const uint8_t col_idx = (uint8_t) (x - x_start);
+                if (col_idx < 3)
+                    sample.col[col_idx]++;
+            }
+        }
+    }
+    return sample;
+}
+
+static bool vision_ui_block_is_thin_vertical(const vision_ui_block3x3_t* sample) {
+    const uint8_t side_sum = (uint8_t) (sample->col[0] + sample->col[2]);
+    return (sample->col[1] >= 2) && (side_sum <= 1);
+}
+
 static void vision_ui_draw_background_blur_animation(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint8_t fadeLevel) {
     if (x0 + width > SCREEN_WIDTH) {
         width = SCREEN_WIDTH - x0;
@@ -131,6 +169,9 @@ static void vision_ui_draw_background_blur_animation(uint16_t x0, uint16_t y0, u
     if (fadeLevel < 1 || fadeLevel > 5) {
         return;
     }
+
+    const uint8_t* buffer_live = oled_get_raw_buffer_pointer();
+    if (buffer_live == NULL) return;
 
     // 定义2x2网格的渐隐模式
     // 每个数组表示一个2x2网格中哪些像素需要熄灭
@@ -162,23 +203,65 @@ static void vision_ui_draw_background_blur_animation(uint16_t x0, uint16_t y0, u
         }
     };
 
-    // 计算边界
     const uint16_t xEnd = x0 + width;
     const uint16_t yEnd = y0 + height;
+    const uint16_t row_bits = width;
+    const uint16_t row_mask_bytes = (uint16_t) ((row_bits + 7u) >> 3);
+    uint8_t row_mask_prev[(SCREEN_WIDTH + 7) / 8];
+    uint8_t row_mask_curr[(SCREEN_WIDTH + 7) / 8];
+    memset(row_mask_prev, 0, row_mask_bytes);
+    memset(row_mask_curr, 0, row_mask_bytes);
+
+    bool has_prev_row = false;
+    uint16_t prev_row_y = 0;
 
     for (uint16_t y = y0; y < yEnd; y++) {
-        for (uint16_t x = x0; x < xEnd; x++) {
-            // 计算在2x2网格中的相对位置
-            const uint16_t grid_x = (x - x0) % 2;
-            const uint16_t grid_y = (y - y0) % 2;
+        memset(row_mask_curr, 0, row_mask_bytes);
 
-            // 根据渐隐级别和网格位置决定是否熄灭像素
-            if (patterns[fadeLevel - 1][grid_y][grid_x]) {
-                oled_set_draw_color(0);
-                oled_draw_pixel(x, y);
+        for (uint16_t x = x0; x < xEnd; x++) {
+            const uint16_t grid_x = (x - x0) & 0x1u;
+            const uint16_t grid_y = (y - y0) & 0x1u;
+
+            if (!patterns[fadeLevel - 1][grid_y][grid_x]) continue;
+
+            const vision_ui_block3x3_t block = vision_ui_sample_block3x3(buffer_live, x, y);
+
+            if (block.total <= 1) continue;
+
+            if (fadeLevel >= 2 && fadeLevel <= 4) {
+                if (vision_ui_block_is_thin_vertical(&block)) {
+                    if (((y + fadeLevel) & 1u) == 0)
+                        continue;
+                }
             }
+
+            const uint16_t local_x = (uint16_t) (x - x0);
+            row_mask_curr[local_x >> 3] |= (uint8_t) (1u << (local_x & 0x7));
+        }
+
+        if (has_prev_row) {
+            oled_set_draw_color(0);
+            for (uint16_t local_x = 0; local_x < row_bits; ++local_x) {
+                if (row_mask_prev[local_x >> 3] & (uint8_t) (1u << (local_x & 0x7)))
+                    oled_draw_pixel(x0 + local_x, prev_row_y);
+            }
+        } else {
+            has_prev_row = true;
+        }
+
+        memcpy(row_mask_prev, row_mask_curr, row_mask_bytes);
+        prev_row_y = y;
+    }
+
+    if (has_prev_row) {
+        oled_set_draw_color(0);
+        for (uint16_t local_x = 0; local_x < row_bits; ++local_x) {
+            if (row_mask_prev[local_x >> 3] & (uint8_t) (1u << (local_x & 0x7)))
+                oled_draw_pixel(x0 + local_x, prev_row_y);
         }
     }
+
+    oled_set_draw_color(1);
 }
 
 void astra_draw_info_bar() {
@@ -499,7 +582,7 @@ static void vision_ui_draw_list_footer() {
         const int16_t frame_y = y_list_item + (LIST_FRAME_FIXED_HEIGHT - LIST_FOOTER_MAX_HEIGHT) / 2;
         if (current_list_item->type == list_item) {
         } else if (current_list_item->type == switch_item) {
-            if (*astra_to_switch_item(current_list_item)->value == true) {
+            if (astra_to_switch_item(current_list_item)->value == true) {
                 oled_set_draw_color(1);
                 oled_draw_bMP(frame_x, frame_y, LIST_FOOTER_MAX_WIDTH, LIST_FOOTER_MAX_HEIGHT, footer_switch_on);
             } else {
@@ -514,8 +597,7 @@ static void vision_ui_draw_list_footer() {
             const int16_t footer_y1 = footer_y0 + LIST_FOOTER_MAX_HEIGHT;
 
             char value_str[10] = {};
-            const int16_t value = *astra_to_slider_item(current_list_item)->value;
-            sprintf(value_str, "%d", value);
+            sprintf(value_str, "%d", astra_to_slider_item(current_list_item)->value);
 
             oled_set_draw_color(1);
             vision_ui_draw_text(value_str,

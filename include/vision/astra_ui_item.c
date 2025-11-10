@@ -113,25 +113,27 @@ astra_list_item_t* astra_new_title_item(const char* title) {
     return _astra_list_item;
 }
 
-astra_list_item_t* astra_new_switch_item(char* _content, bool* _value, void (*on_clicked)()) {
+astra_list_item_t* astra_new_switch_item(char* _content, const bool defaultValue, void (*on_changed)(bool value)) {
     astra_switch_item_t* _astra_switch_item = malloc(sizeof(astra_switch_item_t));
     memset(_astra_switch_item, 0, sizeof(astra_switch_item_t));
     _astra_switch_item->base_item.type = switch_item;
     _astra_switch_item->base_item.content = _content;
-    _astra_switch_item->value = _value;
-    _astra_switch_item->on_clicked = on_clicked;
+    _astra_switch_item->value = defaultValue;
+    _astra_switch_item->on_changed = on_changed;
     return (astra_list_item_t*) _astra_switch_item;
 }
 
-astra_list_item_t* astra_new_slider_item(char* _content, int16_t* _value, uint8_t _step, int16_t _min, int16_t _max) {
+astra_list_item_t* astra_new_slider_item(char* _content, int16_t defaultValue, uint8_t _step, int16_t _min, int16_t _max,
+                                         void (*on_changed)(int16_t value)) {
     astra_slider_item_t* _astra_slider_item = malloc(sizeof(astra_slider_item_t));
     memset(_astra_slider_item, 0, sizeof(astra_slider_item_t));
     _astra_slider_item->base_item.type = slider_item;
     _astra_slider_item->base_item.content = _content;
-    _astra_slider_item->value = _value;
+    _astra_slider_item->value = defaultValue;
     _astra_slider_item->value_step = _step;
     _astra_slider_item->value_min = _min;
     _astra_slider_item->value_max = _max;
+    _astra_slider_item->on_changed = on_changed;
     return (astra_list_item_t*) _astra_slider_item;
 }
 
@@ -180,9 +182,11 @@ bool astra_bind_item_to_selector(astra_list_item_t* _item) {
 void astra_selector_go_next_item() {
     if (astra_selector.selected_item->type == slider_item && astra_to_slider_item(astra_selector.selected_item)->is_confirmed) {
         astra_slider_item_t* _selected_slider_item = astra_to_slider_item(astra_selector.selected_item);
-        *_selected_slider_item->value += _selected_slider_item->value_step;
-        if (*_selected_slider_item->value >= _selected_slider_item->value_max)
-            *_selected_slider_item->value = _selected_slider_item->value_max;
+        _selected_slider_item->value += _selected_slider_item->value_step;
+        if (_selected_slider_item->value >= _selected_slider_item->value_max) {
+            _selected_slider_item->value = _selected_slider_item->value_max;
+        }
+        _selected_slider_item->on_changed(_selected_slider_item->value);
         return;
     }
 
@@ -201,9 +205,11 @@ void astra_selector_go_next_item() {
 void astra_selector_go_prev_item() {
     if (astra_selector.selected_item->type == slider_item && astra_to_slider_item(astra_selector.selected_item)->is_confirmed) {
         astra_slider_item_t* _selected_slider_item = astra_to_slider_item(astra_selector.selected_item);
-        *_selected_slider_item->value -= _selected_slider_item->value_step;
-        if (*_selected_slider_item->value <= _selected_slider_item->value_min)
-            *_selected_slider_item->value = _selected_slider_item->value_min;
+        _selected_slider_item->value -= _selected_slider_item->value_step;
+        if (_selected_slider_item->value <= _selected_slider_item->value_min) {
+            _selected_slider_item->value = _selected_slider_item->value_min;
+        }
+        _selected_slider_item->on_changed(_selected_slider_item->value);
         return;
     }
 
@@ -247,8 +253,8 @@ void astra_selector_jump_to_selected_item() {
 
     if (astra_selector.selected_item->type == switch_item) {
         astra_switch_item_t* _selected_switch_item = astra_to_switch_item(astra_selector.selected_item);
-        *_selected_switch_item->value = !*_selected_switch_item->value;
-        _selected_switch_item->on_clicked();
+        _selected_switch_item->value = !_selected_switch_item->value;
+        _selected_switch_item->on_changed(_selected_switch_item->value);
         return;
     }
 
@@ -256,12 +262,9 @@ void astra_selector_jump_to_selected_item() {
         astra_slider_item_t* _selected_slider_item = astra_to_slider_item(astra_selector.selected_item);
         if (!_selected_slider_item->is_confirmed) {
             _selected_slider_item->is_confirmed = true; //如果没选中 就选中
-            _selected_slider_item->value_backup = *_selected_slider_item->value; //此时代表开始修改值了 所以先备份最开始的数据
             return;
         }
         if (_selected_slider_item->is_confirmed) {
-            //如果已选中且又长按确认键 直接退出即可 因为在选中之后 对于值的改变是实时生效的
-            astra_push_pop_up("ok.", 1000);
             _selected_slider_item->is_confirmed = false;
             return;
         }
@@ -282,10 +285,10 @@ void astra_selector_exit_current_item() {
         //如果已选中又长按退出键
         astra_slider_item_t* _selected_slider_item = astra_to_slider_item(astra_selector.selected_item);
 
-        astra_push_pop_up("canceled.", 1000);
-        _selected_slider_item->is_confirmed = false;
-        *_selected_slider_item->value = _selected_slider_item->value_backup;
-        return;
+        if (_selected_slider_item->is_confirmed) {
+            _selected_slider_item->is_confirmed = false;
+            return;
+        }
     }
 
     if (astra_selector.selected_item->type == user_item && astra_to_user_item(astra_selector.selected_item)->in_user_item) {
