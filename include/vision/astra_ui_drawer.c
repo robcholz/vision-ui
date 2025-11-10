@@ -477,14 +477,17 @@ void astra_draw_selector() {
     const int16_t y_selector = (int16_t) lrintf(astra_selector.y_selector + astra_camera.y_camera);
 
     oled_set_draw_color(1);
-    oled_draw_R_frame(x_selector, y_selector, astra_selector.w_selector_trg, astra_selector.h_selector_trg, 3);
+    const int16_t selector_w = (int16_t) lrintf(astra_selector.w_selector);
+    const int16_t selector_h = (int16_t) lrintf(astra_selector.h_selector);
+
+    oled_draw_R_frame(x_selector, y_selector, selector_w, selector_h, 3);
     oled_set_draw_color(2);
     oled_draw_box(x_selector + 1,
                   y_selector + 2,
-                  astra_selector.w_selector_trg - 2,
-                  astra_selector.h_selector_trg - 4);
-    oled_draw_H_line(x_selector + 2, y_selector + 1, astra_selector.w_selector_trg - 4);
-    oled_draw_H_line(x_selector + 2, y_selector + astra_selector.h_selector_trg - 2, astra_selector.w_selector_trg - 4);
+                  selector_w - 2,
+                  selector_h - 4);
+    oled_draw_H_line(x_selector + 2, y_selector + 1, selector_w - 4);
+    oled_draw_H_line(x_selector + 2, y_selector + selector_h - 2, selector_w - 4);
 }
 
 void astra_draw_widget() {
