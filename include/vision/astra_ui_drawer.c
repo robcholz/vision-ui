@@ -25,15 +25,15 @@ void astra_draw_exit_animation() {
     //2 遮罩开始抬升
     //0 遮罩抬升完成 退场动画完成
     static float _temp_h = -8;
-    static float _temp_h_trg = OLED_HEIGHT + 8;
+    static float _temp_h_trg = SCREEN_HEIGHT + 8;
 
     oled_set_draw_color(0);
-    oled_draw_box(0, 0, OLED_WIDTH, _temp_h); //遮罩
+    oled_draw_box(0, 0, SCREEN_WIDTH, _temp_h); //遮罩
     oled_set_draw_color(1);
 
     // 沙漏
-    uint8_t _x_hourglass_offset = OLED_WIDTH / 2 - 8;
-    int8_t _y_hourglass = _temp_h - OLED_HEIGHT / 2 - 18;
+    uint8_t _x_hourglass_offset = SCREEN_WIDTH / 2 - 8;
+    int8_t _y_hourglass = _temp_h - SCREEN_HEIGHT / 2 - 18;
     if (_y_hourglass + 20 >= 0) {
         // 绘制顶部和底部矩形及中间擦除
         oled_draw_box(_x_hourglass_offset, _y_hourglass + 2, 13, 3);
@@ -83,10 +83,10 @@ void astra_draw_exit_animation() {
     if (_temp_h + 3 >= 0)
         //下面是遮罩下方横线
         for (uint8_t i = 0; i <= 3; ++i)
-            oled_draw_H_line(0, _temp_h + i, OLED_WIDTH);
+            oled_draw_H_line(0, _temp_h + i, SCREEN_WIDTH);
 
     //棋盘格过渡
-    for (int16_t i = 0; i <= OLED_WIDTH; i += 2)
+    for (int16_t i = 0; i <= SCREEN_WIDTH; i += 2)
         for (int16_t j = _temp_h - 5; j <= _temp_h - 1; j++) {
             if (j % 2 == 0)
                 oled_draw_pixel(i + 1, j);
@@ -97,7 +97,7 @@ void astra_draw_exit_animation() {
     astra_exit_animation(&_temp_h, _temp_h_trg, 94);
 
     //下落过程
-    if (astra_exit_animation_status == 0 && _temp_h == _temp_h_trg && _temp_h == OLED_HEIGHT + 8) {
+    if (astra_exit_animation_status == 0 && _temp_h == _temp_h_trg && _temp_h == SCREEN_HEIGHT + 8) {
         astra_exit_animation_status = 1; //落下来了
         return;
     }
@@ -114,7 +114,7 @@ void astra_draw_exit_animation() {
         astra_exit_animation_finished = true;
         astra_exit_animation_status = 0; //退场动画完成
         _temp_h = -8;
-        _temp_h_trg = OLED_HEIGHT + 8;
+        _temp_h_trg = SCREEN_HEIGHT + 8;
         return;
     }
 }
@@ -131,7 +131,7 @@ void astra_draw_info_bar() {
         if (astra_info_bar.y_info_bar == astra_info_bar.y_info_bar_trg) astra_info_bar.is_running = false; //等归位后结束生命周期
     }
 
-    int16_t _x_info_bar = OLED_WIDTH / 2 - astra_info_bar.w_info_bar / 2;
+    int16_t _x_info_bar = SCREEN_WIDTH / 2 - astra_info_bar.w_info_bar / 2;
     int16_t _y_info_bar_1 = astra_info_bar.y_info_bar - 4;
     int16_t _y_info_bar_2 = astra_info_bar.y_info_bar + INFO_BAR_HEIGHT;
 
@@ -141,7 +141,7 @@ void astra_draw_info_bar() {
                     (int16_t) astra_info_bar.w_info_bar, INFO_BAR_HEIGHT + 4, 4);
 
     oled_set_draw_color(0); //黑遮罩打底
-    oled_draw_R_box((int16_t) (OLED_WIDTH / 2 - (astra_info_bar.w_info_bar + 4) / 2), _y_info_bar_1,
+    oled_draw_R_box((int16_t) (SCREEN_WIDTH / 2 - (astra_info_bar.w_info_bar + 4) / 2), _y_info_bar_1,
                     (int16_t) (astra_info_bar.w_info_bar + 4), INFO_BAR_HEIGHT + 6, 4);
 
     oled_set_draw_color(1);
@@ -171,7 +171,7 @@ void astra_draw_pop_up() {
         if (astra_pop_up.y_pop_up == astra_pop_up.y_pop_up_trg) astra_pop_up.is_running = false; //等归位后结束生命周期
     }
 
-    int16_t _x_pop_up = OLED_WIDTH / 2 - astra_pop_up.w_pop_up / 2;
+    int16_t _x_pop_up = SCREEN_WIDTH / 2 - astra_pop_up.w_pop_up / 2;
     int16_t _y_pop_up = astra_pop_up.y_pop_up + POP_UP_HEIGHT;
 
     astra_set_font(astra_font);
@@ -181,7 +181,7 @@ void astra_draw_pop_up() {
                     POP_UP_HEIGHT, 4);
 
     oled_set_draw_color(0); //黑遮罩
-    oled_draw_R_box((int16_t) (OLED_WIDTH / 2 - (astra_pop_up.w_pop_up + 4) / 2 - 2), (int16_t) (astra_pop_up.y_pop_up - 2),
+    oled_draw_R_box((int16_t) (SCREEN_WIDTH / 2 - (astra_pop_up.w_pop_up + 4) / 2 - 2), (int16_t) (astra_pop_up.y_pop_up - 2),
                     (int16_t) (astra_pop_up.w_pop_up + 8), POP_UP_HEIGHT + 4, 5);
 
     oled_set_draw_color(1);
@@ -192,7 +192,7 @@ void astra_draw_pop_up() {
     oled_set_draw_color(2);
     oled_draw_H_line(_x_pop_up, _y_pop_up - 2, (int16_t) astra_pop_up.w_pop_up);
     oled_draw_pixel(_x_pop_up - 1, _y_pop_up - 3);
-    oled_draw_pixel((int16_t) (OLED_WIDTH / 2 + astra_pop_up.w_pop_up / 2), _y_pop_up - 3);
+    oled_draw_pixel((int16_t) (SCREEN_WIDTH / 2 + astra_pop_up.w_pop_up / 2), _y_pop_up - 3);
 
     oled_draw_UTF8(_x_pop_up + 3,
                    (int16_t) (astra_pop_up.y_pop_up + oled_get_str_height() + 1),
@@ -205,15 +205,17 @@ void astra_draw_list_appearance() {
     oled_draw_V_line(SCREEN_WIDTH - 2, 0, SCREEN_HEIGHT);
 
     const astra_list_item_t* parent = astra_selector.selected_item->parent;
-    const uint8_t child_cnt = parent ? parent->child_num : 1;
-    const float part = child_cnt > 0 ? (float) SCREEN_HEIGHT / child_cnt : SCREEN_HEIGHT;
-    const float slider_top = part * astra_selector.selected_index;
-    const float slider_h = (float) LIST_FRAME_FIXED_HEIGHT / (child_cnt > 0 ? child_cnt : 1);
+
+    const int16_t slider_top_px = parent ? parent->scroll_bar_top_px : 0;
+    const int16_t slider_h_px = parent ? parent->scroll_bar_height_px : SCREEN_HEIGHT;
 
     oled_draw_box(SCREEN_WIDTH - LIST_SCROLL_BAR_WIDTH,
-                  lrintf(slider_top),
+                  slider_top_px,
                   LIST_SCROLL_BAR_WIDTH,
-                  lrintf(fmaxf(slider_h, part)));
+                  slider_h_px);
+
+    const uint8_t child_cnt = parent ? parent->child_num : 1;
+    const float part = child_cnt > 0 ? (float) SCREEN_HEIGHT / child_cnt : SCREEN_HEIGHT;
 
     const int16_t track_x = SCREEN_WIDTH - LIST_SCROLL_BAR_WIDTH;
     for (uint8_t i = 0; i <= child_cnt; ++i) {

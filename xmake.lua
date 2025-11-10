@@ -4,6 +4,13 @@ add_rules("mode.debug")
 
 add_requires("libsdl >=2.0", { configs = { shared = true } })
 
+option("language")
+   set_showmenu(true)
+   set_description("Select simulator language")
+   set_default("default")
+   set_values("default", "english")
+option_end()
+
 target("u8g2")
     set_kind("static")
     add_files("components/u8g2/csrc/*.c")
@@ -20,8 +27,12 @@ target("vision_ui")
 
 target("vision_ui_simulator")
     set_kind("binary")
+    local simulator_main = "main_english.cpp"
+if get_config("language") == "mandarin" then
+    simulator_main = "main_mandarin.cpp"
+end
     add_files(
-        "main.cpp",
+        simulator_main,
         "components/u8g2/sys/sdl/common/u8x8_d_sdl_128x64.c",
         "components/u8g2/sys/sdl/common/u8x8_sdl_key.c"
     )

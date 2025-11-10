@@ -7,13 +7,8 @@
 
 #include <stdint.h>
 
-#define OLED_HEIGHT 64
-#define OLED_WIDTH 128
-
 #ifdef __cplusplus
 extern "C" {
-
-
 #endif
 
 enum UIAction {

@@ -103,12 +103,20 @@ void astra_refresh_widget_core_position() {
 
 void astra_init_list() {
     //做动画
-    for (uint8_t i = 0; i < astra_get_root_list()->child_num; i++)
-        astra_get_root_list()->child_list_item[i]->y_list_item = 0;
+    for (uint8_t i = 0; i < astra_get_root_list()->child_num; i++) {
+        astra_list_item_t* list = astra_get_root_list()->child_list_item[i];
+        list->y_list_item = 0;
+        list->scroll_bar_top = 0;
+        list->scroll_bar_top_trg = 0;
+        list->scroll_bar_height = 0;
+        list->scroll_bar_height_trg = 0;
+        list->scroll_bar_top_px = 0;
+        list->scroll_bar_height_px = SCREEN_HEIGHT;
+    }
     astra_selector.selected_index = 0;
     astra_selector.selected_item = astra_get_root_list()->child_list_item[0];
-    astra_selector.y_selector = OLED_HEIGHT;
-    astra_selector.h_selector = OLED_HEIGHT;
+    astra_selector.y_selector = SCREEN_HEIGHT;
+    astra_selector.h_selector = SCREEN_HEIGHT;
 }
 
 void astra_init_core() {
@@ -118,9 +126,40 @@ void astra_init_core() {
 }
 
 void astra_refresh_list_item_position() {
-    for (uint8_t i = 0; i < astra_selector.selected_item->parent->child_num; i++)
-        astra_animation(&astra_selector.selected_item->parent->child_list_item[i]->y_list_item,
-                        astra_selector.selected_item->parent->child_list_item[i]->y_list_item_trg, 84);
+    astra_list_item_t* parent = astra_selector.selected_item->parent;
+
+    for (uint8_t i = 0; i < parent->child_num; i++)
+        astra_animation(&parent->child_list_item[i]->y_list_item,
+                        parent->child_list_item[i]->y_list_item_trg, 84);
+
+    const uint8_t child_cnt = parent->child_num > 0 ? parent->child_num : 1;
+    const float part = (float) SCREEN_HEIGHT / child_cnt;
+    const float slider_top_trg = part * astra_selector.selected_index;
+    const float slider_h_trg = fmaxf((float) LIST_FRAME_FIXED_HEIGHT / child_cnt, part);
+
+    parent->scroll_bar_top_trg = slider_top_trg;
+    parent->scroll_bar_height_trg = slider_h_trg;
+
+    const bool scroll_bar_uninitialized = parent->scroll_bar_height == 0.f && parent->scroll_bar_height_trg == 0.f;
+    if (scroll_bar_uninitialized) {
+        parent->scroll_bar_top = parent->scroll_bar_top_trg;
+        parent->scroll_bar_height = parent->scroll_bar_height_trg;
+    } else {
+        astra_animation(&parent->scroll_bar_top, parent->scroll_bar_top_trg, LIST_SCROLL_BAR_ANIMATION_SPEED);
+        astra_animation(&parent->scroll_bar_height, parent->scroll_bar_height_trg, LIST_SCROLL_BAR_ANIMATION_SPEED);
+    }
+
+    int16_t slider_top_px = (int16_t) lrintf(parent->scroll_bar_top);
+    int16_t slider_h_px = (int16_t) lrintf(parent->scroll_bar_height);
+    if (slider_h_px < 1) slider_h_px = 1;
+    if (slider_h_px > SCREEN_HEIGHT) slider_h_px = SCREEN_HEIGHT;
+    if (slider_top_px < 0) slider_top_px = 0;
+    if (slider_top_px > SCREEN_HEIGHT - 1) slider_top_px = SCREEN_HEIGHT - 1;
+    if (slider_top_px + slider_h_px > SCREEN_HEIGHT)
+        slider_top_px = SCREEN_HEIGHT - slider_h_px;
+
+    parent->scroll_bar_top_px = slider_top_px;
+    parent->scroll_bar_height_px = slider_h_px;
 }
 
 void astra_refresh_selector_position() {

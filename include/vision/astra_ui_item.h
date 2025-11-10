@@ -28,7 +28,13 @@ extern bool astra_exit_animation_finished;
 typedef struct astra_info_bar_t {
     char* content;
     uint16_t span;
-    float y_info_bar, y_info_bar_trg, w_info_bar, w_info_bar_trg;
+
+    float y_info_bar;
+    float y_info_bar_trg;
+
+    float w_info_bar;
+    float w_info_bar_trg;
+
     bool is_running;
     uint32_t time_start;
     uint32_t time;
@@ -97,6 +103,7 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 
 // fixed properties
 #define LIST_SCROLL_BAR_WIDTH 3
+#define LIST_SCROLL_BAR_ANIMATION_SPEED 92
 
 // derived properties
 #define LIST_FOOTER_TO_SCROLL_BAR_PADDING (LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING-LIST_FOOTER_MAX_WIDTH/2)
@@ -112,11 +119,21 @@ typedef enum {
 
 typedef struct astra_list_item_t {
     astra_list_item_type_t type;
+
     char* content;
     uint32_t text_scroll_anchor;
 
+    float scroll_bar_top;
+    float scroll_bar_top_trg;
+    float scroll_bar_height;
+    float scroll_bar_height_trg;
+    int16_t scroll_bar_top_px;
+    int16_t scroll_bar_height_px;
+
+    float y_list_item;
+    float y_list_item_trg;
+
     uint8_t layer;
-    float y_list_item, y_list_item_trg;
     uint8_t child_num;
     struct astra_list_item_t* child_list_item[MAX_LIST_CHILD_NUM];
     struct astra_list_item_t* parent;
