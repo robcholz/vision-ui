@@ -12,6 +12,7 @@
 extern "C" {
 
 
+
 #endif
 
 extern void* astra_font;
@@ -66,29 +67,40 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 #define SCREEN_WIDTH 128
 
 #define LIST_ITEM_SPACING 15
-#define LIST_ITEM_OFFSET 8
 #define LIST_ITEM_LEFT_MARGIN 4
 #define LIST_ITEM_RIGHT_MARGIN 15
 
-#define LIST_ITEM_SWITCH_BOX_WIDTH 9
-#define LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE 1
-
 #define LIST_TEXT_TO_HEADER_PADDING 10
-#define LIST_TEXT_RIGHT_PADDING 15
 
 #define LIST_WIDGET_SCROLL_PAUSE_MS 1000
 #define LIST_WIDGET_SCROLL_SPEED_PX_S 15
 
-#define LIST_INFO_BAR_HEIGHT 3
 #define LIST_FONT_TOP_MARGIN 4
 
 #define SELECTOR_DECORATION_WIDTH 4
 #define SELECTOR_DECORATION_HEIGHT 8
-#define SELECTOR_TO_LIST_TEXT_PADDING 12
 #define SELECTOR_TO_LIST_FOOTER_PADDING 1
+
+// paddings
+#define LIST_FRAME_TO_DISPLAY_TOP_PADDING 3
+
+#define LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 8
+#define LIST_FOOTER_TO_LEFT_PADDING 10
+
+#define LIST_HEADER_TO_TEXT_PADDING 2
+#define LIST_HEADER_TO_LEFT_DISPLAY_PADDING 3
+
+// fixed sizes
+#define LIST_FOOTER_MAX_HEIGHT 9
+#define LIST_FOOTER_MAX_WIDTH 20
+#define LIST_HEADER_MAX_WIDTH 7 // rect
+#define LIST_FRAME_FIXED_HEIGHT 15
 
 // fixed properties
 #define LIST_SCROLL_BAR_WIDTH 5
+// derived properties
+#define LIST_FOOTER_TO_SCROLL_BAR_PADDING (LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING-LIST_FOOTER_MAX_WIDTH/2)
+#define LIST_TEXT_MAX_WIDTH (SCREEN_WIDTH-LIST_FOOTER_TO_SCROLL_BAR_PADDING-LIST_FOOTER_MAX_WIDTH-LIST_FOOTER_TO_LEFT_PADDING-LIST_HEADER_TO_TEXT_PADDING-LIST_HEADER_MAX_WIDTH-LIST_HEADER_TO_LEFT_DISPLAY_PADDING)
 
 typedef enum {
     list_item,
@@ -124,6 +136,8 @@ typedef struct astra_slider_item_t {
     uint8_t value_step;
     int16_t value_max;
     int16_t value_min;
+
+    uint32_t text_scroll_anchor;
 } astra_slider_item_t;
 
 typedef struct astra_user_item_t {
@@ -143,6 +157,8 @@ typedef struct astra_user_item_t {
 } astra_user_item_t;
 
 extern astra_list_item_t* astra_get_root_list();
+
+extern void vision_ui_set_list_name(astra_list_item_t* list, const char* name);
 
 extern astra_switch_item_t* astra_to_switch_item(astra_list_item_t* _astra_list_item);
 

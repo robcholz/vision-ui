@@ -200,10 +200,6 @@ void astra_draw_pop_up() {
 }
 
 void astra_draw_list_appearance() {
-    oled_set_draw_color(1);
-    //顶部状态栏
-    oled_draw_H_line(0, 1, 66);
-    oled_draw_H_line(0, 0, 67);
     // 参数化绘制配置
     const struct {
         uint8_t _start;
@@ -224,161 +220,245 @@ void astra_draw_list_appearance() {
             oled_draw_pixel(i, draw_cfg[j]._y);
 
     //右侧进度条
-    oled_draw_V_line(OLED_WIDTH - 5, 0, OLED_HEIGHT);
-    oled_draw_V_line(OLED_WIDTH - 1, 0, OLED_HEIGHT);
+    oled_draw_V_line(SCREEN_WIDTH - 1, 0, SCREEN_HEIGHT);
 
     //滑块
     static float _length_each_part = 0;
     _length_each_part = ceilf((SCREEN_HEIGHT - 10.0f) / (float) astra_selector.selected_item->parent->child_num);
-    oled_draw_box(OLED_WIDTH - 4, 5 + astra_selector.selected_index * _length_each_part, 3, _length_each_part);
+    oled_draw_box(SCREEN_WIDTH - 4,
+                  LIST_SCROLL_BAR_WIDTH + ceilf((float) astra_selector.selected_index * _length_each_part),
+                  3,
+                  (uint16_t) _length_each_part);
 
     //滑块内横线
     oled_set_draw_color(0);
-    oled_draw_H_line(OLED_WIDTH - 4, _length_each_part + (float) astra_selector.selected_index * _length_each_part,
+    oled_draw_H_line(SCREEN_WIDTH - 4,
+                     (uint16_t) (_length_each_part + (float) astra_selector.selected_index * _length_each_part),
                      3); //中间横线
 
     //长度允许的情况下绘制上下横线
     if (_length_each_part >= 9) {
-        oled_draw_H_line(OLED_WIDTH - 4,
+        oled_draw_H_line(SCREEN_WIDTH - 4,
                          floorf(_length_each_part - 2.0f + (float) astra_selector.selected_index * _length_each_part), 3);
-        oled_draw_H_line(OLED_WIDTH - 4,
+        oled_draw_H_line(SCREEN_WIDTH - 4,
                          floorf(_length_each_part + 2.0f + (float) astra_selector.selected_index * _length_each_part), 3);
     }
 
     oled_set_draw_color(1);
-    oled_draw_box(OLED_WIDTH - 4, 0, 3, 4);
-    oled_draw_box(OLED_WIDTH - 4, OLED_HEIGHT - 4, 3, 4);
+    oled_draw_box(SCREEN_WIDTH - 4, 0, 3, 4);
+    oled_draw_box(SCREEN_WIDTH - 4, SCREEN_HEIGHT - 4, 3, 4);
     oled_set_draw_color(0);
-    oled_draw_H_line(OLED_WIDTH - 4, 2, 3);
-    oled_draw_pixel(OLED_WIDTH - 3, 1);
-    oled_draw_H_line(OLED_WIDTH - 4, OLED_HEIGHT - 3, 3);
-    oled_draw_pixel(OLED_WIDTH - 3, OLED_HEIGHT - 2);
+    oled_draw_H_line(SCREEN_WIDTH - 4, 2, 3);
+    oled_draw_pixel(SCREEN_WIDTH - 3, 1);
+    oled_draw_H_line(SCREEN_WIDTH - 4, SCREEN_HEIGHT - 3, 3);
+    oled_draw_pixel(SCREEN_WIDTH - 3, SCREEN_HEIGHT - 2);
 }
 
-//todo 视野外的部分将不会被渲染 但是现在坐标值小于屏幕范围的左值待定 并未缜密测试
-void astra_draw_list_item() {
-    //selector内包含的item的parent即是当前正在被绘制的页面
-    for (unsigned char i = 0; i < astra_selector.selected_item->parent->child_num; i++) {
-        astra_list_item_t* _list_item = astra_selector.selected_item->parent->child_list_item[i];
-        int16_t _x_list_item = astra_camera.x_camera + LIST_ITEM_LEFT_MARGIN;
-        int16_t _y_list_item = _list_item->y_list_item + astra_camera.y_camera - oled_get_str_height() / 2;
+static void vision_ui_draw_text(const char* text,
+                                uint32_t* text_scroll_anchor,
+                                const int16_t x0, const int16_t y0,
+                                const int16_t x1, const int16_t y1) {
+    // 当前字体行高
+    const int16_t line_h = oled_get_str_height();
+    const int16_t text_x = x0;
+    const int16_t text_y = y0 + (y1 - y0) / 2 + line_h / 2; // 垂直居中到rect内
+    const int16_t visible_width = x1 - x0;
 
-        oled_set_draw_color(1);
-        //绘制开头的指示器
-        if (_list_item->type == list_item) {
-            if (_y_list_item + 2 > LIST_INFO_BAR_HEIGHT && _y_list_item - 2 < SCREEN_HEIGHT) {
-                oled_draw_H_line(2 + _x_list_item, _y_list_item - 2, 4);
-                oled_draw_H_line(2 + _x_list_item, _y_list_item, 5);
-                oled_draw_H_line(2 + _x_list_item, _y_list_item + 2, 3);
-            }
-        } else if (_list_item->type == switch_item) {
-            if (_y_list_item + 7 > LIST_INFO_BAR_HEIGHT && _y_list_item + 1 < SCREEN_HEIGHT) {
-                oled_draw_circle(4 + _x_list_item, _y_list_item + 1, 3);
-                oled_draw_V_line(4 + _x_list_item, _y_list_item, 3);
+    // 文本总宽度
+    const int16_t text_width = oled_get_UTF8_width(text);
+    int16_t scroll_offset = 0;
 
-                //开关控件指示器部分
-                static const uint8_t FRAME_WIDTH = 1;
-                const uint16_t box_padding = FRAME_WIDTH + (LIST_ITEM_SPACING - LIST_ITEM_SWITCH_BOX_WIDTH) / 2;
-                const uint16_t frame_x = OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - SELECTOR_DECORATION_WIDTH-1;
-                const uint16_t frame_y = _y_list_item - box_padding;
-                oled_draw_frame(frame_x, frame_y, LIST_ITEM_SWITCH_BOX_WIDTH,
-                                LIST_ITEM_SWITCH_BOX_WIDTH);
-                if (*astra_to_switch_item(_list_item)->value == true) {
-                    const uint16_t CHECKED_SWITCH_BOX_WIDTH =
-                            LIST_ITEM_SWITCH_BOX_WIDTH - FRAME_WIDTH * 2 - FRAME_WIDTH * 2 * LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE;
-                    oled_draw_box(frame_x + FRAME_WIDTH * (1 + LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE),
-                                  frame_y + FRAME_WIDTH * (1 + LIST_ITEM_SWITCH_BOX_CHECKED_SIZE_SCALE),
-                                  CHECKED_SWITCH_BOX_WIDTH,
-                                  CHECKED_SWITCH_BOX_WIDTH);
-                } else {
-                    // do nothing
-                }
-            }
-        } else if (_list_item->type == slider_item) {
-            if (_y_list_item + 5 > LIST_INFO_BAR_HEIGHT && _y_list_item - 2 < SCREEN_HEIGHT) {
-                oled_draw_V_line(3 + _x_list_item, _y_list_item - 1, 5);
-                oled_draw_V_line(6 + _x_list_item, _y_list_item - 1, 5);
-                oled_draw_box(2 + _x_list_item, _y_list_item - 2, 3, 3);
-                oled_draw_box(5 + _x_list_item, _y_list_item + 2, 3, 3);
+    // 如果文本太长，需要滚动
+    if (text_width > visible_width && visible_width > 0) {
+        const int16_t overflow = text_width - visible_width;
+        const float speed_px_s = LIST_WIDGET_SCROLL_SPEED_PX_S; // px/s
+        const uint32_t forward_ms = (uint32_t) (1000.f * overflow / speed_px_s + 0.5f);
 
-                //滑块控件指示器部分
-                char _value_str[10] = {};
-                int16_t* _value = astra_to_slider_item(_list_item)->value;
-                sprintf(_value_str, "%d", *_value);
+        const uint32_t now = get_ticks_ms();
+        if (*text_scroll_anchor == 0)
+            *text_scroll_anchor = now;
 
-                int16_t _x_value = OLED_WIDTH - LIST_ITEM_RIGHT_MARGIN - oled_get_str_width(_value_str) + 2;
+        const uint32_t elapsed = now - *text_scroll_anchor;
 
-                //如果选中了就闪烁 否则就一直显示
-                if (astra_to_slider_item(_list_item)->is_confirmed) {
-                    static uint32_t _last_tick = 0;
-                    static bool _is_visiable = false;
-                    uint32_t _ticks = get_ticks_ms();
-
-                    if (_is_visiable) {
-                        oled_set_draw_color(1);
-                        oled_draw_R_box(_x_value, _y_list_item - 4, oled_get_UTF8_width(_value_str) + 4, oled_get_str_height() - 2, 1);
-                    }
-
-                    oled_set_draw_color(2);
-                    oled_draw_str(_x_value + 2, _y_list_item + oled_get_str_height() / 2, _value_str);
-
-                    if (_ticks - _last_tick >= 1000) {
-                        _is_visiable = !_is_visiable;
-                        _last_tick = _ticks;
-                    }
-                } else oled_draw_str(_x_value + 2, _y_list_item + oled_get_str_height() / 2, _value_str);
-            }
+        if (elapsed > LIST_WIDGET_SCROLL_PAUSE_MS && forward_ms > 0) {
+            // 生成往返三角波（0..overflow..0）
+            const uint32_t t = (elapsed - LIST_WIDGET_SCROLL_PAUSE_MS) % (forward_ms * 2u);
+            const float p = (float) t / (float) forward_ms; // 0..2
+            const float tri = (p <= 1.f) ? p : (2.f - p); // 0..1..0
+            scroll_offset = (int16_t) lrintf((float) overflow * tri);
         } else {
-            if (_y_list_item + oled_get_str_height() / 2 > LIST_INFO_BAR_HEIGHT && _y_list_item + oled_get_str_height() / 2 < SCREEN_HEIGHT)
-                oled_draw_str(2 + _x_list_item, _y_list_item + oled_get_str_height() / 2, "-");
+            scroll_offset = 0;
         }
+
+        // 绘制 + 裁剪到rect内
+        oled_set_clip_window(x0, y0, x1, y1);
+        oled_draw_UTF8(text_x - scroll_offset, text_y, text);
+        oled_reset_clip_window();
+    } else {
+        // 不滚动，直接居中画
+        *text_scroll_anchor = 0;
+        oled_draw_UTF8(text_x, text_y, text);
+    }
+}
+
+static void vision_ui_draw_list_item_text(astra_list_item_t* list,
+                                          const int16_t x0, const int16_t y0,
+                                          const int16_t x1, const int16_t y1) {
+    vision_ui_draw_text(list->content, &list->text_scroll_anchor, x0, y0, x1, y1);
+}
+
+static void vision_ui_draw_list_header() {
+    static const uint8_t header_list_item[LIST_HEADER_MAX_WIDTH] = {
+        0b0000000,
+        0b0011110,
+        0b0000000,
+        0b0111110,
+        0b0000000,
+        0b0001110,
+        0b0000000,
+    };
+
+    static const uint8_t header_switch_item[LIST_HEADER_MAX_WIDTH] = {
+        0b0011100,
+        0b0100010,
+        0b1001001,
+        0b1001001,
+        0b1001001,
+        0b0100010,
+        0b0011100,
+    };
+
+    static const uint8_t header_slider_item[7] = {
+        0b0001110,
+        0b0101110,
+        0b0101110,
+        0b0100100,
+        0b1110100,
+        0b1110100,
+        0b1110000,
+    };
+
+    static const uint8_t header_other_item[LIST_HEADER_MAX_WIDTH] = {
+        0b0000000,
+        0b0000000,
+        0b0000000,
+        0b0011100,
+        0b0000000,
+        0b0000000,
+        0b0000000,
+    };
+
+    for (uint8_t i = 0; i < astra_selector.selected_item->parent->child_num; i++) {
+        astra_list_item_t* current_list_item = astra_selector.selected_item->parent->child_list_item[i];
+        int16_t x_list_item = astra_camera.x_camera + LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
+        int16_t y_list_item = current_list_item->y_list_item + astra_camera.y_camera + (
+                                  LIST_FRAME_FIXED_HEIGHT - LIST_HEADER_MAX_WIDTH) / 2;
+        // draw header
+        oled_set_draw_color(1);
+        const uint16_t header_base_x = x_list_item;
+        if (current_list_item->type == list_item) {
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_list_item);
+        } else if (current_list_item->type == switch_item) {
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_switch_item);
+        } else if (current_list_item->type == slider_item) {
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_slider_item);
+        } else {
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_other_item);
+        }
+    }
+}
+
+static void vision_ui_draw_list_footer() {
+    static const uint8_t footer_switch_off[LIST_FOOTER_MAX_HEIGHT][3] = {
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+    };
+
+    static const uint8_t footer_switch_on[LIST_FOOTER_MAX_HEIGHT][3] = {
+        {0x00, 0x00, 0x00},
+        {0x00, 0xF8, 0x03},
+        {0x00, 0x02, 0x08,},
+        {0x00, 0x02, 0xE8,}, // 00000 010111010 000000
+        {0x00, 0x02, 0xE8,},
+        {0x00, 0x02, 0xE8,},
+        {0x00, 0x02, 0x08,},
+        {0x00, 0x03, 0xF8,},
+        {0x00, 0x00, 0x00,},
+    };
+
+    static const uint8_t footer_slider[LIST_FOOTER_MAX_HEIGHT][3] = {
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+        {0b11111111, 0b11111111, 0b11111111},
+    };
+
+    for (uint8_t i = 0; i < astra_selector.selected_item->parent->child_num; i++) {
+        astra_list_item_t* current_list_item = astra_selector.selected_item->parent->child_list_item[i];
+        int16_t y_list_item = current_list_item->y_list_item + astra_camera.y_camera;
+
+        // draw header
+        const int16_t frame_x = SCREEN_WIDTH - LIST_SCROLL_BAR_WIDTH - LIST_FOOTER_TO_SCROLL_BAR_PADDING - LIST_FOOTER_MAX_WIDTH;
+        const int16_t frame_y = y_list_item + (LIST_FRAME_FIXED_HEIGHT - LIST_FOOTER_MAX_HEIGHT) / 2;
+        if (current_list_item->type == list_item) {
+        } else if (current_list_item->type == switch_item) {
+            if (*astra_to_switch_item(current_list_item)->value == true) {
+                oled_set_draw_color(1);
+                oled_draw_bMP(frame_x, frame_y, LIST_FOOTER_MAX_WIDTH, LIST_FOOTER_MAX_HEIGHT, footer_switch_on);
+            } else {
+                oled_set_draw_color(1);
+                oled_draw_bMP(frame_x, frame_y, LIST_FOOTER_MAX_WIDTH, LIST_FOOTER_MAX_HEIGHT, footer_switch_off);
+            }
+        } else if (current_list_item->type == slider_item) {
+            char value_str[10] = {};
+            const int16_t value = *astra_to_slider_item(current_list_item)->value;
+            sprintf(value_str, "%d", value);
+            oled_set_draw_color(1);
+            oled_draw_bMP(frame_x, frame_y, LIST_FOOTER_MAX_WIDTH, LIST_FOOTER_MAX_HEIGHT, footer_slider);
+            const int16_t x_offset = (LIST_FOOTER_MAX_WIDTH - oled_get_str_width(value_str)) / 2;
+            const int16_t y_offset = (LIST_FOOTER_MAX_HEIGHT - oled_get_str_height()) / 2;
+            oled_set_draw_color(1);
+            vision_ui_draw_text(value_str,
+                                &astra_to_slider_item(current_list_item)->text_scroll_anchor,
+                                frame_x + x_offset,
+                                frame_y + y_offset,
+                                frame_x + x_offset + LIST_FOOTER_MAX_WIDTH,
+                                frame_y + y_offset + LIST_FOOTER_MAX_HEIGHT);
+        }
+    }
+}
+
+void astra_draw_list_item() {
+    vision_ui_draw_list_header();
+    vision_ui_draw_list_footer();
+
+    for (uint8_t i = 0; i < astra_selector.selected_item->parent->child_num; i++) {
+        astra_list_item_t* current_list_item = astra_selector.selected_item->parent->child_list_item[i];
+        const int16_t x_list_item = astra_camera.x_camera + LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
+        const int16_t y_list_item = current_list_item->y_list_item + astra_camera.y_camera;
+
+        const int16_t frame_x = x_list_item + LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING;
+        const int16_t frame_y = y_list_item;
 
         astra_set_font(astra_font);
-        const bool _is_visible = (_y_list_item + oled_get_str_height() / 2 > LIST_INFO_BAR_HEIGHT &&
-                                  _y_list_item - oled_get_str_height() / 2 < SCREEN_HEIGHT);
-        if (_is_visible) {
-            const int16_t text_x = LIST_TEXT_TO_HEADER_PADDING + _x_list_item;
-            const int16_t text_y = _y_list_item + oled_get_str_height() / 2;
-            const int16_t text_right_limit = SCREEN_WIDTH - LIST_ITEM_RIGHT_MARGIN - LIST_TEXT_RIGHT_PADDING;
-            const int16_t visible_width = text_right_limit - text_x;
-
-            const int16_t text_width = oled_get_UTF8_width(_list_item->content);
-            int16_t scroll_offset = 0;
-            bool needs_clip = false;
-
-            if (visible_width > 0 && text_width > visible_width) {
-                needs_clip = true;
-                const uint32_t now = get_ticks_ms();
-                if (_list_item->text_scroll_anchor == 0)
-                    _list_item->text_scroll_anchor = now;
-
-                const uint32_t elapsed = now - _list_item->text_scroll_anchor;
-                const uint32_t LIST_TEXT_SCROLL_PERIOD_MS = (text_width / LIST_WIDGET_SCROLL_SPEED_PX_S) * 1000;
-                if (elapsed > LIST_WIDGET_SCROLL_PAUSE_MS) {
-                    const uint32_t animated_ms = (elapsed - LIST_WIDGET_SCROLL_PAUSE_MS) % LIST_TEXT_SCROLL_PERIOD_MS;
-                    const float progress = (float) animated_ms / (float) LIST_TEXT_SCROLL_PERIOD_MS;
-                    const float triangle = (progress <= 0.5f) ? progress * 2.0f : (2.0f - progress * 2.0f);
-                    scroll_offset = (int16_t) lrintf((text_width - visible_width) * triangle);
-                }
-            } else {
-                _list_item->text_scroll_anchor = 0;
-            }
-
-            oled_set_draw_color(1);
-            if (needs_clip) {
-                const int16_t clip_x0 = text_x;
-                const int16_t clip_x1 = text_right_limit;
-                const int16_t clip_y1 = _y_list_item + LIST_ITEM_SPACING / 2;
-                const int16_t clip_y0 = clip_y1 - LIST_ITEM_SPACING;
-                oled_set_clip_window(clip_x0, clip_y0, clip_x1, clip_y1);
-                oled_draw_UTF8(text_x - scroll_offset, text_y, _list_item->content);
-                oled_reset_clip_window();
-            } else {
-                oled_draw_UTF8(text_x, text_y, _list_item->content);
-            }
-        } else {
-            _list_item->text_scroll_anchor = 0;
-        }
+        oled_set_draw_color(1);
+        vision_ui_draw_list_item_text(current_list_item,
+                                      frame_x,
+                                      frame_y,
+                                      frame_x + LIST_TEXT_MAX_WIDTH,
+                                      y_list_item + LIST_FRAME_FIXED_HEIGHT);
     }
 }
 
