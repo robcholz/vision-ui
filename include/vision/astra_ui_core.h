@@ -6,7 +6,7 @@
 #define ASTRA_UI_CORE_H
 #include <stdbool.h>
 
-#define ALLOW_EXIT_ASTRA_UI_BY_USER 0 //允许用户在最浅层级退出astra ui lite
+#define ALLOW_EXIT_ASTRA_UI_BY_USER 1 //允许用户在最浅层级退出astra ui lite
 
 #ifdef __cplusplus
 extern "C" {

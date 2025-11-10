@@ -239,6 +239,11 @@ void astra_selector_jump_to_selected_item() {
         return;
     }
 
+    if (astra_selector.selected_item->type == title_item) {
+        astra_selector_exit_current_item();
+        return;
+    }
+
     if (astra_selector.selected_item->type == switch_item) {
         astra_switch_item_t* _selected_switch_item = astra_to_switch_item(astra_selector.selected_item);
         *_selected_switch_item->value = !*_selected_switch_item->value;
