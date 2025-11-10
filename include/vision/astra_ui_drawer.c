@@ -238,7 +238,9 @@ void astra_draw_list_appearance() {
 static void vision_ui_draw_text(const char* text,
                                 uint32_t* text_scroll_anchor,
                                 const int16_t x0, const int16_t y0,
-                                const int16_t x1, const int16_t y1) {
+                                const int16_t x1, const int16_t y1,
+                                const uint16_t scroll_speed_s,
+                                const uint16_t scroll_pause_ms) {
     // 当前字体行高
     const int16_t line_h = oled_get_str_height();
     const int16_t text_x = x0;
@@ -258,7 +260,7 @@ static void vision_ui_draw_text(const char* text,
     if (text_width > visible_width && visible_width > 0) {
         int16_t scroll_offset = 0;
         const int16_t overflow = text_width - visible_width;
-        const float speed_px_s = LIST_WIDGET_SCROLL_SPEED_PX_S; // px/s
+        const float speed_px_s = scroll_speed_s; // px/s
         const uint32_t forward_ms = (uint32_t) (1000.f * overflow / speed_px_s + 0.5f);
 
         const uint32_t now = get_ticks_ms();
@@ -267,9 +269,9 @@ static void vision_ui_draw_text(const char* text,
 
         const uint32_t elapsed = now - *text_scroll_anchor;
 
-        if (elapsed > LIST_WIDGET_SCROLL_PAUSE_MS && forward_ms > 0) {
+        if (elapsed > scroll_pause_ms && forward_ms > 0) {
             // 生成往返三角波（0..overflow..0）
-            const uint32_t t = (elapsed - LIST_WIDGET_SCROLL_PAUSE_MS) % (forward_ms * 2u);
+            const uint32_t t = (elapsed - scroll_pause_ms) % (forward_ms * 2u);
             const float p = (float) t / (float) forward_ms; // 0..2
             const float tri = (p <= 1.f) ? p : (2.f - p); // 0..1..0
             scroll_offset = (int16_t) lrintf((float) overflow * tri);
@@ -296,11 +298,11 @@ static void vision_ui_draw_text(const char* text,
 static void vision_ui_draw_list_item_text(astra_list_item_t* list,
                                           const int16_t x0, const int16_t y0,
                                           const int16_t x1, const int16_t y1) {
-    vision_ui_draw_text(list->content, &list->text_scroll_anchor, x0, y0, x1, y1);
+    vision_ui_draw_text(list->content, &list->text_scroll_anchor, x0, y0, x1, y1,LIST_TEXT_SCROLL_SPEED_PX_S,LIST_TEXT_SCROLL_PAUSE_MS);
 }
 
 static void vision_ui_draw_list_header() {
-    static const uint8_t header_list_item[LIST_HEADER_MAX_WIDTH] = {
+    static const uint8_t header_list_item[LIST_HEADER_MAX_HEIGHT] = {
         0b0000000,
         0b0011110,
         0b0000000,
@@ -310,7 +312,7 @@ static void vision_ui_draw_list_header() {
         0b0000000,
     };
 
-    static const uint8_t header_switch_item[LIST_HEADER_MAX_WIDTH] = {
+    static const uint8_t header_switch_item[LIST_HEADER_MAX_HEIGHT] = {
         0b0011100,
         0b0100010,
         0b1001001,
@@ -320,7 +322,7 @@ static void vision_ui_draw_list_header() {
         0b0011100,
     };
 
-    static const uint8_t header_slider_item[7] = {
+    static const uint8_t header_slider_item[LIST_HEADER_MAX_HEIGHT] = {
         0b0001110,
         0b0101110,
         0b0101110,
@@ -330,7 +332,7 @@ static void vision_ui_draw_list_header() {
         0b1110000,
     };
 
-    static const uint8_t header_other_item[LIST_HEADER_MAX_WIDTH] = {
+    static const uint8_t header_other_item[LIST_HEADER_MAX_HEIGHT] = {
         0b0000000,
         0b0000000,
         0b0000000,
@@ -344,59 +346,65 @@ static void vision_ui_draw_list_header() {
         astra_list_item_t* current_list_item = astra_selector.selected_item->parent->child_list_item[i];
         int16_t x_list_item = astra_camera.x_camera + LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         int16_t y_list_item = current_list_item->y_list_item + astra_camera.y_camera + (
-                                  LIST_FRAME_FIXED_HEIGHT - LIST_HEADER_MAX_WIDTH) / 2;
+                                  LIST_FRAME_FIXED_HEIGHT - LIST_HEADER_MAX_HEIGHT) / 2;
         // draw header
         oled_set_draw_color(1);
         const uint16_t header_base_x = x_list_item;
         if (current_list_item->type == list_item) {
-            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_list_item);
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_HEIGHT, header_list_item);
         } else if (current_list_item->type == switch_item) {
-            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_switch_item);
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_HEIGHT, header_switch_item);
         } else if (current_list_item->type == slider_item) {
-            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_slider_item);
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_HEIGHT, header_slider_item);
         } else if (current_list_item->type == title_item) {
             // do nothing
         } else {
-            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_WIDTH, header_other_item);
+            oled_draw_bMP(header_base_x, y_list_item, LIST_HEADER_MAX_WIDTH, LIST_HEADER_MAX_HEIGHT, header_other_item);
         }
     }
 }
 
 static void vision_ui_draw_list_footer() {
     static const uint8_t footer_switch_off[LIST_FOOTER_MAX_HEIGHT][3] = {
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
+        {0b00000000, 0b00000000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00000000, 0b00000000, 0b00000000},
     };
 
     static const uint8_t footer_switch_on[LIST_FOOTER_MAX_HEIGHT][3] = {
-        {0x00, 0x00, 0x00},
-        {0x00, 0xF8, 0x03},
-        {0x00, 0x02, 0x08,},
-        {0x00, 0x02, 0xE8,}, // 00000 010111010 000000
-        {0x00, 0x02, 0xE8,},
-        {0x00, 0x02, 0xE8,},
-        {0x00, 0x02, 0x08,},
-        {0x00, 0x03, 0xF8,},
-        {0x00, 0x00, 0x00,},
+        {0b00000000, 0b00000000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00000000, 0b00000000, 0b00000000},
     };
 
     static const uint8_t footer_slider[LIST_FOOTER_MAX_HEIGHT][3] = {
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
-        {0b11111111, 0b11111111, 0b11111111},
+        {0b00000000, 0b00000000, 0b00000000},
+        {0b11111110, 0b11111111, 0b00000011},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111110, 0b11111111, 0b00000011},
     };
 
     for (uint8_t i = 0; i < astra_selector.selected_item->parent->child_num; i++) {
@@ -416,20 +424,29 @@ static void vision_ui_draw_list_footer() {
                 oled_draw_bMP(frame_x, frame_y, LIST_FOOTER_MAX_WIDTH, LIST_FOOTER_MAX_HEIGHT, footer_switch_off);
             }
         } else if (current_list_item->type == slider_item) {
+            const uint16_t SHRINK_WIDTH = LIST_FOOTER_MAX_WIDTH - 4;
+            const int16_t footer_x0 = frame_x + (LIST_FOOTER_MAX_WIDTH - SHRINK_WIDTH) / 2;
+            const int16_t footer_y0 = frame_y;
+            const int16_t footer_x1 = footer_x0 + SHRINK_WIDTH;
+            const int16_t footer_y1 = footer_y0 + LIST_FOOTER_MAX_HEIGHT;
+
             char value_str[10] = {};
             const int16_t value = *astra_to_slider_item(current_list_item)->value;
             sprintf(value_str, "%d", value);
-            oled_set_draw_color(1);
-            oled_draw_bMP(frame_x, frame_y, LIST_FOOTER_MAX_WIDTH, LIST_FOOTER_MAX_HEIGHT, footer_slider);
-            const int16_t x_offset = (LIST_FOOTER_MAX_WIDTH - oled_get_str_width(value_str)) / 2;
-            const int16_t y_offset = (LIST_FOOTER_MAX_HEIGHT - oled_get_str_height()) / 2;
+
             oled_set_draw_color(1);
             vision_ui_draw_text(value_str,
                                 &astra_to_slider_item(current_list_item)->text_scroll_anchor,
-                                frame_x + x_offset,
-                                frame_y + y_offset,
-                                frame_x + x_offset + LIST_FOOTER_MAX_WIDTH,
-                                frame_y + y_offset + LIST_FOOTER_MAX_HEIGHT);
+                                footer_x0,
+                                footer_y0,
+                                footer_x1,
+                                footer_y1,
+                                LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S,
+                                LIST_SLIDER_VALUE_SCROLL_PAUSE_MS);
+            if (astra_to_slider_item(current_list_item)->is_confirmed) {
+                oled_set_draw_color(2);
+                oled_draw_bMP(frame_x, frame_y, LIST_FOOTER_MAX_WIDTH, LIST_FOOTER_MAX_HEIGHT, footer_slider);
+            }
         }
     }
 }
