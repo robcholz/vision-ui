@@ -12,21 +12,21 @@ extern "C" {
 #endif
 
 extern uint8_t astra_exit_animation_status;
-extern void astra_draw_exit_animation(); //退场动画
+extern void astra_draw_exit_animation();
 
-extern void astra_draw_info_bar();  //前景
+extern void astra_draw_info_bar();
 
-extern void astra_draw_pop_up();    //前景
+extern void astra_draw_pop_up();
 
-extern void astra_draw_list_appearance();   //前景
+extern void astra_draw_list_appearance();
 
-extern void astra_draw_list_item();   //背景
+extern void astra_draw_list_item();
 
-extern void astra_draw_selector();    //背景
+extern void astra_draw_selector();
 
-extern void astra_draw_widget();    //总的控件 前景
+extern void astra_draw_widget();
 
-extern void astra_draw_list();    //总的列表 背景
+extern void astra_draw_list();
 
 #ifdef __cplusplus
     }

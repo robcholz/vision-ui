@@ -152,11 +152,22 @@ void astra_draw_info_bar() {
     oled_set_draw_color(2);
     oled_draw_H_line(_x_info_bar + 2, _y_info_bar_2 - 2, (int16_t) (astra_info_bar.w_info_bar - 4));
     oled_draw_pixel(_x_info_bar + 1, _y_info_bar_2 - 3);
-    oled_draw_pixel(_x_info_bar - 2, _y_info_bar_2 - 3);
+    oled_draw_pixel(_x_info_bar + 1, _y_info_bar_2 - 3);
 
-    oled_draw_UTF8(_x_info_bar + 6,
-                   (int16_t) (astra_info_bar.y_info_bar + oled_get_str_height() - 2),
-                   astra_info_bar.content);
+    const int16_t text_x = _x_info_bar + 6;
+    const int16_t text_y = (int16_t) (astra_info_bar.y_info_bar + oled_get_str_height() - 2);
+
+    const int16_t text_w = oled_get_str_width(astra_info_bar.content);
+    const int16_t text_h = oled_get_str_height();
+
+    oled_set_draw_color(0);
+    oled_draw_box(text_x, text_y - text_h, text_w, text_h);
+
+    oled_set_draw_color(1);
+    oled_draw_UTF8(text_x, text_y, astra_info_bar.content);
+
+    oled_set_draw_color(2);
+    oled_draw_box(text_x, text_y - text_h, text_w, text_h);
 }
 
 void astra_draw_pop_up() {
@@ -194,9 +205,20 @@ void astra_draw_pop_up() {
     oled_draw_pixel(_x_pop_up - 1, _y_pop_up - 3);
     oled_draw_pixel((int16_t) (SCREEN_WIDTH / 2 + astra_pop_up.w_pop_up / 2), _y_pop_up - 3);
 
-    oled_draw_UTF8(_x_pop_up + 3,
-                   (int16_t) (astra_pop_up.y_pop_up + oled_get_str_height() + 1),
-                   astra_pop_up.content);
+    const int16_t text_x = _x_pop_up + 3;
+    const int16_t text_y = (int16_t) (astra_pop_up.y_pop_up + oled_get_str_height() + 1);
+
+    const int16_t text_w = oled_get_str_width(astra_pop_up.content);
+    const int16_t text_h = oled_get_str_height();
+
+    oled_set_draw_color(0);
+    oled_draw_box(text_x, text_y - text_h, text_w, text_h);
+
+    oled_set_draw_color(1);
+    oled_draw_UTF8(text_x, text_y, astra_pop_up.content);
+
+    oled_set_draw_color(2);
+    oled_draw_box(text_x, text_y - text_h, text_w, text_h);
 }
 
 void astra_draw_list_appearance() {
