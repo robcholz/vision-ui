@@ -66,20 +66,9 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 #define SCREEN_HEIGHT 64
 #define SCREEN_WIDTH 128
 
-#define LIST_ITEM_SPACING 15
-#define LIST_ITEM_LEFT_MARGIN 4
-#define LIST_ITEM_RIGHT_MARGIN 15
-
-#define LIST_TEXT_TO_HEADER_PADDING 10
-
+// timing
 #define LIST_WIDGET_SCROLL_PAUSE_MS 1000
 #define LIST_WIDGET_SCROLL_SPEED_PX_S 15
-
-#define LIST_FONT_TOP_MARGIN 4
-
-#define SELECTOR_DECORATION_WIDTH 4
-#define SELECTOR_DECORATION_HEIGHT 8
-#define SELECTOR_TO_LIST_FOOTER_PADDING 1
 
 // paddings
 #define LIST_TITLE_TO_DISPLAY_TOP_PADDING 0
@@ -91,9 +80,9 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 #define LIST_FOOTER_TO_LEFT_PADDING 10
 
 #define LIST_HEADER_TO_TEXT_PADDING 2
-#define LIST_HEADER_TO_LEFT_DISPLAY_PADDING 3
+#define LIST_HEADER_TO_LEFT_DISPLAY_PADDING 4
 
-#define LIST_TEXT_TO_SELECTOR_PADDING 3
+#define LIST_SELECTOR_TO_INNER_WIDGET_PADDING 3
 
 // fixed sizes
 #define LIST_FOOTER_MAX_HEIGHT 9

@@ -200,25 +200,6 @@ void astra_draw_pop_up() {
 }
 
 void astra_draw_list_appearance() {
-    // 参数化绘制配置
-    const struct {
-        uint8_t _start;
-        uint8_t _end;
-        uint8_t _step;
-        uint8_t _y;
-    } draw_cfg[] = {
-                {67, 99, 2, 1}, // 奇数序列优化为步长2
-                {68, 100, 2, 0}, // 偶数序列优化为步长2
-                {102, 111, 3, 1}, // 原i%3==0等效步长3（数学变换后起始点+1）
-                {103, 112, 3, 0}, // 原i%3==1等效步长3（数学变换后起始点+2）
-                {115, 124, 5, 1}, // 原i%5==0等效步长5（数学变换后起始点+3）
-                {116, 124, 5, 0} // 原i%5==1等效步长5（数学变换后起始点+2）
-            };
-
-    for (uint8_t j = 0; j < sizeof(draw_cfg) / sizeof(draw_cfg[0]); ++j)
-        for (uint8_t i = draw_cfg[j]._start; i <= draw_cfg[j]._end; i += draw_cfg[j]._step)
-            oled_draw_pixel(i, draw_cfg[j]._y);
-
     //右侧进度条
     oled_draw_V_line(SCREEN_WIDTH - 1, 0, SCREEN_HEIGHT);
 
@@ -451,7 +432,10 @@ void astra_draw_list_item() {
         const int16_t x_list_item = astra_camera.x_camera + LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         const int16_t y_list_item = current_list_item->y_list_item + astra_camera.y_camera;
 
-        const int16_t frame_x = x_list_item + LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING;
+        const int16_t frame_x = current_list_item->type == title_item
+                                    ? x_list_item
+                                    : x_list_item + LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING;
+
         const int16_t frame_y = y_list_item;
 
         astra_set_font(astra_font);
@@ -465,33 +449,19 @@ void astra_draw_list_item() {
 }
 
 void astra_draw_selector() {
-    const int64_t x_selector = lrintf(astra_camera.x_camera) + LIST_ITEM_LEFT_MARGIN;
-    const int64_t y_selector = lrintf(astra_selector.y_selector + astra_camera.y_camera);
-
-    oled_set_draw_color(2);
-    oled_draw_box(x_selector, y_selector,
-                  astra_selector.w_selector_trg, astra_selector.h_selector);
-
-    const int64_t x0 = lrintf(astra_selector.w_selector) + x_selector;
-    const int16_t y0 = y_selector;
-
-    const int64_t h = lrintf(astra_selector.h_selector);
+    const int16_t x_selector = (int16_t) (lrintf(astra_camera.x_camera) + LIST_HEADER_TO_LEFT_DISPLAY_PADDING -
+                                          LIST_SELECTOR_TO_INNER_WIDGET_PADDING);
+    const int16_t y_selector = (int16_t) lrintf(astra_selector.y_selector + astra_camera.y_camera);
 
     oled_set_draw_color(1);
-    static const uint8_t TILE_8x8[SELECTOR_DECORATION_HEIGHT] = {
-        0b0101,
-        0b1010,
-        0b0101,
-        0b1010,
-        0b0101,
-        0b1010,
-        0b0101,
-        0b1010,
-    };
-    for (int64_t y = 0; y < h; y += SELECTOR_DECORATION_HEIGHT) {
-        const int64_t bh = (h - y > SELECTOR_DECORATION_HEIGHT) ? SELECTOR_DECORATION_HEIGHT : (h - y);
-        oled_draw_bMP(x0, y0 + y, SELECTOR_DECORATION_WIDTH, bh, TILE_8x8);
-    }
+    oled_draw_R_frame(x_selector, y_selector, astra_selector.w_selector_trg, astra_selector.h_selector_trg, 3);
+    oled_set_draw_color(2);
+    oled_draw_box(x_selector + 1,
+                  y_selector + 2,
+                  astra_selector.w_selector_trg - 2,
+                  astra_selector.h_selector_trg - 4);
+    oled_draw_H_line(x_selector + 2, y_selector + 1, astra_selector.w_selector_trg - 4);
+    oled_draw_H_line(x_selector + 2, y_selector + astra_selector.h_selector_trg - 2, astra_selector.w_selector_trg - 4);
 }
 
 void astra_draw_widget() {

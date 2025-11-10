@@ -90,7 +90,7 @@ astra_list_item_t* astra_get_root_list() {
         _astra_list_root_item = malloc(sizeof(astra_list_item_t));
         memset(_astra_list_root_item, 0, sizeof(astra_list_item_t));
         _astra_list_root_item->type = list_item;
-        _astra_list_root_item->content = "Root";
+        _astra_list_root_item->content = "VisionUI";
         astra_push_item_to_list(_astra_list_root_item, astra_new_title_item(_astra_list_root_item->content));
     }
     return _astra_list_root_item;
@@ -323,7 +323,6 @@ bool astra_push_item_to_list(astra_list_item_t* _parent, astra_list_item_t* _chi
     if (_parent->layer >= MAX_LIST_LAYER) return false;
 
     _child->layer = _parent->layer + 1;
-    _child->child_num = 0;
 
     astra_set_font(astra_font);
     float next_y = LIST_TITLE_TO_DISPLAY_TOP_PADDING;
