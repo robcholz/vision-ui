@@ -38,7 +38,7 @@ void astra_push_info_bar(char* _content, const uint16_t _span) {
     }
 
     astra_set_font(astra_font);
-    astra_info_bar.w_info_bar_trg = oled_get_UTF8_width(astra_info_bar.content) + INFO_BAR_OFFSET;
+    astra_info_bar.w_info_bar_trg = oled_get_UTF8_width(astra_info_bar.content) + INFO_BAR_WIDTH;
 }
 
 astra_pop_up_t astra_pop_up = {0, 1, 0 - 2 * POP_UP_HEIGHT, 0 - 2 * POP_UP_HEIGHT, 80, 80, false, 0, 1};
@@ -57,7 +57,7 @@ void astra_push_pop_up(char* _content, const uint16_t _span) {
     }
 
     astra_set_font(astra_font);
-    astra_pop_up.w_pop_up_trg = oled_get_UTF8_width(astra_pop_up.content) + POP_UP_OFFSET;
+    astra_pop_up.w_pop_up_trg = oled_get_UTF8_width(astra_pop_up.content) + POP_UP_WIDTH;
 }
 
 // astra_list_item_t astra_list_item_root = {};

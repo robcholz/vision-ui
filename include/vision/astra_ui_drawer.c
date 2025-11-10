@@ -283,9 +283,6 @@ void astra_draw_info_bar() {
     int16_t _y_info_bar_2 = astra_info_bar.y_info_bar + INFO_BAR_HEIGHT;
 
     astra_set_font(astra_font);
-    oled_set_draw_color(1);
-    oled_draw_R_box(_x_info_bar + 3, _y_info_bar_1 + 3,
-                    (int16_t) astra_info_bar.w_info_bar, INFO_BAR_HEIGHT + 4, 4);
 
     oled_set_draw_color(0); //黑遮罩打底
     oled_draw_R_box((int16_t) (SCREEN_WIDTH / 2 - (astra_info_bar.w_info_bar + 4) / 2), _y_info_bar_1,
@@ -301,11 +298,10 @@ void astra_draw_info_bar() {
     oled_draw_pixel(_x_info_bar + 1, _y_info_bar_2 - 3);
     oled_draw_pixel(_x_info_bar + 1, _y_info_bar_2 - 3);
 
-    const int16_t text_x = _x_info_bar + 6;
-    const int16_t text_y = (int16_t) (astra_info_bar.y_info_bar + oled_get_str_height() - 2);
-
     const int16_t text_w = oled_get_str_width(astra_info_bar.content);
     const int16_t text_h = oled_get_str_height();
+    const int16_t text_x = _x_info_bar + (int16_t) ((astra_info_bar.w_info_bar - text_w) / 2);
+    const int16_t text_y = (int16_t) (astra_info_bar.y_info_bar + oled_get_str_height() - 2);
 
     oled_set_draw_color(0);
     oled_draw_box(text_x, text_y - text_h, text_w, text_h);
@@ -327,7 +323,7 @@ void astra_draw_pop_up() {
 
     //时间到了就收回
     if (astra_pop_up.time - astra_pop_up.time_start >= astra_pop_up.span) {
-        astra_pop_up.y_pop_up_trg = 0 - 2 * INFO_BAR_HEIGHT; //收回
+        astra_pop_up.y_pop_up_trg = 0 - 2 * POP_UP_HEIGHT; //收回
         if (astra_pop_up.y_pop_up == astra_pop_up.y_pop_up_trg) astra_pop_up.is_running = false; //等归位后结束生命周期
     }
 
@@ -335,10 +331,6 @@ void astra_draw_pop_up() {
     int16_t _y_pop_up = astra_pop_up.y_pop_up + POP_UP_HEIGHT;
 
     astra_set_font(astra_font);
-    oled_set_draw_color(1); //阴影打底
-    oled_draw_R_box(_x_pop_up + 1, (int16_t) astra_pop_up.y_pop_up + 3,
-                    (int16_t) (astra_pop_up.w_pop_up + 4),
-                    POP_UP_HEIGHT, 4);
 
     oled_set_draw_color(0); //黑遮罩
     oled_draw_R_box((int16_t) (SCREEN_WIDTH / 2 - (astra_pop_up.w_pop_up + 4) / 2 - 2), (int16_t) (astra_pop_up.y_pop_up - 2),
@@ -354,11 +346,10 @@ void astra_draw_pop_up() {
     oled_draw_pixel(_x_pop_up - 1, _y_pop_up - 3);
     oled_draw_pixel((int16_t) (SCREEN_WIDTH / 2 + astra_pop_up.w_pop_up / 2), _y_pop_up - 3);
 
-    const int16_t text_x = _x_pop_up + 3;
-    const int16_t text_y = (int16_t) (astra_pop_up.y_pop_up + oled_get_str_height() + 1);
-
     const int16_t text_w = oled_get_str_width(astra_pop_up.content);
     const int16_t text_h = oled_get_str_height();
+    const int16_t text_x = _x_pop_up + (int16_t) ((astra_pop_up.w_pop_up - text_w) / 2);
+    const int16_t text_y = (int16_t) (astra_pop_up.y_pop_up + oled_get_str_height() + 1);
 
     oled_set_draw_color(0);
     oled_draw_box(text_x, text_y - text_h, text_w, text_h);

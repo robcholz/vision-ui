@@ -40,12 +40,6 @@ extern astra_info_bar_t astra_info_bar;
 
 extern void astra_push_info_bar(char* _content, const uint16_t _span);
 
-/*** 信息栏 ***/
-
-/*** 弹窗 ***/
-#define POP_UP_HEIGHT 20
-#define POP_UP_OFFSET 8
-
 typedef struct astra_pop_up_t {
     char* content;
     uint16_t span;
@@ -67,7 +61,11 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 
 /*** 信息栏 ***/
 #define INFO_BAR_HEIGHT 15
-#define INFO_BAR_OFFSET 10
+#define INFO_BAR_WIDTH 20
+
+/*** 弹窗 ***/
+#define POP_UP_HEIGHT 20
+#define POP_UP_WIDTH 20
 
 #define SCREEN_HEIGHT 64
 #define SCREEN_WIDTH 128
