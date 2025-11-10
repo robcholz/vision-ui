@@ -200,39 +200,32 @@ void astra_draw_pop_up() {
 }
 
 void astra_draw_list_appearance() {
-    //右侧进度条
-    oled_draw_V_line(SCREEN_WIDTH - 1, 0, SCREEN_HEIGHT);
-
-    //滑块
-    static float _length_each_part = 0;
-    _length_each_part = ceilf((SCREEN_HEIGHT - 10.0f) / (float) astra_selector.selected_item->parent->child_num);
-    oled_draw_box(SCREEN_WIDTH - 4,
-                  LIST_SCROLL_BAR_WIDTH + ceilf((float) astra_selector.selected_index * _length_each_part),
-                  3,
-                  (uint16_t) _length_each_part);
-
-    //滑块内横线
-    oled_set_draw_color(0);
-    oled_draw_H_line(SCREEN_WIDTH - 4,
-                     (uint16_t) (_length_each_part + (float) astra_selector.selected_index * _length_each_part),
-                     3); //中间横线
-
-    //长度允许的情况下绘制上下横线
-    if (_length_each_part >= 9) {
-        oled_draw_H_line(SCREEN_WIDTH - 4,
-                         floorf(_length_each_part - 2.0f + (float) astra_selector.selected_index * _length_each_part), 3);
-        oled_draw_H_line(SCREEN_WIDTH - 4,
-                         floorf(_length_each_part + 2.0f + (float) astra_selector.selected_index * _length_each_part), 3);
-    }
-
     oled_set_draw_color(1);
-    oled_draw_box(SCREEN_WIDTH - 4, 0, 3, 4);
-    oled_draw_box(SCREEN_WIDTH - 4, SCREEN_HEIGHT - 4, 3, 4);
-    oled_set_draw_color(0);
-    oled_draw_H_line(SCREEN_WIDTH - 4, 2, 3);
-    oled_draw_pixel(SCREEN_WIDTH - 3, 1);
-    oled_draw_H_line(SCREEN_WIDTH - 4, SCREEN_HEIGHT - 3, 3);
-    oled_draw_pixel(SCREEN_WIDTH - 3, SCREEN_HEIGHT - 2);
+
+    oled_draw_V_line(SCREEN_WIDTH - 2, 0, SCREEN_HEIGHT);
+
+    const astra_list_item_t* parent = astra_selector.selected_item->parent;
+    const uint8_t child_cnt = parent ? parent->child_num : 1;
+    const float part = child_cnt > 0 ? (float) SCREEN_HEIGHT / child_cnt : SCREEN_HEIGHT;
+    const float slider_top = part * astra_selector.selected_index;
+    const float slider_h = (float) LIST_FRAME_FIXED_HEIGHT / (child_cnt > 0 ? child_cnt : 1);
+
+    oled_draw_box(SCREEN_WIDTH - LIST_SCROLL_BAR_WIDTH,
+                  lrintf(slider_top),
+                  LIST_SCROLL_BAR_WIDTH,
+                  lrintf(fmaxf(slider_h, part)));
+
+    const int16_t track_x = SCREEN_WIDTH - LIST_SCROLL_BAR_WIDTH;
+    for (uint8_t i = 0; i <= child_cnt; ++i) {
+        const int16_t y = lrintf(part * i);
+        if (y >= 0 && y < SCREEN_HEIGHT) {
+            if (i % 2 == 0) {
+                oled_draw_H_line(track_x, y, LIST_SCROLL_BAR_WIDTH);
+            } else {
+                oled_draw_H_line(track_x, y, LIST_SCROLL_BAR_WIDTH - 1);
+            }
+        }
+    }
 }
 
 static void vision_ui_draw_text(const char* text,

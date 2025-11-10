@@ -78,7 +78,7 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 
 #define LIST_FRAME_BETWEEN_PADDING 2
 
-#define LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 8
+#define LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 10
 #define LIST_FOOTER_TO_LEFT_PADDING 10
 
 #define LIST_HEADER_TO_TEXT_PADDING 2
@@ -96,7 +96,7 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 #define LIST_SELECTOR_FIXED_HEIGHT 15
 
 // fixed properties
-#define LIST_SCROLL_BAR_WIDTH 5
+#define LIST_SCROLL_BAR_WIDTH 3
 
 // derived properties
 #define LIST_FOOTER_TO_SCROLL_BAR_PADDING (LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING-LIST_FOOTER_MAX_WIDTH/2)
