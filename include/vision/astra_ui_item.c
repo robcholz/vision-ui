@@ -113,12 +113,13 @@ astra_list_item_t* astra_new_title_item(const char* title) {
     return _astra_list_item;
 }
 
-astra_list_item_t* astra_new_switch_item(char* _content, bool* _value) {
+astra_list_item_t* astra_new_switch_item(char* _content, bool* _value, void (*on_clicked)()) {
     astra_switch_item_t* _astra_switch_item = malloc(sizeof(astra_switch_item_t));
     memset(_astra_switch_item, 0, sizeof(astra_switch_item_t));
     _astra_switch_item->base_item.type = switch_item;
     _astra_switch_item->base_item.content = _content;
     _astra_switch_item->value = _value;
+    _astra_switch_item->on_clicked = on_clicked;
     return (astra_list_item_t*) _astra_switch_item;
 }
 
@@ -247,6 +248,7 @@ void astra_selector_jump_to_selected_item() {
     if (astra_selector.selected_item->type == switch_item) {
         astra_switch_item_t* _selected_switch_item = astra_to_switch_item(astra_selector.selected_item);
         *_selected_switch_item->value = !*_selected_switch_item->value;
+        _selected_switch_item->on_clicked();
         return;
     }
 

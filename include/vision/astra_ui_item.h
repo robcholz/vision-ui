@@ -21,10 +21,6 @@ extern void astra_set_font(void* _font);
 
 extern bool astra_exit_animation_finished;
 
-/*** 信息栏 ***/
-#define INFO_BAR_HEIGHT 15
-#define INFO_BAR_OFFSET 10
-
 typedef struct astra_info_bar_t {
     char* content;
     uint16_t span;
@@ -68,6 +64,10 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 /*** 列表项 ***/
 #define MAX_LIST_CHILD_NUM 10
 #define MAX_LIST_LAYER 10
+
+/*** 信息栏 ***/
+#define INFO_BAR_HEIGHT 15
+#define INFO_BAR_OFFSET 10
 
 #define SCREEN_HEIGHT 64
 #define SCREEN_WIDTH 128
@@ -143,6 +143,8 @@ typedef struct astra_switch_item_t {
     astra_list_item_t base_item;
 
     bool* value;
+
+    void (*on_clicked)();
 } astra_switch_item_t;
 
 typedef struct astra_slider_item_t {
@@ -190,8 +192,7 @@ extern astra_list_item_t* astra_new_list_item(char* _content);
 
 extern astra_list_item_t* astra_new_title_item(const char* title);
 
-//正确用法：astra_push_item_to_list(astra_get_root_list(), astra_new_list_item(...));
-extern astra_list_item_t* astra_new_switch_item(char* _content, bool* _value);
+extern astra_list_item_t* astra_new_switch_item(char* _content, bool* _value, void (*on_clicked)());
 
 extern astra_list_item_t* astra_new_slider_item(char* _content, int16_t* _value, uint8_t _step, int16_t _min, int16_t _max);
 

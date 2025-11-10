@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "astra_ui_core.h"
 
@@ -119,8 +120,71 @@ void astra_draw_exit_animation() {
     }
 }
 
+static void vision_ui_draw_background_blur_animation(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint8_t fadeLevel) {
+    if (x0 + width > SCREEN_WIDTH) {
+        width = SCREEN_WIDTH - x0;
+    }
+    if (y0 + height > SCREEN_HEIGHT) {
+        height = SCREEN_HEIGHT - y0;
+    }
+
+    if (fadeLevel < 1 || fadeLevel > 5) {
+        return;
+    }
+
+    // 定义2x2网格的渐隐模式
+    // 每个数组表示一个2x2网格中哪些像素需要熄灭
+    // 0表示保持亮，1表示熄灭
+    const uint8_t patterns[5][2][2] = {
+        {
+            {0, 0}, // Level 1: 全亮
+            {0, 0}
+        },
+
+        {
+            {1, 0}, // Level 2: 左上角熄灭
+            {0, 0}
+        },
+
+        {
+            {1, 0}, // Level 3: 左上角和右下角熄灭
+            {0, 1}
+        },
+
+        {
+            {1, 0}, // Level 4: 只保留右上角
+            {1, 1}
+        },
+
+        {
+            {1, 1}, // Level 5: 全暗
+            {1, 1}
+        }
+    };
+
+    // 计算边界
+    const uint16_t xEnd = x0 + width;
+    const uint16_t yEnd = y0 + height;
+
+    for (uint16_t y = y0; y < yEnd; y++) {
+        for (uint16_t x = x0; x < xEnd; x++) {
+            // 计算在2x2网格中的相对位置
+            const uint16_t grid_x = (x - x0) % 2;
+            const uint16_t grid_y = (y - y0) % 2;
+
+            // 根据渐隐级别和网格位置决定是否熄灭像素
+            if (patterns[fadeLevel - 1][grid_y][grid_x]) {
+                oled_set_draw_color(0);
+                oled_draw_pixel(x, y);
+            }
+        }
+    }
+}
+
 void astra_draw_info_bar() {
-    if (!astra_info_bar.is_running) return;
+    if (!astra_info_bar.is_running) {
+        return;
+    }
 
     //弹窗到位后才开始计算时间
     if (astra_info_bar.y_info_bar == astra_info_bar.y_info_bar_trg) astra_info_bar.time = get_ticks_ms();
@@ -171,7 +235,9 @@ void astra_draw_info_bar() {
 }
 
 void astra_draw_pop_up() {
-    if (!astra_pop_up.is_running) return;
+    if (!astra_pop_up.is_running) {
+        return;
+    }
 
     //弹窗到位后才开始计算时间
     if (astra_pop_up.y_pop_up == astra_pop_up.y_pop_up_trg) astra_pop_up.time = get_ticks_ms();
@@ -274,7 +340,7 @@ static void vision_ui_draw_text(const char* text,
     const bool has_visible_area = clip_x0 < clip_x1 && clip_y0 < clip_y1;
 
     // 如果文本太长，需要滚动
-    if (text_width > visible_width && visible_width > 0) {
+    if (text_width > visible_width && visible_width > 0 && !vision_ui_is_background_frozon()) {
         int16_t scroll_offset = 0;
         const int16_t overflow = text_width - visible_width;
         const float speed_px_s = scroll_speed_s; // px/s
@@ -513,7 +579,9 @@ void astra_draw_selector() {
 }
 
 void astra_draw_widget() {
-    //需要调用所有的控件draw函数 需要在core后面执行 否则会被core覆盖
+    if (vision_ui_is_background_frozon()) {
+        vision_ui_draw_background_blur_animation(0, 0,SCREEN_WIDTH,SCREEN_HEIGHT, 4);
+    }
     astra_draw_info_bar();
     astra_draw_pop_up();
 }

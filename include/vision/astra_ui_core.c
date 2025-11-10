@@ -12,6 +12,8 @@
 
 bool in_astra = false;
 
+static bool is_background_frozen = false;
+
 static bool vision_ui_start() {
     /**自行修改**/
     if (in_astra) {
@@ -190,22 +192,28 @@ void astra_refresh_main_core_position() {
 void vision_ui_render_loop() {
     switch (vision_ui_get_ui_action()) {
         case UIActionGoPrev:
-            astra_selector_go_prev_item();
+            if (!vision_ui_is_background_frozon()) {
+                astra_selector_go_prev_item();
+            }
             break;
         case UIActionGoNext:
-            astra_selector_go_next_item();
+            if (!vision_ui_is_background_frozon()) {
+                astra_selector_go_next_item();
+            }
             break;
         case UIActionExit:
             astra_selector_exit_current_item();
             break;
         case UIActionEnter:
-            astra_selector_jump_to_selected_item();
+            if (!vision_ui_is_background_frozon()) {
+                astra_selector_jump_to_selected_item();
+            }
             break;
         default:
             break;
     }
-    astra_ui_widget_core(); // 弹窗处理函数
     astra_ui_main_core(); // 核心处理函数
+    astra_ui_widget_core(); // 弹窗处理函数
 }
 
 void astra_ui_widget_core() {
@@ -251,6 +259,8 @@ void astra_ui_main_core() {
         astra_draw_list();
     }
 
+    is_background_frozen = astra_pop_up.is_running;
+
     //退场动画
     //上面都是正常应当绘制的内容 退场动画需要绘制时 只需要在上面的基础上绘制遮罩即可
     if (!astra_exit_animation_finished)
@@ -259,4 +269,8 @@ void astra_ui_main_core() {
 
 extern bool vision_ui_is_exited() {
     return !in_astra;
+}
+
+extern bool vision_ui_is_background_frozon() {
+    return is_background_frozen;
 }
