@@ -5,7 +5,7 @@
 #ifndef VISION_UI_VISION_UI_CONFIG_H
 #define VISION_UI_VISION_UI_CONFIG_H
 
-#define VISION_UI_ALLOW_EXIT_BY_USER 0 //允许用户在最浅层级退出vision ui lite
+#define VISION_UI_ALLOW_EXIT_BY_USER 0 // 允许用户在最浅层级退出vision ui lite
 
 /*** 列表项 ***/
 #define VISION_UI_LIST_ROOT_CAPACITY 10

@@ -339,8 +339,8 @@ static void vision_ui_notification_render() {
 
     vision_ui_driver_color_draw(0); // 黑遮罩打底
     vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_notification_instance_get()->w_notification + 4) / 2),
-                                y_notification_1, (int16_t) (vision_ui_notification_instance_get()->w_notification + 4), VISION_UI_NOTIFICATION_HEIGHT + 6,
-                                4);
+                                y_notification_1, (int16_t) (vision_ui_notification_instance_get()->w_notification + 4),
+                                VISION_UI_NOTIFICATION_HEIGHT + 6, 4);
 
     vision_ui_driver_color_draw(1);
     vision_ui_driver_box_r_draw(x_notification, y_notification_1, (int16_t) vision_ui_notification_instance_get()->w_notification,
@@ -348,7 +348,8 @@ static void vision_ui_notification_render() {
     // 向上移动四个像素 同时向下多画四个像素 只用下半部分圆角
 
     vision_ui_driver_color_draw(2);
-    vision_ui_driver_line_h_draw(x_notification + 2, y_notification_2 - 2, (int16_t) (vision_ui_notification_instance_get()->w_notification - 4));
+    vision_ui_driver_line_h_draw(x_notification + 2, y_notification_2 - 2,
+                                 (int16_t) (vision_ui_notification_instance_get()->w_notification - 4));
     vision_ui_driver_pixel_draw(x_notification + 1, y_notification_2 - 3);
     vision_ui_driver_pixel_draw(x_notification + 1, y_notification_2 - 3);
 
