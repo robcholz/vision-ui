@@ -15,9 +15,6 @@
 bool IS_IN_VISION_UI;
 
 static bool IS_BACKGROUND_FROZEN = false;
-static vision_ui_list_item_t *SCROLL_BAR_SCALE_PARENT = NULL;
-static float SCROLL_BAR_SCALE_VALUE = 0.f;
-
 void vision_ui_render_init() {
     IS_IN_VISION_UI = true;
 }
@@ -84,8 +81,8 @@ static void vision_ui_list_init() {
         list->scroll_bar_top_px = 0;
         list->scroll_bar_height_px = VISION_UI_SCREEN_HEIGHT;
     }
-    SCROLL_BAR_SCALE_PARENT = NULL;
-    SCROLL_BAR_SCALE_VALUE = 0.f;
+    vision_ui_selector_mutable_instance_get()->scroll_bar_scale_parent = NULL;
+    vision_ui_selector_mutable_instance_get()->scroll_bar_scale_part_shared = 0.f;
     vision_ui_selector_mutable_instance_get()->selected_index = 0;
     vision_ui_selector_mutable_instance_get()->selected_item = vision_ui_root_list_get()->child_list_item[0];
     vision_ui_selector_mutable_instance_get()->y_selector = VISION_UI_SCREEN_HEIGHT;
@@ -99,7 +96,9 @@ void vision_ui_core_init() {
 }
 
 static void vision_ui_list_item_position_update() {
-    vision_ui_list_item_t *parent = vision_ui_selector_instance_get()->selected_item->parent;
+    vision_ui_selector_t *selector_mut = vision_ui_selector_mutable_instance_get();
+    const vision_ui_selector_t *selector = vision_ui_selector_instance_get();
+    vision_ui_list_item_t *parent = selector->selected_item->parent;
 
     for (uint8_t i = 0; i < parent->child_num; i++) {
         vision_ui_animation_do(&parent->child_list_item[i]->y_list_item, parent->child_list_item[i]->y_list_item_trg, 84);
@@ -107,16 +106,16 @@ static void vision_ui_list_item_position_update() {
 
     const uint8_t child_cnt = parent->child_num > 0 ? parent->child_num : 1;
     const float part = (float) VISION_UI_SCREEN_HEIGHT / child_cnt;
-    const float slider_top_trg = part * vision_ui_selector_instance_get()->selected_index;
+    const float slider_top_trg = part * selector->selected_index;
     const float slider_h_trg = fmaxf((float) VISION_UI_LIST_FRAME_FIXED_HEIGHT / child_cnt, part);
 
     parent->scroll_bar_top_trg = slider_top_trg;
     parent->scroll_bar_height_trg = slider_h_trg;
     parent->scroll_bar_scale_part_trg = part;
 
-    if (parent != SCROLL_BAR_SCALE_PARENT) {
-        parent->scroll_bar_scale_part = SCROLL_BAR_SCALE_VALUE;
-        SCROLL_BAR_SCALE_PARENT = parent;
+    if (parent != selector_mut->scroll_bar_scale_parent) {
+        parent->scroll_bar_scale_part = selector_mut->scroll_bar_scale_part_shared;
+        selector_mut->scroll_bar_scale_parent = parent;
     }
 
     const bool scroll_bar_uninitialized = parent->scroll_bar_height == 0.f && parent->scroll_bar_height_trg == 0.f;
@@ -137,7 +136,7 @@ static void vision_ui_list_item_position_update() {
                                VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED);
     }
 
-    SCROLL_BAR_SCALE_VALUE = parent->scroll_bar_scale_part;
+    selector_mut->scroll_bar_scale_part_shared = parent->scroll_bar_scale_part;
 
     int16_t slider_top_px = (int16_t) lrintf(parent->scroll_bar_top);
     int16_t slider_h_px = (int16_t) lrintf(parent->scroll_bar_height);

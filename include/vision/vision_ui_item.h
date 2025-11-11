@@ -127,6 +127,9 @@ typedef struct vision_ui_selector_t {
 
     uint8_t selected_index;
     vision_ui_list_item_t *selected_item;
+
+    vision_ui_list_item_t *scroll_bar_scale_parent;
+    float scroll_bar_scale_part_shared;
 } vision_ui_selector_t;
 
 typedef struct vision_ui_camera_t {
