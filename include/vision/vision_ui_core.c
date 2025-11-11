@@ -224,8 +224,7 @@ static void vision_ui_main_core_step() {
     vision_ui_page_t *selected_page = vision_ui_page_from_item(selected_item);
     vision_ui_custom_view_t *custom_view = NULL;
 
-    if (selected_item != NULL && selected_item->type == USER_ITEM && selected_page != NULL &&
-        selected_page->view_type == VISION_UI_VIEW_CUSTOM) {
+    if (selected_item != NULL && selected_page != NULL && selected_page->view_type == VISION_UI_VIEW_CUSTOM) {
         custom_view = &selected_page->view.custom;
     }
 

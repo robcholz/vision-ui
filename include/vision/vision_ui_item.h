@@ -58,7 +58,6 @@ typedef enum {
     TITLE_ITEM,
     SWITCH_ITEM,
     SLIDER_ITEM,
-    USER_ITEM,
 } vision_ui_list_item_type_t;
 
 typedef struct vision_ui_list_item_t {
@@ -137,6 +136,53 @@ typedef struct vision_ui_camera_t {
     vision_ui_selector_t *selector;
 } vision_ui_camera_t;
 
+typedef struct {
+    float top;
+    float top_trg;
+    float height;
+    float height_trg;
+    float scale_part;
+    float scale_part_trg;
+    int16_t top_px;
+    int16_t height_px;
+} vision_ui_list_scroll_state_t;
+
+typedef struct {
+    vision_ui_list_item_t *root;
+    vision_ui_list_scroll_state_t scroll;
+} vision_ui_list_view_t;
+
+typedef struct {
+    uint8_t icon_count;
+    uint8_t columns;
+} vision_ui_icon_view_t;
+
+typedef struct {
+    void (*init_function)();
+    void (*loop_function)();
+    void (*exit_function)();
+    bool entering;
+    bool exiting;
+    bool active;
+    bool is_initialized;
+    bool is_looping;
+} vision_ui_custom_view_t;
+
+typedef struct vision_ui_page_t {
+    vision_ui_view_type_t view_type;
+    vision_ui_page_t *parent;
+    vision_ui_list_item_t *owner_item;
+    union {
+        vision_ui_list_view_t list;
+        vision_ui_icon_view_t icon;
+        vision_ui_custom_view_t custom;
+    } view;
+} vision_ui_page_t;
+
+extern vision_ui_page_t *vision_ui_custom_page_create(void (*init_function)(), void (*loop_function)(), void (*exit_function)());
+
+extern void vision_ui_custom_page_bind_to_item(vision_ui_page_t *page, vision_ui_list_item_t *item);
+
 extern void vision_ui_font_set(void *font);
 
 extern void *vision_ui_font_get();
@@ -178,9 +224,6 @@ extern vision_ui_list_item_t *vision_ui_list_switch_item_stateless_new(size_t ca
 extern vision_ui_list_item_t *vision_ui_list_slider_item_new(size_t capacity, const char *content, int16_t default_value, uint8_t step,
                                                              int16_t min, int16_t max, void (*on_changed)(int16_t value));
 
-extern vision_ui_list_item_t *vision_ui_list_user_item_new(size_t capacity, const char *content, void (*init_function)(),
-                                                           void (*loop_function)(), void (*exit_function)());
-
 extern bool vision_ui_list_push_item(vision_ui_list_item_t *parent, vision_ui_list_item_t *child);
 
 extern const vision_ui_selector_t *vision_ui_selector_instance_get();
@@ -206,50 +249,6 @@ extern void vision_ui_camera_instance_x_trg_set(float x_trg);
 extern void vision_ui_camera_instance_y_trg_set(float y_trg);
 
 extern void vision_ui_camera_bind_selector(vision_ui_selector_t *selector);
-
-typedef struct {
-    float top;
-    float top_trg;
-    float height;
-    float height_trg;
-    float scale_part;
-    float scale_part_trg;
-    int16_t top_px;
-    int16_t height_px;
-} vision_ui_list_scroll_state_t;
-
-typedef struct {
-    vision_ui_list_item_t *root;
-    vision_ui_list_scroll_state_t scroll;
-} vision_ui_list_view_t;
-
-typedef struct {
-    uint8_t icon_count;
-    uint8_t columns;
-} vision_ui_icon_view_t;
-
-typedef struct {
-    void (*init_function)();
-    void (*loop_function)();
-    void (*exit_function)();
-    bool entering;
-    bool exiting;
-    bool active;
-    bool is_initialized;
-    bool is_looping;
-} vision_ui_custom_view_t;
-
-struct vision_ui_page_t {
-    const char *title;
-    vision_ui_view_type_t view_type;
-    vision_ui_page_t *parent;
-    vision_ui_list_item_t *owner_item;
-    union {
-        vision_ui_list_view_t list;
-        vision_ui_icon_view_t icon;
-        vision_ui_custom_view_t custom;
-    } view;
-};
 
 extern vision_ui_page_t *vision_ui_page_root_get();
 

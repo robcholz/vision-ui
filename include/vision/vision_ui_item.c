@@ -30,7 +30,7 @@ static void vision_ui_list_scroll_state_reset(vision_ui_list_scroll_state_t *scr
     scroll->height_px = VISION_UI_SCREEN_HEIGHT;
 }
 
-static vision_ui_page_t *vision_ui_page_create(const vision_ui_view_type_t view_type, const char *title) {
+static vision_ui_page_t *vision_ui_page_create(const vision_ui_view_type_t view_type) {
     vision_ui_page_t *page = malloc(sizeof(vision_ui_page_t));
     if (page == NULL) {
         return NULL;
@@ -38,7 +38,6 @@ static vision_ui_page_t *vision_ui_page_create(const vision_ui_view_type_t view_
 
     memset(page, 0, sizeof(vision_ui_page_t));
     page->view_type = view_type;
-    page->title = title;
 
     switch (view_type) {
         case VISION_UI_VIEW_LIST:
@@ -76,9 +75,18 @@ static vision_ui_custom_view_t *vision_ui_custom_view_from_item(vision_ui_list_i
     return &page->view.custom;
 }
 
-static bool vision_ui_user_item_is_active(vision_ui_list_item_t *item) {
-    vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(item);
-    return custom != NULL && custom->active;
+vision_ui_page_t *vision_ui_custom_page_create(void (*init_function)(), void (*loop_function)(), void (*exit_function)()) {
+    vision_ui_page_t *page = vision_ui_page_create(VISION_UI_VIEW_CUSTOM);
+    page->view.custom.init_function = init_function;
+    page->view.custom.loop_function = loop_function;
+    page->view.custom.exit_function = exit_function;
+
+    return page;
+}
+
+void vision_ui_custom_page_bind_to_item(vision_ui_page_t *page, vision_ui_list_item_t *item) {
+    item->page = page;
+    page->owner_item = item;
 }
 
 void vision_ui_font_set(void *font) {
@@ -190,14 +198,6 @@ vision_ui_slider_item_t *vision_ui_to_list_slider_item(vision_ui_list_item_t *li
     return (vision_ui_slider_item_t *) vision_ui_root_list_get();
 }
 
-vision_ui_user_item_t *vision_ui_to_list_user_item(vision_ui_list_item_t *list_item) {
-    if (list_item != NULL && list_item->type == USER_ITEM) {
-        return (vision_ui_user_item_t *) list_item;
-    }
-
-    return (vision_ui_user_item_t *) vision_ui_root_list_get();
-}
-
 // tips: 不会重复创建root节点
 vision_ui_list_item_t *vision_ui_root_list_get() {
     static vision_ui_list_item_t *vision_ui_root_item = NULL;
@@ -208,7 +208,7 @@ vision_ui_list_item_t *vision_ui_root_list_get() {
         vision_ui_root_item->content = "VisionUI";
         vision_ui_root_item->capacity = VISION_UI_LIST_ROOT_CAPACITY;
         vision_ui_root_item->child_list_item = malloc(vision_ui_root_item->capacity * sizeof(vision_ui_list_item_t *));
-        vision_ui_root_item->page = vision_ui_page_create(VISION_UI_VIEW_LIST, vision_ui_root_item->content);
+        vision_ui_root_item->page = vision_ui_page_create(VISION_UI_VIEW_LIST);
         if (vision_ui_root_item->page != NULL) {
             vision_ui_root_item->page->view.list.root = vision_ui_root_item;
             vision_ui_root_item->page->parent = NULL;
@@ -230,7 +230,7 @@ vision_ui_list_item_t *vision_ui_list_item_new(const size_t capacity, const char
     list_item->content = content;
     list_item->capacity = capacity;
     list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t *));
-    list_item->page = vision_ui_page_create(VISION_UI_VIEW_LIST, content);
+    list_item->page = vision_ui_page_create(VISION_UI_VIEW_LIST);
     if (list_item->page != NULL) {
         list_item->page->view.list.root = list_item;
     }
@@ -289,25 +289,6 @@ vision_ui_list_item_t *vision_ui_list_slider_item_new(const size_t capacity, con
     return (vision_ui_list_item_t *) slider_item;
 }
 
-vision_ui_list_item_t *vision_ui_list_user_item_new(const size_t capacity, const char *content, void (*init_function)(),
-                                                    void (*loop_function)(), void (*exit_function)()) {
-    vision_ui_user_item_t *user_item = malloc(sizeof(vision_ui_user_item_t));
-    memset(user_item, 0, sizeof(vision_ui_user_item_t));
-    user_item->base_item.type = USER_ITEM;
-    user_item->base_item.content = content;
-    ((vision_ui_list_item_t *) user_item)->capacity = capacity;
-    ((vision_ui_list_item_t *) user_item)->child_list_item =
-            malloc(((vision_ui_list_item_t *) user_item)->capacity * sizeof(vision_ui_list_item_t *));
-    user_item->base_item.page = vision_ui_page_create(VISION_UI_VIEW_CUSTOM, content);
-    if (user_item->base_item.page != NULL) {
-        user_item->base_item.page->owner_item = (vision_ui_list_item_t *) user_item;
-        user_item->base_item.page->view.custom.init_function = init_function;
-        user_item->base_item.page->view.custom.loop_function = loop_function;
-        user_item->base_item.page->view.custom.exit_function = exit_function;
-    }
-    return (vision_ui_list_item_t *) user_item;
-}
-
 static vision_ui_selector_t VISION_UI_SELECTOR = {};
 
 const vision_ui_selector_t *vision_ui_selector_instance_get() {
@@ -357,10 +338,6 @@ void vision_ui_selector_go_next_item() {
         return;
     }
 
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM && vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
-        return;
-    }
-
     // 到达最末端
     if (VISION_UI_SELECTOR.selected_index == VISION_UI_SELECTOR.selected_item->parent->child_num - 1) {
         VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[0];
@@ -380,10 +357,6 @@ void vision_ui_selector_go_prev_item() {
             selected_slider_item->value = selected_slider_item->value_min;
         }
         selected_slider_item->on_changed(selected_slider_item->value);
-        return;
-    }
-
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM && vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
         return;
     }
 
@@ -417,19 +390,6 @@ void vision_ui_selector_jump_to_selected_item() {
         return;
     }
 
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM) {
-        VISION_UI_EXIT_ANIMATION_FINISHED = false;
-        vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(VISION_UI_SELECTOR.selected_item);
-        if (custom != NULL) {
-            custom->entering = true;
-            custom->exiting = false;
-            custom->active = false;
-            custom->is_initialized = false;
-            custom->is_looping = false;
-        }
-        return;
-    }
-
     if (VISION_UI_SELECTOR.selected_item->type == TITLE_ITEM) {
         vision_ui_selector_exit_current_item();
         return;
@@ -440,6 +400,16 @@ void vision_ui_selector_jump_to_selected_item() {
         selected_switch_item->value = !selected_switch_item->value;
         if (selected_switch_item->on_changed != NULL) {
             selected_switch_item->on_changed(selected_switch_item->value);
+        }
+
+        vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(VISION_UI_SELECTOR.selected_item);
+        if (custom != NULL) {
+            VISION_UI_EXIT_ANIMATION_FINISHED = false;
+            custom->entering = true;
+            custom->exiting = false;
+            custom->active = false;
+            custom->is_initialized = false;
+            custom->is_looping = false;
         }
         return;
     }
@@ -485,16 +455,16 @@ void vision_ui_selector_exit_current_item() {
         }
     }
 
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM && vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
-        VISION_UI_EXIT_ANIMATION_FINISHED = false; // 需要重新绘制退场动画
+    if (VISION_UI_SELECTOR.selected_item->type == SWITCH_ITEM) {
         vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(VISION_UI_SELECTOR.selected_item);
         if (custom != NULL) {
+            VISION_UI_EXIT_ANIMATION_FINISHED = false; // 需要重新绘制退场动画
             custom->entering = false;
             custom->exiting = true;
             custom->is_initialized = false;
             custom->is_looping = false;
+            return;
         }
-        return;
     }
 
     if (VISION_UI_SELECTOR.selected_item->parent->layer == 0 && IS_IN_VISION_UI) {

@@ -19,6 +19,8 @@ static int16_t X_BOARD = -200;
 static int16_t Y_WIRE_1 = 200;
 static int16_t Y_WIRE_2 = 200;
 
+static vision_ui_list_item_t *ABOUT_THE_BOARD_ITEM = NULL;
+
 void animation(int16_t *pos, int16_t pos_trg, int16_t speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) {
@@ -135,18 +137,19 @@ int main() {
     vision_ui_list_item_t *launcher_setting_list_item = vision_ui_list_item_new(10, "Board Settings");
 
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_user_item_new(1, "About the Board...", test_user_item_init_function,
-                                                          test_user_item_loop_function, test_user_item_exit_function));
+    static vision_ui_page_t *page =
+            vision_ui_custom_page_create(test_user_item_init_function, test_user_item_loop_function, test_user_item_exit_function);
+    ABOUT_THE_BOARD_ITEM = vision_ui_list_switch_item_stateless_new(1, "About the Board...", [](bool) {});
+    vision_ui_custom_page_bind_to_item(page, ABOUT_THE_BOARD_ITEM);
+    vision_ui_list_push_item(vision_ui_root_list_get(), ABOUT_THE_BOARD_ITEM);
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 1", false, [](bool b) {
                                  vision_ui_notification_push("Notification Test 1", 5000);
                              }));
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2", false, [](bool b) {
                                  vision_ui_notification_push("Notification Test 2", 5000);
                              }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_stateless_new(1, "Test Alert", [](bool b) {
-                                 vision_ui_alert_push("Alert Test", 5000);
-                             }));
+    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_stateless_new(
+                                                                1, "Test Alert", [](bool b) { vision_ui_alert_push("Alert Test", 5000); }));
 
     vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {}));
     vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {}));
