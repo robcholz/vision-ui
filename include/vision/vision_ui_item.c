@@ -27,8 +27,8 @@ static vision_ui_notification_t VISION_UI_NOTIFICATION = {0,
                                                           1,
                                                           0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
                                                           0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
-                                                          80,
-                                                          80,
+                                                          VISION_UI_NOTIFICATION_WIDTH,
+                                                          VISION_UI_NOTIFICATION_WIDTH,
                                                           false,
                                                           0,
                                                           1,
@@ -75,7 +75,15 @@ void vision_ui_notification_push(const char *content, const uint16_t span) {
     VISION_UI_NOTIFICATION.y_notification_trg = 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT;
 }
 
-static vision_ui_alert_t VISION_UI_ALERT = {0, 1, 0 - 2 * VISION_UI_ALERT_HEIGHT, 0 - 2 * VISION_UI_ALERT_HEIGHT, 80, 80, false, 0, 1};
+static vision_ui_alert_t VISION_UI_ALERT = {0,
+                                            1,
+                                            0 - 2 * VISION_UI_ALERT_HEIGHT,
+                                            0 - 2 * VISION_UI_ALERT_HEIGHT,
+                                            VISION_UI_ALERT_WIDTH,
+                                            VISION_UI_ALERT_WIDTH,
+                                            false,
+                                            0,
+                                            1};
 
 const vision_ui_alert_t *vision_ui_alert_instance_get() {
     return &VISION_UI_ALERT;
