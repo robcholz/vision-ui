@@ -221,9 +221,9 @@ typedef struct vision_ui_selector_t {
     vision_ui_list_item_t* selected_item;
 } vision_ui_selector_t;
 
-extern vision_ui_selector_t VISION_UI_SELECTOR;
+extern const vision_ui_selector_t* vision_ui_selector_instance_get();
 
-extern vision_ui_selector_t* vision_ui_selector_get();
+extern vision_ui_selector_t* vision_ui_selector_mutable_instance_get();
 
 extern bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t* item);
 

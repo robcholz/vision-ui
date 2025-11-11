@@ -63,7 +63,7 @@ void vision_ui_render_init() {
     }
 }
 
-void vision_ui_animation_do(float* pos, float pos_trg, float speed) {
+void vision_ui_animation_do(float* pos, const float pos_trg, const float speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) *pos = pos_trg;
         else *pos += (pos_trg - *pos) / (100.0f - speed) / 1.0f;
@@ -120,20 +120,20 @@ void vision_ui_list_init() {
         list->scroll_bar_top_px = 0;
         list->scroll_bar_height_px = VISION_UI_SCREEN_HEIGHT;
     }
-    VISION_UI_SELECTOR.selected_index = 0;
-    VISION_UI_SELECTOR.selected_item = vision_ui_root_list_get()->child_list_item[0];
-    VISION_UI_SELECTOR.y_selector = VISION_UI_SCREEN_HEIGHT;
-    VISION_UI_SELECTOR.h_selector = VISION_UI_SCREEN_HEIGHT;
+    vision_ui_selector_mutable_instance_get()->selected_index = 0;
+    vision_ui_selector_mutable_instance_get()->selected_item = vision_ui_root_list_get()->child_list_item[0];
+    vision_ui_selector_mutable_instance_get()->y_selector = VISION_UI_SCREEN_HEIGHT;
+    vision_ui_selector_mutable_instance_get()->h_selector = VISION_UI_SCREEN_HEIGHT;
 }
 
 void vision_ui_core_init() {
     vision_ui_list_init();
     vision_ui_selector_t_selector_bind_item(vision_ui_root_list_get());
-    vision_ui_camera_bind_selector(vision_ui_selector_get());
+    vision_ui_camera_bind_selector(vision_ui_selector_mutable_instance_get());
 }
 
 void vision_ui_list_item_position_update() {
-    vision_ui_list_item_t* parent = VISION_UI_SELECTOR.selected_item->parent;
+    vision_ui_list_item_t* parent = vision_ui_selector_instance_get()->selected_item->parent;
 
     for (uint8_t i = 0; i < parent->child_num; i++)
         vision_ui_animation_do(&parent->child_list_item[i]->y_list_item,
@@ -141,7 +141,7 @@ void vision_ui_list_item_position_update() {
 
     const uint8_t child_cnt = parent->child_num > 0 ? parent->child_num : 1;
     const float part = (float) VISION_UI_SCREEN_HEIGHT / child_cnt;
-    const float slider_top_trg = part * VISION_UI_SELECTOR.selected_index;
+    const float slider_top_trg = part * vision_ui_selector_instance_get()->selected_index;
     const float slider_h_trg = fmaxf((float) VISION_UI_LIST_FRAME_FIXED_HEIGHT / child_cnt, part);
 
     parent->scroll_bar_top_trg = slider_top_trg;
@@ -171,26 +171,26 @@ void vision_ui_list_item_position_update() {
 
 void vision_ui_selector_position_update() {
     vision_ui_font_set(vision_ui_font_get());
-    VISION_UI_SELECTOR.h_selector_trg = VISION_UI_LIST_FRAME_FIXED_HEIGHT;
-    VISION_UI_SELECTOR.y_selector_trg = VISION_UI_SELECTOR.selected_item->y_list_item_trg;
+    vision_ui_selector_mutable_instance_get()->h_selector_trg = VISION_UI_LIST_FRAME_FIXED_HEIGHT;
+    vision_ui_selector_mutable_instance_get()->y_selector_trg = vision_ui_selector_instance_get()->selected_item->y_list_item_trg;
     const uint16_t selector_max_width = VISION_UI_LIST_HEADER_MAX_WIDTH + VISION_UI_LIST_HEADER_TO_TEXT_PADDING +
                                         VISION_UI_LIST_TEXT_MAX_WIDTH + VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING +
                                         VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
-    const uint16_t selector_current_width = VISION_UI_SELECTOR.selected_item->type == TITLE_ITEM
+    const uint16_t selector_current_width = vision_ui_selector_instance_get()->selected_item->type == TITLE_ITEM
                                                 ? +vision_ui_driver_str_utf8_width_get(
-                                                      VISION_UI_SELECTOR.selected_item->content) +
+                                                      vision_ui_selector_instance_get()->selected_item->content) +
                                                   VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING
                                                   + VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING
                                                 : +VISION_UI_LIST_HEADER_MAX_WIDTH + VISION_UI_LIST_HEADER_TO_TEXT_PADDING
                                                   +
                                                   vision_ui_driver_str_utf8_width_get(
-                                                      VISION_UI_SELECTOR.selected_item->content) +
+                                                      vision_ui_selector_instance_get()->selected_item->content) +
                                                   VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING
                                                   + VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
-    VISION_UI_SELECTOR.w_selector_trg = selector_current_width > selector_max_width ? selector_max_width : selector_current_width;
-    vision_ui_animation_do(&VISION_UI_SELECTOR.y_selector, VISION_UI_SELECTOR.y_selector_trg, 91);
-    vision_ui_animation_do(&VISION_UI_SELECTOR.w_selector, VISION_UI_SELECTOR.w_selector_trg, 92);
-    vision_ui_animation_do(&VISION_UI_SELECTOR.h_selector, VISION_UI_SELECTOR.h_selector_trg, 93);
+    vision_ui_selector_mutable_instance_get()->w_selector_trg = selector_current_width > selector_max_width ? selector_max_width : selector_current_width;
+    vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->y_selector, vision_ui_selector_instance_get()->y_selector_trg, 91);
+    vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->w_selector, vision_ui_selector_instance_get()->w_selector_trg, 92);
+    vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->h_selector, vision_ui_selector_instance_get()->h_selector_trg, 93);
 }
 
 void vision_ui_main_core_position_update() {
@@ -234,8 +234,8 @@ void vision_ui_main_core_step() {
 
     //切换in user item的逻辑
     if (vision_ui_exit_animation_status_get() == EXIT_MASK_FALL_COMPLETE) {
-        if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM) {
-            vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
+        if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM) {
+            vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
             if (selected_user_item->entering_user_item)
                 selected_user_item->in_user_item = 1;
             else if (selected_user_item->exiting_user_item) {
@@ -247,9 +247,9 @@ void vision_ui_main_core_step() {
     }
 
     //渲染的逻辑
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM && vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item)->
+    if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM && vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item)->
         in_user_item) {
-        vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
+        vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
         //初始化
         if (!selected_user_item->user_item_inited) {
             if (selected_user_item->init_function != NULL)

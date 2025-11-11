@@ -175,27 +175,23 @@ static void vision_ui_draw_background_blur_animation(uint16_t x0, uint16_t y0, u
     // 定义2x2网格的渐隐模式
     // 每个数组表示一个2x2网格中哪些像素需要熄灭
     // 0表示保持亮，1表示熄灭
-    const uint8_t patterns[5][2][2] = {
+    static const uint8_t patterns[5][2][2] = {
         {
             {0, 0}, // Level 1: 全亮
             {0, 0}
         },
-
         {
             {1, 0}, // Level 2: 左上角熄灭
             {0, 0}
         },
-
         {
             {1, 0}, // Level 3: 左上角和右下角熄灭
             {0, 1}
         },
-
         {
             {1, 0}, // Level 4: 只保留右上角
             {1, 1}
         },
-
         {
             {1, 1}, // Level 5: 全暗
             {1, 1}
@@ -376,7 +372,7 @@ static void vision_ui_list_appearance_render() {
 
     vision_ui_driver_line_v_draw(VISION_UI_SCREEN_WIDTH - 2, 0, VISION_UI_SCREEN_HEIGHT);
 
-    const vision_ui_list_item_t* parent = VISION_UI_SELECTOR.selected_item->parent;
+    const vision_ui_list_item_t* parent = vision_ui_selector_mutable_instance_get()->selected_item->parent;
 
     const int16_t slider_top_px = parent ? parent->scroll_bar_top_px : 0;
     const int16_t slider_h_px = parent ? parent->scroll_bar_height_px : VISION_UI_SCREEN_HEIGHT;
@@ -510,8 +506,8 @@ static void vision_ui_draw_list_header() {
         0b0000000,
     };
 
-    for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->child_num; i++) {
-        vision_ui_list_item_t* current_list_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[i];
+    for (uint8_t i = 0; i < vision_ui_selector_mutable_instance_get()->selected_item->parent->child_num; i++) {
+        vision_ui_list_item_t* current_list_item = vision_ui_selector_mutable_instance_get()->selected_item->parent->child_list_item[i];
         int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera + (
                                   VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_HEADER_MAX_HEIGHT) / 2;
@@ -579,8 +575,8 @@ static void vision_ui_draw_list_footer() {
         {0b11111110, 0b11111111, 0b00000011},
     };
 
-    for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->child_num; i++) {
-        vision_ui_list_item_t* current_list_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[i];
+    for (uint8_t i = 0; i < vision_ui_selector_instance_get()->selected_item->parent->child_num; i++) {
+        vision_ui_list_item_t* current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
         int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
         // draw header
@@ -630,8 +626,8 @@ static void vision_ui_list_item_render() {
     vision_ui_draw_list_header();
     vision_ui_draw_list_footer();
 
-    for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->child_num; i++) {
-        vision_ui_list_item_t* current_list_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[i];
+    for (uint8_t i = 0; i < vision_ui_selector_instance_get()->selected_item->parent->child_num; i++) {
+        vision_ui_list_item_t* current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
         const int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
@@ -655,11 +651,11 @@ static void vision_ui_selector_render() {
     const int16_t x_selector = (int16_t) (lrintf(vision_ui_camera_instance_get()->x_camera) + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING
                                           -
                                           VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING);
-    const int16_t y_selector = (int16_t) lrintf(VISION_UI_SELECTOR.y_selector + vision_ui_camera_instance_get()->y_camera);
+    const int16_t y_selector = (int16_t) lrintf(vision_ui_selector_instance_get()->y_selector + vision_ui_camera_instance_get()->y_camera);
 
     vision_ui_driver_color_draw(1);
-    const int16_t selector_w = (int16_t) lrintf(VISION_UI_SELECTOR.w_selector);
-    const int16_t selector_h = (int16_t) lrintf(VISION_UI_SELECTOR.h_selector);
+    const int16_t selector_w = (int16_t) lrintf(vision_ui_selector_instance_get()->w_selector);
+    const int16_t selector_h = (int16_t) lrintf(vision_ui_selector_instance_get()->h_selector);
 
     vision_ui_driver_frame_r_draw(x_selector, y_selector, selector_w, selector_h, 3);
     vision_ui_driver_color_draw(2);

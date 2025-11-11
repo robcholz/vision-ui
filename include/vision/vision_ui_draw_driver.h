@@ -51,7 +51,7 @@ extern void vision_ui_driver_line_h_dotted_draw(uint16_t x, uint16_t y, uint16_t
 
 extern void vision_ui_driver_line_v_dotted_draw(uint16_t x, uint16_t y, uint16_t h);
 
-extern void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bitMap);
+extern void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bit_map);
 
 extern void vision_ui_driver_color_draw(uint8_t color);
 

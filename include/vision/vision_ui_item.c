@@ -170,9 +170,13 @@ vision_ui_list_item_t* vision_ui_list_user_item_new(char* content, void (*init_f
     return (vision_ui_list_item_t*) user_item; //转换回基类 但保留专有数据
 }
 
-vision_ui_selector_t VISION_UI_SELECTOR = {};
+static vision_ui_selector_t VISION_UI_SELECTOR = {};
 
-vision_ui_selector_t* vision_ui_selector_get() {
+const vision_ui_selector_t* vision_ui_selector_instance_get() {
+    return &VISION_UI_SELECTOR;
+}
+
+extern vision_ui_selector_t* vision_ui_selector_mutable_instance_get() {
     return &VISION_UI_SELECTOR;
 }
 
