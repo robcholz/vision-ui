@@ -2,13 +2,15 @@
 // Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
 #include "vision_ui_core.h"
-#include "vision_ui_item.h"
+
 
 #include <stdio.h>
 #include <tgmath.h>
 
 #include "vision_ui_draw_driver.h"
+#include "vision_ui_item.h"
 #include "vision_ui_renderer.h"
+#include "../vision_ui_config.h"
 
 bool IS_IN_VISION_UI;
 

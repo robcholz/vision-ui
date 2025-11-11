@@ -2,7 +2,6 @@
 // Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
 #include "vision_ui_renderer.h"
-#include "vision_ui_item.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -10,6 +9,8 @@
 #include <string.h>
 
 #include "vision_ui_core.h"
+#include "vision_ui_item.h"
+#include "../vision_ui_config.h"
 
 static void vision_ui_exit_animation_step(float* pos, const float pos_trg, const float speed) {
     if (*pos != pos_trg) {

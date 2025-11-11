@@ -7,8 +7,6 @@
 
 #include <stdbool.h>
 
-#define VISION_UI_ALLOW_EXIT_BY_USER 0 //允许用户在最浅层级退出vision ui lite
-
 typedef enum vision_ui_action_t {
     UI_ACTION_NONE,
     UI_ACTION_GO_PREV,

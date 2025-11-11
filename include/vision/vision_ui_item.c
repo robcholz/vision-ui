@@ -8,6 +8,7 @@
 #include <sys/types.h>
 
 #include "vision_ui_core.h"
+#include "../vision_ui_config.h"
 
 static void* VISION_UI_FONT;
 
@@ -112,39 +113,50 @@ vision_ui_list_item_t* vision_ui_root_list_get() {
         memset(vision_ui_root_item, 0, sizeof(vision_ui_list_item_t));
         vision_ui_root_item->type = LIST_ITEM;
         vision_ui_root_item->content = "VisionUI";
-        vision_ui_list_push_item(vision_ui_root_item, vision_ui_list_title_item_new(vision_ui_root_item->content));
+        vision_ui_root_item->capacity = VISION_UI_LIST_ROOT_CAPACITY;
+        vision_ui_root_item->child_list_item = malloc(vision_ui_root_item->capacity * sizeof(vision_ui_list_item_t*));
+        vision_ui_list_push_item(vision_ui_root_item, vision_ui_list_title_item_new(1, vision_ui_root_item->content));
     }
     return vision_ui_root_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_item_new(const char* content) {
+vision_ui_list_item_t* vision_ui_list_item_new(const size_t capacity, const char* content) {
     vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_list_item_t));
     memset(list_item, 0, sizeof(vision_ui_list_item_t));
     list_item->type = LIST_ITEM;
     list_item->content = content;
-    vision_ui_list_push_item(list_item, vision_ui_list_title_item_new(list_item->content));
+    list_item->capacity = capacity;
+    list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
+    vision_ui_list_push_item(list_item, vision_ui_list_title_item_new(1, list_item->content));
     return list_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title) {
+vision_ui_list_item_t* vision_ui_list_title_item_new(const size_t capacity, const char* title) {
     vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_list_item_t));
     memset(list_item, 0, sizeof(vision_ui_list_item_t));
     list_item->type = TITLE_ITEM;
     list_item->content = title;
+    list_item->capacity = capacity;
+    list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
     return list_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_switch_item_new(const char* content, const bool default_value, void (*on_changed)(bool value)) {
+vision_ui_list_item_t* vision_ui_list_switch_item_new(const size_t capacity, const char* content, const bool default_value,
+                                                      void (*on_changed)(bool value)) {
     vision_ui_switch_item_t* switch_item = malloc(sizeof(vision_ui_switch_item_t));
     memset(switch_item, 0, sizeof(vision_ui_switch_item_t));
     switch_item->base_item.type = SWITCH_ITEM;
     switch_item->base_item.content = content;
     switch_item->value = default_value;
     switch_item->on_changed = on_changed;
+    ((vision_ui_list_item_t*) switch_item)->capacity = capacity;
+    ((vision_ui_list_item_t*) switch_item)->child_list_item = malloc(
+        ((vision_ui_list_item_t*) switch_item)->capacity * sizeof(vision_ui_list_item_t*));
     return (vision_ui_list_item_t*) switch_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_slider_item_new(const char* content,
+vision_ui_list_item_t* vision_ui_list_slider_item_new(const size_t capacity,
+                                                      const char* content,
                                                       const int16_t default_value,
                                                       const uint8_t step,
                                                       const int16_t min,
@@ -159,10 +171,16 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(const char* content,
     slider_item->value_min = min;
     slider_item->value_max = max;
     slider_item->on_changed = on_changed;
+    ((vision_ui_list_item_t*) slider_item)->capacity = capacity;
+    ((vision_ui_list_item_t*) slider_item)->child_list_item = malloc(
+        ((vision_ui_list_item_t*) slider_item)->capacity * sizeof(vision_ui_list_item_t*));
     return (vision_ui_list_item_t*) slider_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_user_item_new(const char* content, void (*init_function)(), void (*loop_function)(),
+vision_ui_list_item_t* vision_ui_list_user_item_new(const size_t capacity,
+                                                    const char* content,
+                                                    void (*init_function)(),
+                                                    void (*loop_function)(),
                                                     void (*exit_function)()) {
     vision_ui_user_item_t* user_item = malloc(sizeof(vision_ui_user_item_t));
     memset(user_item, 0, sizeof(vision_ui_user_item_t));
@@ -171,7 +189,10 @@ vision_ui_list_item_t* vision_ui_list_user_item_new(const char* content, void (*
     user_item->init_function = init_function;
     user_item->loop_function = loop_function;
     user_item->exit_function = exit_function;
-    return (vision_ui_list_item_t*) user_item; //转换回基类 但保留专有数据
+    ((vision_ui_list_item_t*) user_item)->capacity = capacity;
+    ((vision_ui_list_item_t*) user_item)->child_list_item = malloc(
+        ((vision_ui_list_item_t*) user_item)->capacity * sizeof(vision_ui_list_item_t*));
+    return (vision_ui_list_item_t*) user_item;
 }
 
 static vision_ui_selector_t VISION_UI_SELECTOR = {};
@@ -374,7 +395,7 @@ void vision_ui_selector_exit_current_item() {
 bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child) {
     if (parent == NULL) return false;
     if (child == NULL) return false;
-    if (parent->child_num >= VISION_UI_MAX_LIST_CHILD_NUM) return false;
+    if (parent->child_num >= parent->capacity) return false;
     if (parent->layer >= VISION_UI_MAX_LIST_LAYER) return false;
 
     child->layer = parent->layer + 1;

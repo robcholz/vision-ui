@@ -34,7 +34,8 @@ void test_user_item_loop_function() {
     uint32_t time = vision_ui_driver_ticks_ms_get();
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_box_r_draw(2, Y_BOX - 1, vision_ui_driver_str_utf8_width_get("「astraLauncher」") + 4, vision_ui_driver_str_height_get() + 2, 1);
+    vision_ui_driver_box_r_draw(2, Y_BOX - 1, vision_ui_driver_str_utf8_width_get("「astraLauncher」") + 4,
+                                vision_ui_driver_str_height_get() + 2, 1);
     vision_ui_driver_color_draw(2);
     vision_ui_driver_str_utf8_draw(4, Y_LOGO - 2, "「astraLauncher」");
 
@@ -102,33 +103,36 @@ int main() {
 
     vision_ui_font_set((void*) u8g2_font_my_chinese);
 
-    vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new("Board Settings");
+    vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new(10, "Board Settings");
 
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new("Switch Screen", true, [](bool b) {
+    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Switch Screen", true, [](bool b) {
     }));
     vision_ui_list_push_item(vision_ui_root_list_get(),
-                            vision_ui_list_user_item_new("Wiring Diagram...", test_user_item_init_function, test_user_item_loop_function,
-                                                test_user_item_exit_function));
+                             vision_ui_list_user_item_new(1, "Wiring Diagram...", test_user_item_init_function,
+                                                          test_user_item_loop_function,
+                                                          test_user_item_exit_function));
     vision_ui_list_push_item(vision_ui_root_list_get(),
-                            vision_ui_list_user_item_new("About the Board...", test_user_item_init_function, test_user_item_loop_function,
-                                                test_user_item_exit_function));
+                             vision_ui_list_user_item_new(1, "About the Board...", test_user_item_init_function,
+                                                          test_user_item_loop_function,
+                                                          test_user_item_exit_function));
     vision_ui_list_push_item(vision_ui_root_list_get(),
-                            vision_ui_list_switch_item_new("Test Alert", false, [](bool b) {
-                                vision_ui_pop_up_push("Hello", 5000);
-                            }));
+                             vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
+                                 vision_ui_pop_up_push("Hello", 5000);
+                             }));
 
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("Heartbeat LED", true, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {
     }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("Reverse Keys", false, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {
     }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_slider_item_new("Display Style", 1600, 5, 1, 9999, [](int16_t value) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_slider_item_new(
+                                 1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {
+                                 }));
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {
     }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("Invert Display", false, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "MCU Serial Channel", false, [](bool b) {
     }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("MCU Serial Channel", false, [](bool b) {
-    }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("External Serial Channel", false, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "External Serial Channel", false, [](bool b) {
     }));
 
     vision_ui_render_init();

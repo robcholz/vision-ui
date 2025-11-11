@@ -6,16 +6,9 @@
 #define VISION_UI_VISION_UI_ITEM_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "vision_ui_draw_driver.h"
-
-extern void vision_ui_font_set(void* font);
-
-extern void* vision_ui_font_get();
-
-extern bool vision_ui_exit_animation_is_finished();
-
-extern void vision_ui_exit_animation_set_is_finished();
 
 typedef struct vision_ui_info_bar_t {
     const char* content;
@@ -32,12 +25,6 @@ typedef struct vision_ui_info_bar_t {
     uint32_t time;
 } vision_ui_info_bar_t;
 
-extern const vision_ui_info_bar_t* vision_ui_info_bar_instance_get();
-
-extern vision_ui_info_bar_t* vision_ui_info_bar_mutable_instance_get();
-
-extern void vision_ui_info_bar_push(const char* content, uint16_t span);
-
 typedef struct vision_ui_pop_up_t {
     const char* content;
     uint16_t span;
@@ -52,66 +39,6 @@ typedef struct vision_ui_pop_up_t {
     uint32_t time_start;
     uint32_t time;
 } vision_ui_pop_up_t;
-
-extern const vision_ui_pop_up_t* vision_ui_pop_up_instance_get();
-
-extern vision_ui_pop_up_t* vision_ui_pop_up_mutable_instance_get();
-
-extern void vision_ui_pop_up_push(const char* content, uint16_t span);
-
-/*** 弹窗 ***/
-
-/*** 列表项 ***/
-#define VISION_UI_MAX_LIST_CHILD_NUM 10
-#define VISION_UI_MAX_LIST_LAYER 10
-
-/*** 信息栏 ***/
-#define VISION_UI_INFO_BAR_HEIGHT 15
-#define VISION_UI_INFO_BAR_WIDTH 20
-
-/*** 弹窗 ***/
-#define VISION_UI_POP_UP_HEIGHT 20
-#define VISION_UI_POP_UP_WIDTH 20
-
-#define VISION_UI_SCREEN_HEIGHT 64
-#define VISION_UI_SCREEN_WIDTH 128
-
-// timing
-#define VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS 1000
-#define VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S 15
-#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S 5
-#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS 1500
-
-// paddings
-#define VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING 0
-#define VISION_UI_LIST_TITLE_TO_FRAME_PADDING 4
-
-#define VISION_UI_LIST_FRAME_BETWEEN_PADDING 2
-
-#define VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 10
-#define VISION_UI_LIST_FOOTER_TO_LEFT_PADDING 10
-
-#define VISION_UI_LIST_HEADER_TO_TEXT_PADDING 2
-#define VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING 4
-
-#define VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING 3
-
-// fixed sizes
-#define VISION_UI_LIST_FOOTER_MAX_HEIGHT 11
-#define VISION_UI_LIST_FOOTER_MAX_WIDTH 19
-#define VISION_UI_LIST_HEADER_MAX_HEIGHT 7
-#define VISION_UI_LIST_HEADER_MAX_WIDTH 7
-#define VISION_UI_LIST_FRAME_FIXED_HEIGHT 15
-
-#define VISION_UI_LIST_SELECTOR_FIXED_HEIGHT 15
-
-// fixed properties
-#define VISION_UI_LIST_SCROLL_BAR_WIDTH 3
-#define VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED 92
-
-// derived properties
-#define VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING (VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING-VISION_UI_LIST_FOOTER_MAX_WIDTH/2)
-#define VISION_UI_LIST_TEXT_MAX_WIDTH (VISION_UI_SCREEN_WIDTH-VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING-VISION_UI_LIST_FOOTER_MAX_WIDTH-VISION_UI_LIST_FOOTER_TO_LEFT_PADDING-VISION_UI_LIST_HEADER_TO_TEXT_PADDING-VISION_UI_LIST_HEADER_MAX_WIDTH-VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING)
 
 typedef enum {
     LIST_ITEM,
@@ -139,7 +66,8 @@ typedef struct vision_ui_list_item_t {
 
     uint8_t layer;
     uint8_t child_num;
-    struct vision_ui_list_item_t* child_list_item[VISION_UI_MAX_LIST_CHILD_NUM];
+    size_t capacity;
+    struct vision_ui_list_item_t** child_list_item;
     struct vision_ui_list_item_t* parent;
 } vision_ui_list_item_t;
 
@@ -185,28 +113,6 @@ typedef struct vision_ui_user_item_t {
     bool user_item_looping;
 } vision_ui_user_item_t;
 
-extern vision_ui_list_item_t* vision_ui_root_list_get();
-
-extern vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item);
-
-extern vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* list_item);
-
-extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item);
-
-extern vision_ui_list_item_t* vision_ui_list_item_new(const char* content);
-
-extern vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title);
-
-extern vision_ui_list_item_t* vision_ui_list_switch_item_new(const char* content, bool default_value, void (*on_changed)(bool value));
-
-extern vision_ui_list_item_t* vision_ui_list_slider_item_new(const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max,
-                                                             void (*on_changed)(int16_t value));
-
-extern vision_ui_list_item_t* vision_ui_list_user_item_new(const char* content, void (*init_function)(), void (*loop_function)(),
-                                                           void (*exit_function)());
-
-extern bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
-
 typedef struct vision_ui_selector_t {
     float y_selector;
     float y_selector_trg;
@@ -221,6 +127,61 @@ typedef struct vision_ui_selector_t {
     vision_ui_list_item_t* selected_item;
 } vision_ui_selector_t;
 
+typedef struct vision_ui_camera_t {
+    float x_camera;
+    float x_camera_trg;
+
+    float y_camera;
+    float y_camera_trg;
+    vision_ui_selector_t* selector;
+} vision_ui_camera_t;
+
+extern void vision_ui_font_set(void* font);
+
+extern void* vision_ui_font_get();
+
+extern bool vision_ui_exit_animation_is_finished();
+
+extern void vision_ui_exit_animation_set_is_finished();
+
+extern const vision_ui_info_bar_t* vision_ui_info_bar_instance_get();
+
+extern vision_ui_info_bar_t* vision_ui_info_bar_mutable_instance_get();
+
+extern void vision_ui_info_bar_push(const char* content, uint16_t span);
+
+extern const vision_ui_pop_up_t* vision_ui_pop_up_instance_get();
+
+extern vision_ui_pop_up_t* vision_ui_pop_up_mutable_instance_get();
+
+extern void vision_ui_pop_up_push(const char* content, uint16_t span);
+
+extern vision_ui_list_item_t* vision_ui_root_list_get();
+
+extern vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item);
+
+extern vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* list_item);
+
+extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item);
+
+extern vision_ui_list_item_t* vision_ui_list_item_new(size_t capacity, const char* content);
+
+extern vision_ui_list_item_t* vision_ui_list_title_item_new(size_t capacity, const char* title);
+
+extern vision_ui_list_item_t* vision_ui_list_switch_item_new(size_t capacity, const char* content, bool default_value,
+                                                             void (*on_changed)(bool value));
+
+extern vision_ui_list_item_t* vision_ui_list_slider_item_new(size_t capacity, const char* content, int16_t default_value, uint8_t step,
+                                                             int16_t min,
+                                                             int16_t max,
+                                                             void (*on_changed)(int16_t value));
+
+extern vision_ui_list_item_t* vision_ui_list_user_item_new(size_t capacity, const char* content, void (*init_function)(),
+                                                           void (*loop_function)(),
+                                                           void (*exit_function)());
+
+extern bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
+
 extern const vision_ui_selector_t* vision_ui_selector_instance_get();
 
 extern vision_ui_selector_t* vision_ui_selector_mutable_instance_get();
@@ -234,15 +195,6 @@ extern void vision_ui_selector_go_prev_item();
 extern void vision_ui_selector_jump_to_selected_item();
 
 extern void vision_ui_selector_exit_current_item();
-
-typedef struct vision_ui_camera_t {
-    float x_camera;
-    float x_camera_trg;
-
-    float y_camera;
-    float y_camera_trg;
-    vision_ui_selector_t* selector;
-} vision_ui_camera_t;
 
 extern const vision_ui_camera_t* vision_ui_camera_instance_get();
 
