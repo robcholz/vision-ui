@@ -84,6 +84,8 @@ typedef struct vision_ui_switch_item_t {
 
     bool value;
 
+    bool is_stateless;
+
     void (*on_changed)(bool value);
 } vision_ui_switch_item_t;
 

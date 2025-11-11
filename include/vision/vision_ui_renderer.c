@@ -586,7 +586,7 @@ static void vision_ui_draw_list_footer() {
         if (current_list_item->type == LIST_ITEM) {
         } else if (current_list_item->type == SWITCH_ITEM) {
             vision_ui_switch_item_t *switch_item = vision_ui_to_list_switch_item(current_list_item);
-            if (switch_item->on_changed == NULL) {
+            if (switch_item->is_stateless) {
                 continue;
             }
 

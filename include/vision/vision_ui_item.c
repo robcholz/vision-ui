@@ -255,6 +255,7 @@ vision_ui_list_item_t *vision_ui_list_switch_item_new(const size_t capacity, con
     switch_item->base_item.type = SWITCH_ITEM;
     switch_item->base_item.content = content;
     switch_item->value = default_value;
+    switch_item->is_stateless = false;
     switch_item->on_changed = on_changed;
     ((vision_ui_list_item_t *) switch_item)->capacity = capacity;
     ((vision_ui_list_item_t *) switch_item)->child_list_item =
@@ -263,7 +264,10 @@ vision_ui_list_item_t *vision_ui_list_switch_item_new(const size_t capacity, con
 }
 
 vision_ui_list_item_t *vision_ui_list_switch_item_stateless_new(const size_t capacity, const char *content) {
-    return vision_ui_list_switch_item_new(capacity, content, false, NULL);
+    vision_ui_list_item_t *list_item = vision_ui_list_switch_item_new(capacity, content, false, NULL);
+    vision_ui_switch_item_t *switch_item = vision_ui_to_list_switch_item(list_item);
+    switch_item->is_stateless = true;
+    return list_item;
 }
 
 vision_ui_list_item_t *vision_ui_list_slider_item_new(const size_t capacity, const char *content, const int16_t default_value,
