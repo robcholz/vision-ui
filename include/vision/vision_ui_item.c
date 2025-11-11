@@ -12,6 +12,75 @@
 
 static void *VISION_UI_FONT;
 
+static vision_ui_page_t *VISION_UI_ROOT_PAGE = NULL;
+static vision_ui_page_t *VISION_UI_ACTIVE_PAGE = NULL;
+
+static void vision_ui_list_scroll_state_reset(vision_ui_list_scroll_state_t *scroll) {
+    if (scroll == NULL) {
+        return;
+    }
+
+    scroll->top = 0.f;
+    scroll->top_trg = 0.f;
+    scroll->height = 0.f;
+    scroll->height_trg = 0.f;
+    scroll->scale_part = 0.f;
+    scroll->scale_part_trg = 0.f;
+    scroll->top_px = 0;
+    scroll->height_px = VISION_UI_SCREEN_HEIGHT;
+}
+
+static vision_ui_page_t *vision_ui_page_create(const vision_ui_view_type_t view_type, const char *title) {
+    vision_ui_page_t *page = malloc(sizeof(vision_ui_page_t));
+    if (page == NULL) {
+        return NULL;
+    }
+
+    memset(page, 0, sizeof(vision_ui_page_t));
+    page->view_type = view_type;
+    page->title = title;
+
+    switch (view_type) {
+        case VISION_UI_VIEW_LIST:
+            vision_ui_list_scroll_state_reset(&page->view.list.scroll);
+            break;
+        case VISION_UI_VIEW_ICON:
+            page->view.icon.icon_count = 0;
+            page->view.icon.columns = 0;
+            break;
+        case VISION_UI_VIEW_CUSTOM:
+            page->view.custom.entering = false;
+            page->view.custom.exiting = false;
+            page->view.custom.active = false;
+            page->view.custom.is_initialized = false;
+            page->view.custom.is_looping = false;
+            page->view.custom.init_function = NULL;
+            page->view.custom.loop_function = NULL;
+            page->view.custom.exit_function = NULL;
+            break;
+    }
+
+    return page;
+}
+
+static vision_ui_custom_view_t *vision_ui_custom_view_from_item(vision_ui_list_item_t *item) {
+    if (item == NULL) {
+        return NULL;
+    }
+
+    vision_ui_page_t *page = item->page;
+    if (page == NULL || page->view_type != VISION_UI_VIEW_CUSTOM) {
+        return NULL;
+    }
+
+    return &page->view.custom;
+}
+
+static bool vision_ui_user_item_is_active(vision_ui_list_item_t *item) {
+    vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(item);
+    return custom != NULL && custom->active;
+}
+
 void vision_ui_font_set(void *font) {
     if (font != VISION_UI_FONT) {
         vision_ui_driver_font_set(font);
@@ -139,6 +208,16 @@ vision_ui_list_item_t *vision_ui_root_list_get() {
         vision_ui_root_item->content = "VisionUI";
         vision_ui_root_item->capacity = VISION_UI_LIST_ROOT_CAPACITY;
         vision_ui_root_item->child_list_item = malloc(vision_ui_root_item->capacity * sizeof(vision_ui_list_item_t *));
+        vision_ui_root_item->page = vision_ui_page_create(VISION_UI_VIEW_LIST, vision_ui_root_item->content);
+        if (vision_ui_root_item->page != NULL) {
+            vision_ui_root_item->page->view.list.root = vision_ui_root_item;
+            vision_ui_root_item->page->parent = NULL;
+            vision_ui_root_item->page->owner_item = NULL;
+            if (VISION_UI_ROOT_PAGE == NULL) {
+                VISION_UI_ROOT_PAGE = vision_ui_root_item->page;
+                VISION_UI_ACTIVE_PAGE = VISION_UI_ROOT_PAGE;
+            }
+        }
         vision_ui_list_push_item(vision_ui_root_item, vision_ui_list_title_item_new(1, vision_ui_root_item->content));
     }
     return vision_ui_root_item;
@@ -151,6 +230,10 @@ vision_ui_list_item_t *vision_ui_list_item_new(const size_t capacity, const char
     list_item->content = content;
     list_item->capacity = capacity;
     list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t *));
+    list_item->page = vision_ui_page_create(VISION_UI_VIEW_LIST, content);
+    if (list_item->page != NULL) {
+        list_item->page->view.list.root = list_item;
+    }
     vision_ui_list_push_item(list_item, vision_ui_list_title_item_new(1, list_item->content));
     return list_item;
 }
@@ -203,12 +286,16 @@ vision_ui_list_item_t *vision_ui_list_user_item_new(const size_t capacity, const
     memset(user_item, 0, sizeof(vision_ui_user_item_t));
     user_item->base_item.type = USER_ITEM;
     user_item->base_item.content = content;
-    user_item->init_function = init_function;
-    user_item->loop_function = loop_function;
-    user_item->exit_function = exit_function;
     ((vision_ui_list_item_t *) user_item)->capacity = capacity;
     ((vision_ui_list_item_t *) user_item)->child_list_item =
             malloc(((vision_ui_list_item_t *) user_item)->capacity * sizeof(vision_ui_list_item_t *));
+    user_item->base_item.page = vision_ui_page_create(VISION_UI_VIEW_CUSTOM, content);
+    if (user_item->base_item.page != NULL) {
+        user_item->base_item.page->owner_item = (vision_ui_list_item_t *) user_item;
+        user_item->base_item.page->view.custom.init_function = init_function;
+        user_item->base_item.page->view.custom.loop_function = loop_function;
+        user_item->base_item.page->view.custom.exit_function = exit_function;
+    }
     return (vision_ui_list_item_t *) user_item;
 }
 
@@ -262,7 +349,7 @@ void vision_ui_selector_go_next_item() {
     }
 
     if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM &&
-        vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item)->in_user_item) {
+        vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
         return;
     }
 
@@ -289,7 +376,7 @@ void vision_ui_selector_go_prev_item() {
     }
 
     if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM &&
-        vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item)->in_user_item) {
+        vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
         return;
     }
 
@@ -325,12 +412,14 @@ void vision_ui_selector_jump_to_selected_item() {
 
     if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM) {
         VISION_UI_EXIT_ANIMATION_FINISHED = false;
-        // vision_ui_selector.selected_item->in_user_item = true;
-        vision_ui_user_item_t *selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
-        selected_user_item->entering_user_item = true;
-        selected_user_item->exiting_user_item = false;
-        selected_user_item->user_item_inited = false;
-        selected_user_item->user_item_looping = false;
+        vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(VISION_UI_SELECTOR.selected_item);
+        if (custom != NULL) {
+            custom->entering = true;
+            custom->exiting = false;
+            custom->active = false;
+            custom->is_initialized = false;
+            custom->is_looping = false;
+        }
         return;
     }
 
@@ -369,6 +458,10 @@ void vision_ui_selector_jump_to_selected_item() {
 
     VISION_UI_SELECTOR.selected_index = 0;
     VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->child_list_item[0];
+
+    if (VISION_UI_SELECTOR.selected_item->parent != NULL) {
+        vision_ui_page_active_set(VISION_UI_SELECTOR.selected_item->parent->page);
+    }
 }
 
 void vision_ui_selector_exit_current_item() {
@@ -384,14 +477,15 @@ void vision_ui_selector_exit_current_item() {
     }
 
     if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM &&
-        vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item)->in_user_item) {
+        vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
         VISION_UI_EXIT_ANIMATION_FINISHED = false; // 需要重新绘制退场动画
-        // vision_ui_selector.selected_item->in_user_item = false;
-        vision_ui_user_item_t *selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
-        selected_user_item->entering_user_item = false;
-        selected_user_item->exiting_user_item = true;
-        selected_user_item->user_item_inited = false;
-        selected_user_item->user_item_looping = false;
+        vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(VISION_UI_SELECTOR.selected_item);
+        if (custom != NULL) {
+            custom->entering = false;
+            custom->exiting = true;
+            custom->is_initialized = false;
+            custom->is_looping = false;
+        }
         return;
     }
 
@@ -417,6 +511,12 @@ void vision_ui_selector_exit_current_item() {
     }
     VISION_UI_SELECTOR.selected_index = temp_index;
     VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->parent;
+
+    if (VISION_UI_SELECTOR.selected_item->parent != NULL) {
+        vision_ui_page_active_set(VISION_UI_SELECTOR.selected_item->parent->page);
+    } else {
+        vision_ui_page_active_set(vision_ui_page_root_get());
+    }
 }
 
 bool vision_ui_list_push_item(vision_ui_list_item_t *parent, vision_ui_list_item_t *child) {
@@ -459,7 +559,89 @@ bool vision_ui_list_push_item(vision_ui_list_item_t *parent, vision_ui_list_item
     parent->child_list_item[parent->child_num++] = child;
     child->parent = parent;
 
+    if (child->page != NULL) {
+        child->page->parent = parent->page;
+        if (child->page->view_type == VISION_UI_VIEW_LIST && child->page->view.list.root == NULL) {
+            child->page->view.list.root = child;
+        }
+        child->page->owner_item = child;
+    }
+
     return true;
+}
+
+vision_ui_page_t *vision_ui_page_root_get() {
+    if (VISION_UI_ROOT_PAGE == NULL) {
+        (void) vision_ui_root_list_get();
+    }
+    return VISION_UI_ROOT_PAGE;
+}
+
+vision_ui_page_t *vision_ui_page_active_get() {
+    vision_ui_page_t *root_page = vision_ui_page_root_get();
+    return VISION_UI_ACTIVE_PAGE != NULL ? VISION_UI_ACTIVE_PAGE : root_page;
+}
+
+void vision_ui_page_active_set(vision_ui_page_t *page) {
+    if (page == NULL) {
+        VISION_UI_ACTIVE_PAGE = vision_ui_page_root_get();
+        return;
+    }
+
+    VISION_UI_ACTIVE_PAGE = page;
+}
+
+vision_ui_page_t *vision_ui_page_from_item(const vision_ui_list_item_t *item) {
+    if (item == NULL) {
+        return NULL;
+    }
+    return item->page;
+}
+
+void vision_ui_page_set_view_type(vision_ui_page_t *page, vision_ui_view_type_t view_type) {
+    if (page == NULL) {
+        return;
+    }
+
+    if (page->view_type == view_type) {
+        return;
+    }
+
+    if (page->view_type == VISION_UI_VIEW_CUSTOM) {
+        page->view.custom.entering = false;
+        page->view.custom.exiting = false;
+        page->view.custom.active = false;
+        page->view.custom.is_initialized = false;
+        page->view.custom.is_looping = false;
+    }
+
+    page->view_type = view_type;
+
+    switch (view_type) {
+        case VISION_UI_VIEW_LIST:
+            vision_ui_list_scroll_state_reset(&page->view.list.scroll);
+            break;
+        case VISION_UI_VIEW_ICON:
+            page->view.icon.icon_count = 0;
+            page->view.icon.columns = 0;
+            break;
+        case VISION_UI_VIEW_CUSTOM:
+            page->view.custom.entering = false;
+            page->view.custom.exiting = false;
+            page->view.custom.active = false;
+            page->view.custom.is_initialized = false;
+            page->view.custom.is_looping = false;
+            break;
+    }
+}
+
+void vision_ui_page_icon_configure(vision_ui_page_t *page, uint8_t icon_count, uint8_t columns) {
+    if (page == NULL || page->view_type != VISION_UI_VIEW_ICON) {
+        return;
+    }
+
+    page->view.icon.icon_count = icon_count;
+    page->view.icon.columns = columns == 0 ? 1 : columns;
 }
 
 static vision_ui_camera_t VISION_UI_CAMERA = {0, 0, 0, 0}; // 在refresh加上camera的坐标
