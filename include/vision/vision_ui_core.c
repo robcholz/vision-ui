@@ -113,7 +113,12 @@ static void vision_ui_list_item_position_update() {
     parent->scroll_bar_height_trg = slider_h_trg;
     parent->scroll_bar_scale_part_trg = part;
 
-    if (parent != selector_mut->scroll_bar_scale_parent) {
+    vision_ui_list_item_t *const prev_parent = selector_mut->scroll_bar_scale_parent;
+    if (parent != prev_parent) {
+        if (prev_parent != NULL) {
+            parent->scroll_bar_top = prev_parent->scroll_bar_top;
+            parent->scroll_bar_height = prev_parent->scroll_bar_height;
+        }
         parent->scroll_bar_scale_part = selector_mut->scroll_bar_scale_part_shared;
         selector_mut->scroll_bar_scale_parent = parent;
     }
