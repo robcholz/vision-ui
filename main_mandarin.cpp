@@ -18,7 +18,7 @@ static int16_t x_board = -200;
 static int16_t y_wire_1 = 200;
 static int16_t y_wire_2 = 200;
 
-void animation(int16_t* pos, int16_t target, int16_t speed) {
+void animation(int16_t *pos, int16_t target, int16_t speed) {
     if (*pos != target) {
         if (fabs(*pos - target) <= 1.0f)
             *pos = target;
@@ -66,17 +66,28 @@ void board_info_loop(void) {
     oled_draw_V_line(x_board + 14, y_wire_2 + 3, 3);
     oled_draw_V_line(x_board + 15, y_wire_2 + 6, 2);
 
-    if (t - TIME_START > 300) animation(&y_logo, 15, 94);
-    if (t - TIME_START > 350) animation(&y_version, 14, 88);
-    if (t - TIME_START > 400) animation(&y_box, 2, 92);
-    if (t - TIME_START > 450) animation(&y_astra, 36, 91);
-    if (t - TIME_START > 500) animation(&y_name, 62, 94);
-    if (t - TIME_START > 550) animation(&x_board, 102, 92);
-    if (t - TIME_START > 620) animation(&y_wire_1, 56, 86);
-    if (t - TIME_START > 1400 && t - TIME_START < 1600) oled_draw_box(x_board + 5, 42, 19, 6);
-    if (t - TIME_START > 1800 && t - TIME_START < 1900) oled_draw_box(x_board + 5, 42, 19, 6);
-    if (t - TIME_START > 2200) oled_draw_box(x_board + 5, 42, 19, 6);
-    if (t - TIME_START > 2400) animation(&y_wire_2, 56, 86);
+    if (t - TIME_START > 300)
+        animation(&y_logo, 15, 94);
+    if (t - TIME_START > 350)
+        animation(&y_version, 14, 88);
+    if (t - TIME_START > 400)
+        animation(&y_box, 2, 92);
+    if (t - TIME_START > 450)
+        animation(&y_astra, 36, 91);
+    if (t - TIME_START > 500)
+        animation(&y_name, 62, 94);
+    if (t - TIME_START > 550)
+        animation(&x_board, 102, 92);
+    if (t - TIME_START > 620)
+        animation(&y_wire_1, 56, 86);
+    if (t - TIME_START > 1400 && t - TIME_START < 1600)
+        oled_draw_box(x_board + 5, 42, 19, 6);
+    if (t - TIME_START > 1800 && t - TIME_START < 1900)
+        oled_draw_box(x_board + 5, 42, 19, 6);
+    if (t - TIME_START > 2200)
+        oled_draw_box(x_board + 5, 42, 19, 6);
+    if (t - TIME_START > 2400)
+        animation(&y_wire_2, 56, 86);
 }
 
 void board_info_exit(void) {
@@ -100,42 +111,32 @@ int main(void) {
 
     // 初始化 Astra UI
     vision_ui_core_init();
-    astra_set_font((void*) u8g2_font_my_chinese);
+    astra_set_font((void *) u8g2_font_my_chinese);
 
     // 主菜单
-    astra_list_item_t* board_setting_item = astra_new_list_item("开发板设置");
+    astra_list_item_t *board_setting_item = astra_new_list_item("开发板设置");
     astra_push_item_to_list(astra_get_root_list(), board_setting_item);
 
-    astra_push_item_to_list(astra_get_root_list(), astra_new_switch_item("切换屏幕", true, [](bool state) {
-    }));
+    astra_push_item_to_list(astra_get_root_list(), astra_new_switch_item("切换屏幕", true, [](bool state) {}));
 
-    astra_push_item_to_list(astra_get_root_list(),
-                            astra_new_user_item("接线图...", board_info_init, board_info_loop, board_info_exit));
+    astra_push_item_to_list(astra_get_root_list(), astra_new_user_item("接线图...", board_info_init, board_info_loop, board_info_exit));
 
-    astra_push_item_to_list(astra_get_root_list(),
-                            astra_new_user_item("关于开发板...", board_info_init, board_info_loop, board_info_exit));
+    astra_push_item_to_list(astra_get_root_list(), astra_new_user_item("关于开发板...", board_info_init, board_info_loop, board_info_exit));
 
-    astra_push_item_to_list(board_setting_item, astra_new_switch_item("心跳灯开关", true, [](bool state) {
-    }));
+    astra_push_item_to_list(board_setting_item, astra_new_switch_item("心跳灯开关", true, [](bool state) {}));
 
-    astra_push_item_to_list(board_setting_item, astra_new_switch_item("反转按键", false, [](bool state) {
-    }));
+    astra_push_item_to_list(board_setting_item, astra_new_switch_item("反转按键", false, [](bool state) {}));
 
-    astra_push_item_to_list(board_setting_item,
-                            astra_new_slider_item("数据显示样式", 1600, 5, 1, 9999, [](int16_t value) {
-                            }));
+    astra_push_item_to_list(board_setting_item, astra_new_slider_item("数据显示样式", 1600, 5, 1, 9999, [](int16_t value) {}));
 
     bool invert_display = false;
-    astra_push_item_to_list(board_setting_item, astra_new_switch_item("反相显示", false, [](bool state) {
-    }));
+    astra_push_item_to_list(board_setting_item, astra_new_switch_item("反相显示", false, [](bool state) {}));
 
     bool mcu_serial = false;
-    astra_push_item_to_list(board_setting_item, astra_new_switch_item("MCU 串口通道", true, [](bool state) {
-    }));
+    astra_push_item_to_list(board_setting_item, astra_new_switch_item("MCU 串口通道", true, [](bool state) {}));
 
     bool external_serial = false;
-    astra_push_item_to_list(board_setting_item, astra_new_switch_item("外部串口通道", false, [](bool state) {
-    }));
+    astra_push_item_to_list(board_setting_item, astra_new_switch_item("外部串口通道", false, [](bool state) {}));
 
     // 渲染循环
     vision_ui_render_init();
