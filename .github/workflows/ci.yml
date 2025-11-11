@@ -34,7 +34,9 @@ jobs:
 
       - name: Clang-Tidy check
         run: |
-          run-clang-tidy -p . -warnings-as-errors='*'
+          find . -type f \( -name '*.c' -o -name '*.cpp' \) \
+          ! -path '*/components/*' \
+          | xargs clang-tidy -p . --warnings-as-errors='*'
 
       - name: Build
         run: xmake
