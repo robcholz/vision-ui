@@ -426,8 +426,11 @@ bool vision_ui_list_push_item(vision_ui_list_item_t *parent, vision_ui_list_item
     }
     child->y_list_item_trg = next_y;
 
-    if (parent->layer == 0 && parent->child_num == 0) {
-        vision_ui_selector_t_selector_bind_item(child); // 初始化并绑定selector
+    const vision_ui_list_item_t *selected_item = vision_ui_selector_instance_get()->selected_item;
+    const bool selector_needs_root_binding = selected_item == NULL || selected_item->parent == NULL;
+    if (parent == vision_ui_root_list_get() && selector_needs_root_binding) {
+        vision_ui_list_item_t *first_root_item = parent->child_num > 0 ? parent->child_list_item[0] : child;
+        vision_ui_selector_t_selector_bind_item(first_root_item); // 初始化并绑定selector
         vision_ui_camera_bind_selector(&VISION_UI_SELECTOR); // 初始化并绑定camera
     }
 
