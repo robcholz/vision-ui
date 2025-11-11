@@ -1,8 +1,8 @@
 #include <tgmath.h>
 #include <u8g2.h>
 
-#include <vision/astra_ui_core.h>
-#include <vision/astra_ui_item.h>
+#include <vision/vision_ui_core.h>
+#include <vision/vision_ui_item.h>
 
 #include "driver/u8g2.h"
 

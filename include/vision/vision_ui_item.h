@@ -1,19 +1,16 @@
 //
-// Created by Fir on 24-11-30.
+// Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
 
-#ifndef FUCKCLION_CORE_SRC_ASTRA_UI_LITE_ASTRA_UI_ITEM_H_
-#define FUCKCLION_CORE_SRC_ASTRA_UI_LITE_ASTRA_UI_ITEM_H_
+#ifndef VISION_UI_VISION_UI_ITEM_H
+#define VISION_UI_VISION_UI_ITEM_H
 
 #include <stdbool.h>
 
-#include "astra_ui_draw_driver.h"
+#include "vision_ui_draw_driver.h"
 
 #ifdef __cplusplus
 extern "C" {
-
-
-
 #endif
 
 extern void* ASTRA_FONT;
@@ -246,10 +243,8 @@ extern astra_camera_t* astra_get_camera();
 
 extern void astra_bind_selector_to_camera(astra_selector_t* selector);
 
-/*** 相机 ***/
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif //FUCKCLION_CORE_SRC_ASTRA_UI_LITE_ASTRA_UI_ITEM_H_
+#endif //VISION_UI_VISION_UI_ITEM_H

@@ -1,16 +1,14 @@
 //
-// Created by Fir on 24-11-29.
+// Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
 
-#ifndef FUCKCLION_CORE_SRC_ASTRA_UI_LITE_DRAW_DRIVER_H_
-#define FUCKCLION_CORE_SRC_ASTRA_UI_LITE_DRAW_DRIVER_H_
+#ifndef VISION_UI_VISION_UI_DRAW_DRIVER_H
+#define VISION_UI_VISION_UI_DRAW_DRIVER_H
 
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
-
-
 #endif
 
 enum ui_action_t {
@@ -88,4 +86,4 @@ extern void* oled_get_raw_buffer_pointer();
 }
 #endif
 
-#endif //FUCKCLION_CORE_SRC_ASTRA_UI_LITE_DRAW_DRIVER_H_
+#endif //VISION_UI_VISION_UI_DRAW_DRIVER_H

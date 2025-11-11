@@ -1,15 +1,14 @@
 //
-// Created by forpaindream on 25-1-20.
+// Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
-
-#include "astra_ui_drawer.h"
+#include "vision_ui_drawer.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "astra_ui_core.h"
+#include "vision_ui_core.h"
 
 void astra_exit_animation(float* pos, float pos_trg, float speed) {
     if (*pos != pos_trg) {
@@ -455,7 +454,7 @@ static void vision_ui_draw_text(const char* text,
 static void vision_ui_draw_list_item_text(astra_list_item_t* list,
                                           const int16_t x0, const int16_t y0,
                                           const int16_t x1, const int16_t y1) {
-    vision_ui_draw_text(list->content, &list->text_scroll_anchor, x0, y0, x1, y1,LIST_TEXT_SCROLL_SPEED_PX_S,LIST_TEXT_SCROLL_PAUSE_MS);
+    vision_ui_draw_text(list->content, &list->text_scroll_anchor, x0, y0, x1, y1, LIST_TEXT_SCROLL_SPEED_PX_S, LIST_TEXT_SCROLL_PAUSE_MS);
 }
 
 static void vision_ui_draw_list_header() {
@@ -653,7 +652,7 @@ void astra_draw_selector() {
 
 void astra_draw_widget() {
     if (vision_ui_is_background_frozon()) {
-        vision_ui_draw_background_blur_animation(0, 0,SCREEN_WIDTH,SCREEN_HEIGHT, 4);
+        vision_ui_draw_background_blur_animation(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 4);
     }
     astra_draw_info_bar();
     astra_draw_pop_up();

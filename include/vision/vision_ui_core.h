@@ -1,9 +1,10 @@
 //
-// Created by forpaindream on 25-1-20.
+// Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
 
-#ifndef ASTRA_UI_CORE_H
-#define ASTRA_UI_CORE_H
+#ifndef VISION_UI_VISION_UI_CORE_H
+#define VISION_UI_VISION_UI_CORE_H
+
 #include <stdbool.h>
 
 #define ALLOW_EXIT_ASTRA_UI_BY_USER 0 //允许用户在最浅层级退出astra ui lite
@@ -48,4 +49,4 @@ extern bool vision_ui_is_background_frozon();
 }
 #endif
 
-#endif //ASTRA_UI_CORE_H
+#endif //VISION_UI_VISION_UI_CORE_H

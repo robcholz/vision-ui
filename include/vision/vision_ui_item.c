@@ -1,14 +1,13 @@
 //
-// Created by Fir on 24-11-30.
+// Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
-
-#include "astra_ui_item.h"
+#include "vision_ui_item.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
-#include "astra_ui_core.h"
+#include "vision_ui_core.h"
 
 void* ASTRA_FONT;
 
@@ -253,7 +252,7 @@ void astra_selector_jump_to_selected_item() {
 
     if (ASTRA_SELECTOR.selected_item->type == SWITCH_ITEM) {
         astra_switch_item_t*
-            selected_switch_item = astra_to_switch_item(ASTRA_SELECTOR.selected_item);
+                selected_switch_item = astra_to_switch_item(ASTRA_SELECTOR.selected_item);
         selected_switch_item->value = !selected_switch_item->value;
         selected_switch_item->on_changed(selected_switch_item->value);
         return;
