@@ -32,7 +32,7 @@ jobs:
 
       - name: Clang-Tidy check
         run: |
-          run-clang-tidy -p build -warnings-as-errors='*'
+          run-clang-tidy -p . -warnings-as-errors='*'
 
       - name: Build
         run: xmake
