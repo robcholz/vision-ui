@@ -133,29 +133,30 @@ int main() {
     vision_ui_font_set((void *) u8g2_font_my_chinese);
 
     vision_ui_list_item_t *launcher_setting_list_item = vision_ui_list_item_new(10, "开发板设置");
+    vision_ui_page_t *launcher_settings_page = vision_ui_list_item_child_page_get(launcher_setting_list_item);
 
-    vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "切换屏幕", true, [](bool b) {}));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
+    vision_ui_page_push_item(vision_ui_root_page_get(), launcher_setting_list_item);
+    vision_ui_page_push_item(vision_ui_root_page_get(), vision_ui_list_switch_item_new(1, "切换屏幕", true, [](bool b) {}));
+    vision_ui_page_push_item(vision_ui_root_page_get(),
                              vision_ui_list_user_item_new(1, "接线图...", test_user_item_init_function, test_user_item_loop_function,
                                                           test_user_item_exit_function));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
+    vision_ui_page_push_item(vision_ui_root_page_get(),
                              vision_ui_list_user_item_new(1, "关于开发板...", test_user_item_init_function, test_user_item_loop_function,
                                                           test_user_item_exit_function));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification", false, [](bool b) {
+    vision_ui_page_push_item(vision_ui_root_page_get(), vision_ui_list_switch_item_new(1, "Test Notification", false, [](bool b) {
                                  vision_ui_notification_push("Notification Test", 5000);
                              }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
+    vision_ui_page_push_item(vision_ui_root_page_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
                                  vision_ui_alert_push("Alert Test", 5000);
                              }));
 
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "心跳灯开关", true, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "反转按键", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item,
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "心跳灯开关", true, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "反转按键", false, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page,
                              vision_ui_list_slider_item_new(1, "数据显示样式", 1600, 5, 1, 9999, [](int16_t value) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "反相显示", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "MCU 串口通道", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "外部串口通道", false, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "反相显示", false, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "MCU 串口通道", false, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "外部串口通道", false, [](bool b) {}));
 
     vision_ui_render_init();
 

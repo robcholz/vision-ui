@@ -133,28 +133,29 @@ int main() {
     vision_ui_font_set((void *) u8g2_font_my_chinese);
 
     vision_ui_list_item_t *launcher_setting_list_item = vision_ui_list_item_new(10, "Board Settings");
+    vision_ui_page_t *launcher_settings_page = vision_ui_list_item_child_page_get(launcher_setting_list_item);
 
-    vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
-    vision_ui_list_push_item(vision_ui_root_list_get(),
+    vision_ui_page_push_item(vision_ui_root_page_get(), launcher_setting_list_item);
+    vision_ui_page_push_item(vision_ui_root_page_get(),
                              vision_ui_list_user_item_new(1, "About the Board...", test_user_item_init_function,
                                                           test_user_item_loop_function, test_user_item_exit_function));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 1", false, [](bool b) {
+    vision_ui_page_push_item(vision_ui_root_page_get(), vision_ui_list_switch_item_new(1, "Test Notification 1", false, [](bool b) {
                                  vision_ui_notification_push("Notification Test 1", 5000);
                              }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2", false, [](bool b) {
+    vision_ui_page_push_item(vision_ui_root_page_get(), vision_ui_list_switch_item_new(1, "Test Notification 2", false, [](bool b) {
                                  vision_ui_notification_push("Notification Test 2", 5000);
                              }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
+    vision_ui_page_push_item(vision_ui_root_page_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
                                  vision_ui_alert_push("Alert Test", 5000);
                              }));
 
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item,
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page,
                              vision_ui_list_slider_item_new(1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "MCU Serial Channel", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item,
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page, vision_ui_list_switch_item_new(1, "MCU Serial Channel", false, [](bool b) {}));
+    vision_ui_page_push_item(launcher_settings_page,
                              vision_ui_list_switch_item_new(1, "External Serial Channel", false, [](bool b) {}));
 
     vision_ui_render_init();

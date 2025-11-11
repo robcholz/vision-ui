@@ -88,24 +88,25 @@ vision_ui_font_set(your_font_pointer);
 vision_ui_core_init();
 
 auto *settings = vision_ui_list_item_new(10, "Board Settings");
-vision_ui_list_push_item(vision_ui_root_list_get(), settings);
+auto *settings_page = vision_ui_list_item_child_page_get(settings);
+vision_ui_page_push_item(vision_ui_root_page_get(), settings);
 
-vision_ui_list_push_item(
-    vision_ui_root_list_get(),
+vision_ui_page_push_item(
+    vision_ui_root_page_get(),
     vision_ui_list_switch_item_new(1, "Switch Screen", true, [](bool enabled) {
         vision_ui_notification_push(enabled ? "Screen A" : "Screen B", 1500);
     })
 );
 
-vision_ui_list_push_item(
-    settings,
+vision_ui_page_push_item(
+    settings_page,
     vision_ui_list_slider_item_new(1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {
         printf("Style -> %d\n", value);
     })
 );
 
-vision_ui_list_push_item(
-    vision_ui_root_list_get(),
+vision_ui_page_push_item(
+    vision_ui_root_page_get(),
     vision_ui_list_user_item_new(1, "About…", init_fn, loop_fn, exit_fn)
 );
 ```

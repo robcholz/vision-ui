@@ -53,11 +53,25 @@ typedef enum {
     USER_ITEM,
 } vision_ui_list_item_type_t;
 
+struct vision_ui_page_t;
+
 typedef struct vision_ui_list_item_t {
     vision_ui_list_item_type_t type;
 
     const char *content;
     uint32_t text_scroll_anchor;
+
+    float y_list_item;
+    float y_list_item_trg;
+
+    uint8_t layer;
+
+    struct vision_ui_page_t *page;
+    struct vision_ui_page_t *child_page;
+} vision_ui_list_item_t;
+
+typedef struct vision_ui_page_t {
+    const char *title;
 
     float scroll_bar_top;
     float scroll_bar_top_trg;
@@ -68,15 +82,14 @@ typedef struct vision_ui_list_item_t {
     int16_t scroll_bar_top_px;
     int16_t scroll_bar_height_px;
 
-    float y_list_item;
-    float y_list_item_trg;
+    size_t capacity;
+    uint8_t item_count;
+    vision_ui_list_item_t **items;
 
     uint8_t layer;
-    uint8_t child_num;
-    size_t capacity;
-    struct vision_ui_list_item_t **child_list_item;
-    struct vision_ui_list_item_t *parent;
-} vision_ui_list_item_t;
+    struct vision_ui_page_t *parent;
+    vision_ui_list_item_t *entry_item;
+} vision_ui_page_t;
 
 typedef struct vision_ui_switch_item_t {
     vision_ui_list_item_t base_item;
@@ -133,7 +146,8 @@ typedef struct vision_ui_selector_t {
     uint8_t selected_index;
     vision_ui_list_item_t *selected_item;
 
-    vision_ui_list_item_t *scroll_bar_scale_parent;
+    vision_ui_page_t *current_page;
+    vision_ui_page_t *scroll_bar_scale_page;
     float scroll_bar_scale_part_shared;
 } vision_ui_selector_t;
 
@@ -166,13 +180,15 @@ extern vision_ui_alert_t *vision_ui_alert_mutable_instance_get();
 
 extern void vision_ui_alert_push(const char *content, uint16_t span);
 
-extern vision_ui_list_item_t *vision_ui_root_list_get();
+extern vision_ui_page_t *vision_ui_root_page_get();
 
 extern vision_ui_switch_item_t *vision_ui_to_list_switch_item(vision_ui_list_item_t *list_item);
 
 extern vision_ui_slider_item_t *vision_ui_to_list_slider_item(vision_ui_list_item_t *list_item);
 
 extern vision_ui_user_item_t *vision_ui_to_list_user_item(vision_ui_list_item_t *list_item);
+
+extern vision_ui_page_t *vision_ui_list_item_child_page_get(vision_ui_list_item_t *list_item);
 
 extern vision_ui_list_item_t *vision_ui_list_item_new(size_t capacity, const char *content);
 
@@ -187,13 +203,13 @@ extern vision_ui_list_item_t *vision_ui_list_slider_item_new(size_t capacity, co
 extern vision_ui_list_item_t *vision_ui_list_user_item_new(size_t capacity, const char *content, void (*init_function)(),
                                                            void (*loop_function)(), void (*exit_function)());
 
-extern bool vision_ui_list_push_item(vision_ui_list_item_t *parent, vision_ui_list_item_t *child);
+extern bool vision_ui_page_push_item(vision_ui_page_t *page, vision_ui_list_item_t *child);
 
 extern const vision_ui_selector_t *vision_ui_selector_instance_get();
 
 extern vision_ui_selector_t *vision_ui_selector_mutable_instance_get();
 
-extern bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t *item);
+extern bool vision_ui_selector_bind_page(vision_ui_page_t *page);
 
 extern void vision_ui_selector_go_next_item();
 
