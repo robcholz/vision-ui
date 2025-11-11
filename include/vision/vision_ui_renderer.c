@@ -265,56 +265,56 @@ static void vision_ui_draw_background_blur_animation(const uint16_t x0, const ui
     vision_ui_driver_color_draw(1);
 }
 
-static void vision_ui_info_bar_render() {
-    if (!vision_ui_info_bar_instance_get()->is_running) {
+static void vision_ui_notification_render() {
+    if (!vision_ui_notification_instance_get()->is_running) {
         return;
     }
 
     // 弹窗到位后才开始计算时间
-    if (vision_ui_info_bar_instance_get()->y_info_bar == vision_ui_info_bar_instance_get()->y_info_bar_trg) {
-        vision_ui_info_bar_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
+    if (vision_ui_notification_instance_get()->y_notification == vision_ui_notification_instance_get()->y_notification_trg) {
+        vision_ui_notification_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
     }
 
     // 时间到了就收回
-    if (vision_ui_info_bar_instance_get()->time - vision_ui_info_bar_instance_get()->time_start >=
-        vision_ui_info_bar_instance_get()->span) {
-        vision_ui_info_bar_mutable_instance_get()->y_info_bar_trg = 0 - 2 * VISION_UI_INFO_BAR_HEIGHT; // 收回
-        if (vision_ui_info_bar_instance_get()->y_info_bar == vision_ui_info_bar_instance_get()->y_info_bar_trg) {
-            vision_ui_info_bar_mutable_instance_get()->is_running = false; // 等归位后结束生命周期
+    if (vision_ui_notification_instance_get()->time - vision_ui_notification_instance_get()->time_start >=
+        vision_ui_notification_instance_get()->span) {
+        vision_ui_notification_mutable_instance_get()->y_notification_trg = 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT; // 收回
+        if (vision_ui_notification_instance_get()->y_notification == vision_ui_notification_instance_get()->y_notification_trg) {
+            vision_ui_notification_mutable_instance_get()->is_running = false; // 等归位后结束生命周期
         }
     }
 
-    const int16_t x_info_bar = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_info_bar_instance_get()->w_info_bar / 2;
-    const int16_t y_info_bar_1 = vision_ui_info_bar_instance_get()->y_info_bar - 4;
-    const int16_t y_info_bar_2 = vision_ui_info_bar_instance_get()->y_info_bar + VISION_UI_INFO_BAR_HEIGHT;
+    const int16_t x_notification = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_notification_instance_get()->w_notification / 2;
+    const int16_t y_notification_1 = vision_ui_notification_instance_get()->y_notification - 4;
+    const int16_t y_notification_2 = vision_ui_notification_instance_get()->y_notification + VISION_UI_NOTIFICATION_HEIGHT;
 
     vision_ui_font_set(vision_ui_font_get());
 
     vision_ui_driver_color_draw(0); // 黑遮罩打底
-    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_info_bar_instance_get()->w_info_bar + 4) / 2),
-                                y_info_bar_1, (int16_t) (vision_ui_info_bar_instance_get()->w_info_bar + 4), VISION_UI_INFO_BAR_HEIGHT + 6,
+    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_notification_instance_get()->w_notification + 4) / 2),
+                                y_notification_1, (int16_t) (vision_ui_notification_instance_get()->w_notification + 4), VISION_UI_NOTIFICATION_HEIGHT + 6,
                                 4);
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_box_r_draw(x_info_bar, y_info_bar_1, (int16_t) vision_ui_info_bar_instance_get()->w_info_bar,
-                                VISION_UI_INFO_BAR_HEIGHT + 4, 3);
+    vision_ui_driver_box_r_draw(x_notification, y_notification_1, (int16_t) vision_ui_notification_instance_get()->w_notification,
+                                VISION_UI_NOTIFICATION_HEIGHT + 4, 3);
     // 向上移动四个像素 同时向下多画四个像素 只用下半部分圆角
 
     vision_ui_driver_color_draw(2);
-    vision_ui_driver_line_h_draw(x_info_bar + 2, y_info_bar_2 - 2, (int16_t) (vision_ui_info_bar_instance_get()->w_info_bar - 4));
-    vision_ui_driver_pixel_draw(x_info_bar + 1, y_info_bar_2 - 3);
-    vision_ui_driver_pixel_draw(x_info_bar + 1, y_info_bar_2 - 3);
+    vision_ui_driver_line_h_draw(x_notification + 2, y_notification_2 - 2, (int16_t) (vision_ui_notification_instance_get()->w_notification - 4));
+    vision_ui_driver_pixel_draw(x_notification + 1, y_notification_2 - 3);
+    vision_ui_driver_pixel_draw(x_notification + 1, y_notification_2 - 3);
 
-    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_info_bar_instance_get()->content);
+    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_notification_instance_get()->content);
     const int16_t text_h = vision_ui_driver_str_height_get();
-    const int16_t text_x = x_info_bar + (int16_t) ((vision_ui_info_bar_instance_get()->w_info_bar - text_w) / 2);
-    const int16_t text_y = (int16_t) (vision_ui_info_bar_instance_get()->y_info_bar + vision_ui_driver_str_height_get() - 2);
+    const int16_t text_x = x_notification + (int16_t) ((vision_ui_notification_instance_get()->w_notification - text_w) / 2);
+    const int16_t text_y = (int16_t) (vision_ui_notification_instance_get()->y_notification + vision_ui_driver_str_height_get() - 2);
 
     vision_ui_driver_color_draw(0);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_str_utf8_draw(text_x, text_y, vision_ui_info_bar_instance_get()->content);
+    vision_ui_driver_str_utf8_draw(text_x, text_y, vision_ui_notification_instance_get()->content);
 
     vision_ui_driver_color_draw(2);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
@@ -613,7 +613,7 @@ void vision_ui_widget_render() {
     if (vision_ui_is_background_frozen()) {
         vision_ui_draw_background_blur_animation(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, 4);
     }
-    vision_ui_info_bar_render();
+    vision_ui_notification_render();
     vision_ui_alert_render();
 }
 

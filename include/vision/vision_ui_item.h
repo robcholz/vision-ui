@@ -10,20 +10,20 @@
 
 #include "vision_ui_draw_driver.h"
 
-typedef struct vision_ui_info_bar_t {
+typedef struct vision_ui_notification_t {
     const char *content;
     uint16_t span;
 
-    float y_info_bar;
-    float y_info_bar_trg;
+    float y_notification;
+    float y_notification_trg;
 
-    float w_info_bar;
-    float w_info_bar_trg;
+    float w_notification;
+    float w_notification_trg;
 
     bool is_running;
     uint32_t time_start;
     uint32_t time;
-} vision_ui_info_bar_t;
+} vision_ui_notification_t;
 
 typedef struct vision_ui_alert_t {
     const char *content;
@@ -144,11 +144,11 @@ extern bool vision_ui_exit_animation_is_finished();
 
 extern void vision_ui_exit_animation_set_is_finished();
 
-extern const vision_ui_info_bar_t *vision_ui_info_bar_instance_get();
+extern const vision_ui_notification_t *vision_ui_notification_instance_get();
 
-extern vision_ui_info_bar_t *vision_ui_info_bar_mutable_instance_get();
+extern vision_ui_notification_t *vision_ui_notification_mutable_instance_get();
 
-extern void vision_ui_info_bar_push(const char *content, uint16_t span);
+extern void vision_ui_notification_push(const char *content, uint16_t span);
 
 extern const vision_ui_alert_t *vision_ui_alert_instance_get();
 

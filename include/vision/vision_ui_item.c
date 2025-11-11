@@ -23,35 +23,35 @@ void *vision_ui_font_get() {
     return VISION_UI_FONT;
 }
 
-static vision_ui_info_bar_t VISION_UI_INFO_BAR = {0, 1, 0 - 2 * VISION_UI_INFO_BAR_HEIGHT, 0 - 2 * VISION_UI_INFO_BAR_HEIGHT, 80, 80, false,
+static vision_ui_notification_t VISION_UI_NOTIFICATION = {0, 1, 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT, 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT, 80, 80, false,
                                                   0, 1};
 
-extern const vision_ui_info_bar_t *vision_ui_info_bar_instance_get() {
-    return &VISION_UI_INFO_BAR;
+extern const vision_ui_notification_t *vision_ui_notification_instance_get() {
+    return &VISION_UI_NOTIFICATION;
 }
 
-vision_ui_info_bar_t *vision_ui_info_bar_mutable_instance_get() {
-    return &VISION_UI_INFO_BAR;
+vision_ui_notification_t *vision_ui_notification_mutable_instance_get() {
+    return &VISION_UI_NOTIFICATION;
 }
 
-void vision_ui_info_bar_push(const char *content, const uint16_t span) {
+void vision_ui_notification_push(const char *content, const uint16_t span) {
     // 设定显示时间的概念，超过了显示时间，就将ytrg设为初始位置，如果在显示时间之内，有新的消息涌入，则y和ytrg都不变，继续显示，且显示时间清零
     // 只有显示时间到了的时候，才会复位
 
-    VISION_UI_INFO_BAR.time = vision_ui_driver_ticks_ms_get();
-    VISION_UI_INFO_BAR.content = content;
-    VISION_UI_INFO_BAR.span = span;
-    VISION_UI_INFO_BAR.is_running = false; // 每次进入该函数都代表有新的消息涌入，所以需要重置is_running
+    VISION_UI_NOTIFICATION.time = vision_ui_driver_ticks_ms_get();
+    VISION_UI_NOTIFICATION.content = content;
+    VISION_UI_NOTIFICATION.span = span;
+    VISION_UI_NOTIFICATION.is_running = false; // 每次进入该函数都代表有新的消息涌入，所以需要重置is_running
 
     // 展开弹窗 收回弹窗和同步时间戳需要在循环中进行 所以移到了drawer中
-    if (!VISION_UI_INFO_BAR.is_running) {
-        VISION_UI_INFO_BAR.time_start = vision_ui_driver_ticks_ms_get();
-        VISION_UI_INFO_BAR.y_info_bar_trg = 0;
-        VISION_UI_INFO_BAR.is_running = true;
+    if (!VISION_UI_NOTIFICATION.is_running) {
+        VISION_UI_NOTIFICATION.time_start = vision_ui_driver_ticks_ms_get();
+        VISION_UI_NOTIFICATION.y_notification_trg = 0;
+        VISION_UI_NOTIFICATION.is_running = true;
     }
 
     vision_ui_font_set(vision_ui_font_get());
-    VISION_UI_INFO_BAR.w_info_bar_trg = vision_ui_driver_str_utf8_width_get(VISION_UI_INFO_BAR.content) + VISION_UI_INFO_BAR_WIDTH;
+    VISION_UI_NOTIFICATION.w_notification_trg = vision_ui_driver_str_utf8_width_get(VISION_UI_NOTIFICATION.content) + VISION_UI_NOTIFICATION_WIDTH;
 }
 
 static vision_ui_alert_t VISION_UI_ALERT = {0, 1, 0 - 2 * VISION_UI_ALERT_HEIGHT, 0 - 2 * VISION_UI_ALERT_HEIGHT, 80, 80, false, 0, 1};

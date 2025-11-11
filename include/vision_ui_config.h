@@ -5,15 +5,15 @@
 #ifndef VISION_UI_VISION_UI_CONFIG_H
 #define VISION_UI_VISION_UI_CONFIG_H
 
-#define VISION_UI_ALLOW_EXIT_BY_USER 0 // 允许用户在最浅层级退出vision ui lite
+#define VISION_UI_ALLOW_EXIT_BY_USER 0 //允许用户在最浅层级退出vision ui lite
 
 /*** 列表项 ***/
 #define VISION_UI_LIST_ROOT_CAPACITY 10
 #define VISION_UI_MAX_LIST_LAYER 10
 
-/*** 信息栏 ***/
-#define VISION_UI_INFO_BAR_HEIGHT 15
-#define VISION_UI_INFO_BAR_WIDTH 20
+/*** 通知栏 ***/
+#define VISION_UI_NOTIFICATION_HEIGHT 15
+#define VISION_UI_NOTIFICATION_WIDTH 20
 
 /*** 弹窗 ***/
 #define VISION_UI_ALERT_HEIGHT 20

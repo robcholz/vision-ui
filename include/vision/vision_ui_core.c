@@ -30,11 +30,11 @@ void vision_ui_animation_do(float *pos, const float pos_trg, const float speed) 
     }
 }
 
-static void vision_ui_info_bar_update() {
-    vision_ui_animation_do(&vision_ui_info_bar_mutable_instance_get()->y_info_bar,
-                           vision_ui_info_bar_mutable_instance_get()->y_info_bar_trg, 94);
-    vision_ui_animation_do(&vision_ui_info_bar_mutable_instance_get()->w_info_bar,
-                           vision_ui_info_bar_mutable_instance_get()->w_info_bar_trg, 95);
+static void vision_ui_notification_update() {
+    vision_ui_animation_do(&vision_ui_notification_mutable_instance_get()->y_notification,
+                           vision_ui_notification_mutable_instance_get()->y_notification_trg, 94);
+    vision_ui_animation_do(&vision_ui_notification_mutable_instance_get()->w_notification,
+                           vision_ui_notification_mutable_instance_get()->w_notification_trg, 95);
 }
 
 static void vision_ui_alert_update() {
@@ -64,7 +64,7 @@ static void vision_ui_camera_position_update() {
 
 static void vision_ui_widget_core_position_update() {
     // 需要调用所有的widget update
-    vision_ui_info_bar_update();
+    vision_ui_notification_update();
     vision_ui_alert_update();
 }
 

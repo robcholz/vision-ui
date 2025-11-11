@@ -11,7 +11,7 @@ to your board.
 
 - Focused on MCU dashboards: hierarchical lists, title rows, toggles, sliders, and user-defined scenes rendered at 60
   FPS (`main_english.cpp`).
-- Rich micro-interactions: elastic selector, scrolling text, info-bar and pop-up notifications, scroll bars, and exit
+- Rich micro-interactions: elastic selector, scrolling text, notification bar and alert toasts, scroll bars, and exit
   masks (`include/vision/vision_ui_renderer.c`).
 - Event-driven core decoupled from hardware through the `vision_ui_driver_*` interface (`include/driver/u8g2.c`), making
   it portable across OLED, LCD, and simulator targets.
@@ -93,7 +93,7 @@ vision_ui_list_push_item(vision_ui_root_list_get(), settings);
 vision_ui_list_push_item(
     vision_ui_root_list_get(),
     vision_ui_list_switch_item_new(1, "Switch Screen", true, [](bool enabled) {
-        vision_ui_info_bar_push(enabled ? "Screen A" : "Screen B", 1500);
+        vision_ui_notification_push(enabled ? "Screen A" : "Screen B", 1500);
     })
 );
 
@@ -130,7 +130,7 @@ Animations (selector easing, camera tracking, exit masks) are computed in `visio
 
 ## Notifications, Alerts, and Animations
 
-- **Info bar**: `vision_ui_info_bar_push("Saved", 2000);`
+- **Notification bar**: `vision_ui_notification_push("Saved", 2000);`
 - **Alert toast**: `vision_ui_alert_push("Hello", 5000);`
 - **Exit animation hooks**: inspect `vision_ui_exit_animation_status_get()` if your user item needs to pause while the
   sand-glass animation runs.
@@ -149,7 +149,8 @@ Animations (selector easing, camera tracking, exit masks) are computed in `visio
 ## Roadmap
 
 - [x] rename the pop-up widget to alert
-- [ ] rename the info bar to notification, add multiple notification animation
+- [x] rename the info bar to notification
+- [ ] add multiple notification animation
 - [ ] decouple the new page, user_item, list_view
 - [ ] add fade out effect on the top of current effect when switching the page
 - [ ] add animation for scroll bar
