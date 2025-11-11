@@ -127,8 +127,7 @@ static void vision_ui_list_item_position_update() {
         vision_ui_animation_do(&parent->scroll_bar_height, parent->scroll_bar_height_trg, VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED);
     }
 
-    const bool scroll_bar_scale_uninitialized =
-            parent->scroll_bar_scale_part == 0.f && parent->scroll_bar_scale_part_trg == 0.f;
+    const bool scroll_bar_scale_uninitialized = parent->scroll_bar_scale_part == 0.f && parent->scroll_bar_scale_part_trg == 0.f;
     if (scroll_bar_scale_uninitialized) {
         parent->scroll_bar_scale_part = parent->scroll_bar_scale_part_trg;
     } else {

@@ -23,8 +23,8 @@ void *vision_ui_font_get() {
     return VISION_UI_FONT;
 }
 
-static vision_ui_notification_t VISION_UI_NOTIFICATION = {0, 1, 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT, 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT, 80, 80, false,
-                                                  0, 1};
+static vision_ui_notification_t VISION_UI_NOTIFICATION = {
+        0, 1, 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT, 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT, 80, 80, false, 0, 1};
 
 extern const vision_ui_notification_t *vision_ui_notification_instance_get() {
     return &VISION_UI_NOTIFICATION;
@@ -51,7 +51,8 @@ void vision_ui_notification_push(const char *content, const uint16_t span) {
     }
 
     vision_ui_font_set(vision_ui_font_get());
-    VISION_UI_NOTIFICATION.w_notification_trg = vision_ui_driver_str_utf8_width_get(VISION_UI_NOTIFICATION.content) + VISION_UI_NOTIFICATION_WIDTH;
+    VISION_UI_NOTIFICATION.w_notification_trg =
+            vision_ui_driver_str_utf8_width_get(VISION_UI_NOTIFICATION.content) + VISION_UI_NOTIFICATION_WIDTH;
 }
 
 static vision_ui_alert_t VISION_UI_ALERT = {0, 1, 0 - 2 * VISION_UI_ALERT_HEIGHT, 0 - 2 * VISION_UI_ALERT_HEIGHT, 80, 80, false, 0, 1};
