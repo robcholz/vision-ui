@@ -7,46 +7,46 @@
 
 #include <stdbool.h>
 
-#define ALLOW_EXIT_ASTRA_UI_BY_USER 0 //允许用户在最浅层级退出astra ui lite
+#define VISION_UI_ALLOW_EXIT_BY_USER 0 //允许用户在最浅层级退出vision ui lite
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum vision_ui_action_t {
+    UI_ACTION_NONE,
+    UI_ACTION_GO_PREV,
+    UI_ACTION_GO_NEXT,
+    UI_ACTION_ENTER,
+    UI_ACTION_EXIT,
+};
 
-extern bool IS_IN_ASTRA;
+extern bool IS_IN_VISION_UI;
 
 extern void vision_ui_render_init();
 
-extern void astra_refresh_info_bar();
+extern void vision_ui_info_bar_update();
 
-extern void astra_refresh_pop_up();
+extern void vision_ui_pop_up_update();
 
-extern void astra_refresh_camera_position();
+extern void vision_ui_camera_position_update();
 
-extern void astra_refresh_widget_core_position();
+extern void vision_ui_widget_core_position_update();
 
-extern void astra_init_list();
+extern void vision_ui_list_init();
 
-extern void astra_init_core();
+extern void vision_ui_core_init();
 
-extern void astra_refresh_list_item_position();
+extern void vision_ui_list_item_position_update();
 
-extern void astra_refresh_selector_position();
+extern void vision_ui_selector_position_update();
 
-extern void astra_refresh_main_core_position();
+extern void vision_ui_main_core_position_update();
 
-extern void vision_ui_render_loop();
+extern void vision_ui_step_render();
 
-extern void astra_ui_widget_core();
+extern void vision_ui_widget_core_step();
 
-extern void astra_ui_main_core();
+extern void vision_ui_main_core_step();
 
 extern bool vision_ui_is_exited();
 
-extern bool vision_ui_is_background_frozon();
-
-#ifdef __cplusplus
-}
-#endif
+extern bool vision_ui_is_background_frozen();
 
 #endif //VISION_UI_VISION_UI_CORE_H

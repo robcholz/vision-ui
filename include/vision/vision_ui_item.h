@@ -9,17 +9,15 @@
 
 #include "vision_ui_draw_driver.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern void vision_ui_font_set(void* font);
 
-extern void* ASTRA_FONT;
+extern void* vision_ui_font_get();
 
-extern void astra_set_font(void* font);
+extern bool vision_ui_exit_animation_is_finished();
 
-extern bool ASTRA_EXIT_ANIMATION_FINISHED;
+extern void vision_ui_exit_animation_set_is_finished();
 
-typedef struct astra_info_bar_t {
+typedef struct vision_ui_info_bar_t {
     char* content;
     uint16_t span;
 
@@ -32,78 +30,84 @@ typedef struct astra_info_bar_t {
     bool is_running;
     uint32_t time_start;
     uint32_t time;
-} astra_info_bar_t;
+} vision_ui_info_bar_t;
 
-extern astra_info_bar_t ASTRA_INFO_BAR;
+extern vision_ui_info_bar_t VISION_UI_INFO_BAR;
 
-extern void astra_push_info_bar(char* content, uint16_t span);
+extern void vision_ui_info_bar_push(char* content, uint16_t span);
 
-typedef struct astra_pop_up_t {
+typedef struct vision_ui_pop_up_t {
     char* content;
     uint16_t span;
-    float y_pop_up, y_pop_up_trg, w_pop_up, w_pop_up_trg;
+
+    float y_pop_up;
+    float y_pop_up_trg;
+
+    float w_pop_up;
+    float w_pop_up_trg;
+
     bool is_running;
     uint32_t time_start;
     uint32_t time;
-} astra_pop_up_t;
+} vision_ui_pop_up_t;
 
-extern astra_pop_up_t ASTRA_POP_UP;
+extern vision_ui_pop_up_t VISION_UI_POP_UP;
 
-extern void astra_push_pop_up(char* content, uint16_t span);
+extern void vision_ui_pop_up_push(char* content, uint16_t span);
 
 /*** 弹窗 ***/
 
 /*** 列表项 ***/
-#define MAX_LIST_CHILD_NUM 10
-#define MAX_LIST_LAYER 10
+#define VISION_UI_MAX_LIST_CHILD_NUM 10
+#define VISION_UI_MAX_LIST_LAYER 10
 
 /*** 信息栏 ***/
-#define INFO_BAR_HEIGHT 15
-#define INFO_BAR_WIDTH 20
+#define VISION_UI_INFO_BAR_HEIGHT 15
+#define VISION_UI_INFO_BAR_WIDTH 20
 
 /*** 弹窗 ***/
-#define POP_UP_HEIGHT 20
-#define POP_UP_WIDTH 20
+#define VISION_UI_POP_UP_HEIGHT 20
+#define VISION_UI_POP_UP_WIDTH 20
 
-#define SCREEN_HEIGHT 64
-#define SCREEN_WIDTH 128
+#define VISION_UI_SCREEN_HEIGHT 64
+#define VISION_UI_SCREEN_WIDTH 128
 
 // timing
-#define LIST_TEXT_SCROLL_PAUSE_MS 1000
-#define LIST_TEXT_SCROLL_SPEED_PX_S 15
-#define LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S 5
-#define LIST_SLIDER_VALUE_SCROLL_PAUSE_MS 1500
+#define VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS 1000
+#define VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S 15
+#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S 5
+#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS 1500
 
 // paddings
-#define LIST_TITLE_TO_DISPLAY_TOP_PADDING 0
-#define LIST_TITLE_TO_FRAME_PADDING 4
+#define VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING 0
+#define VISION_UI_LIST_TITLE_TO_FRAME_PADDING 4
 
-#define LIST_FRAME_BETWEEN_PADDING 2
+#define VISION_UI_LIST_FRAME_BETWEEN_PADDING 2
 
-#define LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 10
-#define LIST_FOOTER_TO_LEFT_PADDING 10
+#define VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 10
+#define VISION_UI_LIST_FOOTER_TO_LEFT_PADDING 10
 
-#define LIST_HEADER_TO_TEXT_PADDING 2
-#define LIST_HEADER_TO_LEFT_DISPLAY_PADDING 4
+#define VISION_UI_LIST_HEADER_TO_TEXT_PADDING 2
+#define VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING 4
 
-#define LIST_SELECTOR_TO_INNER_WIDGET_PADDING 3
+#define VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING 3
 
 // fixed sizes
-#define LIST_FOOTER_MAX_HEIGHT 11
-#define LIST_FOOTER_MAX_WIDTH 19
-#define LIST_HEADER_MAX_HEIGHT 7
-#define LIST_HEADER_MAX_WIDTH 7
-#define LIST_FRAME_FIXED_HEIGHT 15
+#define VISION_UI_LIST_FOOTER_MAX_HEIGHT 11
+#define VISION_UI_LIST_FOOTER_MAX_WIDTH 19
+#define VISION_UI_LIST_HEADER_MAX_HEIGHT 7
+#define VISION_UI_LIST_HEADER_MAX_WIDTH 7
+#define VISION_UI_LIST_FRAME_FIXED_HEIGHT 15
 
-#define LIST_SELECTOR_FIXED_HEIGHT 15
+#define VISION_UI_LIST_SELECTOR_FIXED_HEIGHT 15
 
 // fixed properties
-#define LIST_SCROLL_BAR_WIDTH 3
-#define LIST_SCROLL_BAR_ANIMATION_SPEED 92
+#define VISION_UI_LIST_SCROLL_BAR_WIDTH 3
+#define VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED 92
 
 // derived properties
-#define LIST_FOOTER_TO_SCROLL_BAR_PADDING (LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING-LIST_FOOTER_MAX_WIDTH/2)
-#define LIST_TEXT_MAX_WIDTH (SCREEN_WIDTH-LIST_FOOTER_TO_SCROLL_BAR_PADDING-LIST_FOOTER_MAX_WIDTH-LIST_FOOTER_TO_LEFT_PADDING-LIST_HEADER_TO_TEXT_PADDING-LIST_HEADER_MAX_WIDTH-LIST_HEADER_TO_LEFT_DISPLAY_PADDING)
+#define VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING (VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING-VISION_UI_LIST_FOOTER_MAX_WIDTH/2)
+#define VISION_UI_LIST_TEXT_MAX_WIDTH (VISION_UI_SCREEN_WIDTH-VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING-VISION_UI_LIST_FOOTER_MAX_WIDTH-VISION_UI_LIST_FOOTER_TO_LEFT_PADDING-VISION_UI_LIST_HEADER_TO_TEXT_PADDING-VISION_UI_LIST_HEADER_MAX_WIDTH-VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING)
 
 typedef enum {
     LIST_ITEM,
@@ -111,10 +115,10 @@ typedef enum {
     SWITCH_ITEM,
     SLIDER_ITEM,
     USER_ITEM,
-} astra_list_item_type_t;
+} vision_ui_list_item_type_t;
 
-typedef struct astra_list_item_t {
-    astra_list_item_type_t type;
+typedef struct vision_ui_list_item_t {
+    vision_ui_list_item_type_t type;
 
     char* content;
     uint32_t text_scroll_anchor;
@@ -131,20 +135,20 @@ typedef struct astra_list_item_t {
 
     uint8_t layer;
     uint8_t child_num;
-    struct astra_list_item_t* child_list_item[MAX_LIST_CHILD_NUM];
-    struct astra_list_item_t* parent;
-} astra_list_item_t;
+    struct vision_ui_list_item_t* child_list_item[VISION_UI_MAX_LIST_CHILD_NUM];
+    struct vision_ui_list_item_t* parent;
+} vision_ui_list_item_t;
 
-typedef struct astra_switch_item_t {
-    astra_list_item_t base_item;
+typedef struct vision_ui_switch_item_t {
+    vision_ui_list_item_t base_item;
 
     bool value;
 
     void (*on_changed)(bool value);
-} astra_switch_item_t;
+} vision_ui_switch_item_t;
 
-typedef struct astra_slider_item_t {
-    astra_list_item_t base_item;
+typedef struct vision_ui_slider_item_t {
+    vision_ui_list_item_t base_item;
 
     int16_t value;
     bool is_confirmed;
@@ -155,14 +159,14 @@ typedef struct astra_slider_item_t {
     uint32_t text_scroll_anchor;
 
     void (*on_changed)(int16_t value);
-} astra_slider_item_t;
+} vision_ui_slider_item_t;
 
 typedef struct vision_ui_title_item_t {
-    astra_list_item_t base_item;
+    vision_ui_list_item_t base_item;
 } vision_ui_title_item_t;
 
-typedef struct astra_user_item_t {
-    astra_list_item_t base_item;
+typedef struct vision_ui_user_item_t {
+    vision_ui_list_item_t base_item;
 
     bool in_user_item;
     bool entering_user_item;
@@ -175,76 +179,71 @@ typedef struct astra_user_item_t {
 
     bool user_item_inited;
     bool user_item_looping;
-} astra_user_item_t;
+} vision_ui_user_item_t;
 
-extern astra_list_item_t* astra_get_root_list();
+extern vision_ui_list_item_t* vision_ui_root_list_get();
 
-extern astra_switch_item_t* astra_to_switch_item(astra_list_item_t* astra_list_item);
+extern vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item);
 
-extern astra_slider_item_t* astra_to_slider_item(astra_list_item_t* astra_list_item);
+extern vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* list_item);
 
-extern astra_user_item_t* astra_to_user_item(astra_list_item_t* astra_list_item);
+extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item);
 
-extern astra_list_item_t* astra_new_list_item(char* content);
+extern vision_ui_list_item_t* vision_ui_list_item_new(char* content);
 
-extern astra_list_item_t* astra_new_title_item(const char* title);
+extern vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title);
 
-extern astra_list_item_t* astra_new_switch_item(char* content, bool default_value, void (*on_changed)(bool value));
+extern vision_ui_list_item_t* vision_ui_list_switch_item_new(char* content, bool default_value, void (*on_changed)(bool value));
 
-extern astra_list_item_t* astra_new_slider_item(char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max,
-                                                void (*on_changed)(int16_t value));
+extern vision_ui_list_item_t* vision_ui_list_slider_item_new(char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max,
+                                                             void (*on_changed)(int16_t value));
 
-extern astra_list_item_t* astra_new_user_item(char* content, void (*init_function)(), void (*loop_function)(), void (*exit_function)());
+extern vision_ui_list_item_t* vision_ui_list_user_item_new(char* content, void (*init_function)(), void (*loop_function)(),
+                                                           void (*exit_function)());
 
-//正确用法：astra_push_item_to_list(astra_get_root_list(), astra_new_user_item(...));
+extern bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
 
-//此种方法合理且安全，本质是将user item类转换为了基类，用于渲染
-//在此过程中，派生类的专有变量不会丢失内容，selector发现是user type后再转换回派生类执行对应内部函数即可
+typedef struct vision_ui_selector_t {
+    float y_selector;
+    float y_selector_trg;
 
-extern bool astra_push_item_to_list(astra_list_item_t* parent, astra_list_item_t* child);
+    float w_selector;
+    float w_selector_trg;
 
-/*** 列表项 ***/
+    float h_selector;
+    float h_selector_trg;
 
-/*** 选择器 ***/
-typedef struct astra_selector_t {
-    float y_selector, y_selector_trg, w_selector, w_selector_trg, h_selector, h_selector_trg;
     uint8_t selected_index;
-    astra_list_item_t* selected_item;
-} astra_selector_t;
+    vision_ui_list_item_t* selected_item;
+} vision_ui_selector_t;
 
-extern astra_selector_t ASTRA_SELECTOR;
+extern vision_ui_selector_t VISION_UI_SELECTOR;
 
-extern astra_selector_t* astra_get_selector();
+extern vision_ui_selector_t* vision_ui_selector_get();
 
-extern bool astra_bind_item_to_selector(astra_list_item_t* item);
+extern bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t* item);
 
-extern void astra_selector_go_next_item();
+extern void vision_ui_selector_go_next_item();
 
-extern void astra_selector_go_prev_item();
+extern void vision_ui_selector_go_prev_item();
 
-extern void astra_selector_jump_to_selected_item();
+extern void vision_ui_selector_jump_to_selected_item();
 
-extern void astra_selector_exit_current_item();
+extern void vision_ui_selector_exit_current_item();
 
-/*** 选择器 ***/
-
-/*** 相机 ***/
-typedef struct astra_camera_t {
+typedef struct vision_ui_camera_t {
     float x_camera;
     float x_camera_trg;
+
     float y_camera;
     float y_camera_trg;
-    astra_selector_t* selector;
-} astra_camera_t;
+    vision_ui_selector_t* selector;
+} vision_ui_camera_t;
 
-extern astra_camera_t ASTRA_CAMERA;
+extern vision_ui_camera_t VISION_UI_CAMERA;
 
-extern astra_camera_t* astra_get_camera();
+extern vision_ui_camera_t* vision_ui_camera_instance_get();
 
-extern void astra_bind_selector_to_camera(astra_selector_t* selector);
-
-#ifdef __cplusplus
-}
-#endif
+extern void vision_ui_camera_bind_selector(vision_ui_selector_t* selector);
 
 #endif //VISION_UI_VISION_UI_ITEM_H

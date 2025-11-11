@@ -28,22 +28,22 @@ void animation(int16_t* pos, int16_t target, int16_t speed) {
 }
 
 void board_info_init(void) {
-    TIME_START = get_ticks_ms();
+    TIME_START = vision_ui_driver_ticks_ms_get();
 }
 
 void board_info_loop(void) {
-    uint32_t t = get_ticks_ms();
+    uint32_t t = vision_ui_driver_ticks_ms_get();
 
     oled_set_draw_color(1);
     oled_draw_R_box(2, y_box - 1, oled_get_UTF8_width("「开发板启动器」") + 4, oled_get_str_height() + 2, 1);
     oled_set_draw_color(2);
-    oled_draw_UTF8(4, y_logo - 2, "「开发板启动器」");
+    vision_ui_driver_str_utf8_draw(4, y_logo - 2, "「开发板启动器」");
 
     oled_set_draw_color(1);
-    oled_draw_str(106, y_version, "v1.0");
-    oled_draw_UTF8(2, y_name, "由 无理造物 制作.");
-    oled_draw_UTF8(2, y_astra, "基于「Astra UI Lite」v1.1");
-    oled_draw_UTF8(2, y_astra + 14, "驱动引擎.");
+    vision_ui_driver_str_draw(106, y_version, "v1.0");
+    vision_ui_driver_str_utf8_draw(2, y_name, "由 无理造物 制作.");
+    vision_ui_driver_str_utf8_draw(2, y_astra, "基于「Astra UI Lite」v1.1");
+    vision_ui_driver_str_utf8_draw(2, y_astra + 14, "驱动引擎.");
     oled_draw_frame(x_board, 38, 28, 20);
     oled_draw_frame(x_board + 2, 40, 24, 10);
     oled_draw_box(x_board + 2, 40, 2, 10);
@@ -96,10 +96,10 @@ int main(void) {
     u8g2_InitDisplay(&U8G2);
     u8g2_SetPowerSave(&U8G2, 0);
 
-    vision_ui_bind_driver(&U8G2);
+    vision_ui_driver_bind(&U8G2);
 
     // 初始化 Astra UI
-    astra_init_core();
+    vision_ui_core_init();
     astra_set_font((void*) u8g2_font_my_chinese);
 
     // 主菜单
@@ -140,14 +140,14 @@ int main(void) {
     // 渲染循环
     vision_ui_render_init();
 
-    float prev_ms = get_ticks_ms();
+    float prev_ms = vision_ui_driver_ticks_ms_get();
     float current_ms = prev_ms;
     float fps_timer = prev_ms;
     int frame_count = 0;
 
     while (!vision_ui_is_exited()) {
         prev_ms = current_ms;
-        current_ms = get_ticks_ms();
+        current_ms = vision_ui_driver_ticks_ms_get();
 
         oled_clear_buffer();
         vision_ui_render_loop();

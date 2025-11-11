@@ -1,8 +1,7 @@
 #include <tgmath.h>
 #include <u8g2.h>
 
-#include <vision/vision_ui_core.h>
-#include <vision/vision_ui_item.h>
+#include <vision/vision_ui.h>
 
 #include "driver/u8g2.h"
 
@@ -28,43 +27,43 @@ void animation(int16_t* pos, int16_t pos_trg, int16_t speed) {
 }
 
 void test_user_item_init_function() {
-    TIME_START = get_ticks_ms();
+    TIME_START = vision_ui_driver_ticks_ms_get();
 }
 
 void test_user_item_loop_function() {
-    uint32_t time = get_ticks_ms();
+    uint32_t time = vision_ui_driver_ticks_ms_get();
 
-    oled_set_draw_color(1);
-    oled_draw_R_box(2, Y_BOX - 1, oled_get_UTF8_width("「astraLauncher」") + 4, oled_get_str_height() + 2, 1);
-    oled_set_draw_color(2);
-    oled_draw_UTF8(4, Y_LOGO - 2, "「astraLauncher」");
+    vision_ui_driver_color_draw(1);
+    vision_ui_driver_box_r_draw(2, Y_BOX - 1, vision_ui_driver_str_utf8_width_get("「astraLauncher」") + 4, vision_ui_driver_str_height_get() + 2, 1);
+    vision_ui_driver_color_draw(2);
+    vision_ui_driver_str_utf8_draw(4, Y_LOGO - 2, "「astraLauncher」");
 
-    oled_set_draw_color(1);
-    oled_draw_str(106, Y_VERSION, "v1.0");
-    oled_draw_UTF8(2, Y_NAME, "by Rational Works.");
-    oled_draw_UTF8(2, Y_ASTRA, "Powered by Astra UI Lite v1.1");
-    oled_draw_UTF8(2, Y_ASTRA + 14, "Engine.");
-    oled_draw_frame(X_BOARD, 38, 28, 20);
-    oled_draw_frame(X_BOARD + 2, 40, 24, 10);
-    oled_draw_box(X_BOARD + 2, 40, 2, 10);
-    oled_draw_pixel(X_BOARD + 25, 51);
-    oled_draw_pixel(X_BOARD + 25, 53);
-    oled_draw_pixel(X_BOARD + 25, 55);
-    oled_draw_box(X_BOARD + 21, 51, 3, 2);
-    oled_draw_box(X_BOARD + 21, 54, 3, 2);
-    oled_draw_box(X_BOARD + 17, 53, 3, 3);
+    vision_ui_driver_color_draw(1);
+    vision_ui_driver_str_draw(106, Y_VERSION, "v1.0");
+    vision_ui_driver_str_utf8_draw(2, Y_NAME, "by Rational Works.");
+    vision_ui_driver_str_utf8_draw(2, Y_ASTRA, "Powered by Astra UI Lite v1.1");
+    vision_ui_driver_str_utf8_draw(2, Y_ASTRA + 14, "Engine.");
+    vision_ui_driver_frame_draw(X_BOARD, 38, 28, 20);
+    vision_ui_driver_frame_draw(X_BOARD + 2, 40, 24, 10);
+    vision_ui_driver_box_draw(X_BOARD + 2, 40, 2, 10);
+    vision_ui_driver_pixel_draw(X_BOARD + 25, 51);
+    vision_ui_driver_pixel_draw(X_BOARD + 25, 53);
+    vision_ui_driver_pixel_draw(X_BOARD + 25, 55);
+    vision_ui_driver_box_draw(X_BOARD + 21, 51, 3, 2);
+    vision_ui_driver_box_draw(X_BOARD + 21, 54, 3, 2);
+    vision_ui_driver_box_draw(X_BOARD + 17, 53, 3, 3);
 
-    oled_draw_box(X_BOARD + 12, 53, 4, 3);
-    oled_draw_box(X_BOARD + 7, 53, 4, 3);
-    oled_draw_box(X_BOARD + 2, 53, 4, 3);
+    vision_ui_driver_box_draw(X_BOARD + 12, 53, 4, 3);
+    vision_ui_driver_box_draw(X_BOARD + 7, 53, 4, 3);
+    vision_ui_driver_box_draw(X_BOARD + 2, 53, 4, 3);
 
-    oled_draw_box(X_BOARD + 7, Y_WIRE_1, 4, 3);
-    oled_draw_V_line(X_BOARD + 9, Y_WIRE_1 + 3, 3);
-    oled_draw_V_line(X_BOARD + 8, Y_WIRE_1 + 6, 2);
+    vision_ui_driver_box_draw(X_BOARD + 7, Y_WIRE_1, 4, 3);
+    vision_ui_driver_line_v_draw(X_BOARD + 9, Y_WIRE_1 + 3, 3);
+    vision_ui_driver_line_v_draw(X_BOARD + 8, Y_WIRE_1 + 6, 2);
 
-    oled_draw_box(X_BOARD + 12, Y_WIRE_2, 4, 3);
-    oled_draw_V_line(X_BOARD + 14, Y_WIRE_2 + 3, 3);
-    oled_draw_V_line(X_BOARD + 15, Y_WIRE_2 + 6, 2);
+    vision_ui_driver_box_draw(X_BOARD + 12, Y_WIRE_2, 4, 3);
+    vision_ui_driver_line_v_draw(X_BOARD + 14, Y_WIRE_2 + 3, 3);
+    vision_ui_driver_line_v_draw(X_BOARD + 15, Y_WIRE_2 + 6, 2);
 
     if (time - TIME_START > 300) animation(&Y_LOGO, 15, 94);
     if (time - TIME_START > 350) animation(&Y_VERSION, 14, 88);
@@ -73,9 +72,9 @@ void test_user_item_loop_function() {
     if (time - TIME_START > 500) animation(&Y_NAME, 62, 94);
     if (time - TIME_START > 550) animation(&X_BOARD, 102, 92);
     if (time - TIME_START > 620) animation(&Y_WIRE_1, 56, 86);
-    if (time - TIME_START > 1400 && time - TIME_START < 1600) oled_draw_box(X_BOARD + 5, 42, 19, 6);
-    if (time - TIME_START > 1800 && time - TIME_START < 1900) oled_draw_box(X_BOARD + 5, 42, 19, 6);
-    if (time - TIME_START > 2200) oled_draw_box(X_BOARD + 5, 42, 19, 6);
+    if (time - TIME_START > 1400 && time - TIME_START < 1600) vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
+    if (time - TIME_START > 1800 && time - TIME_START < 1900) vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
+    if (time - TIME_START > 2200) vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
     if (time - TIME_START > 2400) animation(&Y_WIRE_2, 56, 86);
 }
 
@@ -97,44 +96,44 @@ int main() {
     u8g2_InitDisplay(&U8G2);
     u8g2_SetPowerSave(&U8G2, 0);
 
-    vision_ui_bind_driver(&U8G2);
+    vision_ui_driver_bind(&U8G2);
 
-    astra_init_core();
+    vision_ui_core_init();
 
-    astra_set_font((void*) u8g2_font_my_chinese);
+    vision_ui_font_set((void*) u8g2_font_my_chinese);
 
-    astra_list_item_t* launcher_setting_list_item = astra_new_list_item("Board Settings");
+    vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new("Board Settings");
 
-    astra_push_item_to_list(astra_get_root_list(), launcher_setting_list_item);
-    astra_push_item_to_list(astra_get_root_list(), astra_new_switch_item("Switch Screen", true, [](bool b) {
+    vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
+    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new("Switch Screen", true, [](bool b) {
     }));
-    astra_push_item_to_list(astra_get_root_list(),
-                            astra_new_user_item("Wiring Diagram...", test_user_item_init_function, test_user_item_loop_function,
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                            vision_ui_list_user_item_new("Wiring Diagram...", test_user_item_init_function, test_user_item_loop_function,
                                                 test_user_item_exit_function));
-    astra_push_item_to_list(astra_get_root_list(),
-                            astra_new_user_item("About the Board...", test_user_item_init_function, test_user_item_loop_function,
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                            vision_ui_list_user_item_new("About the Board...", test_user_item_init_function, test_user_item_loop_function,
                                                 test_user_item_exit_function));
-    astra_push_item_to_list(astra_get_root_list(),
-                            astra_new_switch_item("Test Alert", false, [](bool b) {
-                                astra_push_pop_up("Hello", 5000);
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                            vision_ui_list_switch_item_new("Test Alert", false, [](bool b) {
+                                vision_ui_pop_up_push("Hello", 5000);
                             }));
 
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Heartbeat LED", true, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("Heartbeat LED", true, [](bool b) {
     }));
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Reverse Keys", false, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("Reverse Keys", false, [](bool b) {
     }));
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_slider_item("Display Style", 1600, 5, 1, 9999, [](int16_t value) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_slider_item_new("Display Style", 1600, 5, 1, 9999, [](int16_t value) {
     }));
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("Invert Display", false, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("Invert Display", false, [](bool b) {
     }));
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("MCU Serial Channel", false, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("MCU Serial Channel", false, [](bool b) {
     }));
-    astra_push_item_to_list(launcher_setting_list_item, astra_new_switch_item("External Serial Channel", false, [](bool b) {
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new("External Serial Channel", false, [](bool b) {
     }));
 
     vision_ui_render_init();
 
-    float prev_ms = get_ticks_ms();
+    float prev_ms = vision_ui_driver_ticks_ms_get();
     float current_ms = prev_ms;
     float fps_timer = prev_ms;
     int frame_count = 0;
@@ -142,20 +141,20 @@ int main() {
     constexpr float target_ms = 1000.0f / 60.0f;
 
     while (!vision_ui_is_exited()) {
-        const float frame_begin = get_ticks_ms();
+        const float frame_begin = vision_ui_driver_ticks_ms_get();
 
         // render
-        oled_clear_buffer();
-        vision_ui_render_loop();
-        oled_send_buffer();
+        vision_ui_driver_buffer_clear();
+        vision_ui_step_render();
+        vision_ui_driver_buffer_send();
 
         // pace to 120 fps (include render time)
-        float now_ms = get_ticks_ms();
+        float now_ms = vision_ui_driver_ticks_ms_get();
         float elapsed_ms = now_ms - frame_begin; // full frame so far
         if (elapsed_ms < target_ms) {
             // sleep the remainder (rounded; replace delay() with a microsecond sleep if you have one)
-            delay((uint32_t) lrintf(target_ms - elapsed_ms));
-            now_ms = get_ticks_ms(); // re-sample after sleep
+            vision_ui_driver_delay((uint32_t) lrintf(target_ms - elapsed_ms));
+            now_ms = vision_ui_driver_ticks_ms_get(); // re-sample after sleep
         }
 
         // fps

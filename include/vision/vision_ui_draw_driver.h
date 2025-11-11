@@ -5,85 +5,71 @@
 #ifndef VISION_UI_VISION_UI_DRAW_DRIVER_H
 #define VISION_UI_VISION_UI_DRAW_DRIVER_H
 
+#include "vision_ui_core.h"
+
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern enum vision_ui_action_t vision_ui_driver_action_get();
 
-enum ui_action_t {
-    UI_ACTION_NONE,
-    UI_ACTION_GO_PREV,
-    UI_ACTION_GO_NEXT,
-    UI_ACTION_ENTER,
-    UI_ACTION_EXIT,
-};
+extern uint32_t vision_ui_driver_ticks_ms_get();
 
-extern enum ui_action_t vision_ui_get_ui_action(void);
+extern void vision_ui_driver_delay(uint32_t ms);
 
-extern uint32_t get_ticks_ms(void);
+extern void vision_ui_driver_bind(void* driver);
 
-extern void delay(uint32_t ms);
+extern void vision_ui_driver_font_set(const uint8_t* font);
 
-extern void vision_ui_bind_driver(void* driver);
+extern void vision_ui_driver_str_draw(uint16_t x, uint16_t y, const char* str);
 
-extern void oled_set_font(const uint8_t* font);
+extern void vision_ui_driver_str_utf8_draw(uint16_t x, uint16_t y, const char* str);
 
-extern void oled_draw_str(uint16_t x, uint16_t y, const char* str);
+extern uint16_t vision_ui_driver_str_width_get(const char* str);
 
-extern void oled_draw_UTF8(uint16_t x, uint16_t y, const char* str);
+extern uint16_t vision_ui_driver_str_utf8_width_get(const char* str);
 
-extern uint16_t oled_get_str_width(const char* str);
+extern uint16_t vision_ui_driver_str_height_get();
 
-extern uint16_t oled_get_UTF8_width(const char* str);
+extern void vision_ui_driver_pixel_draw(uint16_t x, uint16_t y);
 
-extern uint16_t oled_get_str_height(void);
+extern void vision_ui_driver_circle_draw(uint16_t x, uint16_t y, uint16_t r);
 
-extern void oled_draw_pixel(uint16_t x, uint16_t y);
+extern void vision_ui_driver_box_r_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r);
 
-extern void oled_draw_circle(uint16_t x, uint16_t y, uint16_t r);
+extern void vision_ui_driver_box_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
-extern void oled_draw_R_box(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r);
+extern void vision_ui_driver_frame_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
-extern void oled_draw_box(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+extern void vision_ui_driver_frame_r_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r);
 
-extern void oled_draw_frame(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+extern void vision_ui_driver_line_h_draw(uint16_t x, uint16_t y, uint16_t l);
 
-extern void oled_draw_R_frame(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r);
+extern void vision_ui_driver_line_v_draw(uint16_t x, uint16_t y, uint16_t h);
 
-extern void oled_draw_H_line(uint16_t x, uint16_t y, uint16_t l);
+extern void vision_ui_driver_line_draw(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 
-extern void oled_draw_V_line(uint16_t x, uint16_t y, uint16_t h);
+extern void vision_ui_driver_line_h_dotted_draw(uint16_t x, uint16_t y, uint16_t l);
 
-extern void oled_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+extern void vision_ui_driver_line_v_dotted_draw(uint16_t x, uint16_t y, uint16_t h);
 
-extern void oled_draw_H_dotted_line(uint16_t x, uint16_t y, uint16_t l);
+extern void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bitMap);
 
-extern void oled_draw_V_dotted_line(uint16_t x, uint16_t y, uint16_t h);
+extern void vision_ui_driver_color_draw(uint8_t color);
 
-extern void oled_draw_bMP(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bitMap);
+extern void vision_ui_driver_font_mode_set(uint8_t mode);
 
-extern void oled_set_draw_color(uint8_t color);
+extern void vision_ui_driver_font_direction_set(uint8_t dir);
 
-extern void oled_set_font_mode(uint8_t mode);
+extern void vision_ui_driver_clip_window_set(int16_t x0, int16_t y0, int16_t x1, int16_t y1);
 
-extern void oled_set_font_direction(uint8_t dir);
+extern void vision_ui_driver_clip_window_reset();
 
-extern void oled_set_clip_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1);
+extern void vision_ui_driver_buffer_clear();
 
-extern void oled_reset_clip_window(void);
+extern void vision_ui_driver_buffer_send();
 
-extern void oled_clear_buffer(void);
-
-extern void oled_send_buffer(void);
-
-extern void oled_send_area_buffer(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+extern void vision_ui_driver_buffer_area_send(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
 /// @attention this should be a full size buffer
-extern void* oled_get_raw_buffer_pointer();
-
-#ifdef __cplusplus
-}
-#endif
+extern void* vision_ui_driver_buffer_pointer_get();
 
 #endif //VISION_UI_VISION_UI_DRAW_DRIVER_H
