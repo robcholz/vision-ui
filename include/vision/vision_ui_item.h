@@ -25,20 +25,20 @@ typedef struct vision_ui_info_bar_t {
     uint32_t time;
 } vision_ui_info_bar_t;
 
-typedef struct vision_ui_pop_up_t {
+typedef struct vision_ui_alert_t {
     const char *content;
     uint16_t span;
 
-    float y_pop_up;
-    float y_pop_up_trg;
+    float y_alert;
+    float y_alert_trg;
 
-    float w_pop_up;
-    float w_pop_up_trg;
+    float w_alert;
+    float w_alert_trg;
 
     bool is_running;
     uint32_t time_start;
     uint32_t time;
-} vision_ui_pop_up_t;
+} vision_ui_alert_t;
 
 typedef enum {
     LIST_ITEM,
@@ -150,11 +150,11 @@ extern vision_ui_info_bar_t *vision_ui_info_bar_mutable_instance_get();
 
 extern void vision_ui_info_bar_push(const char *content, uint16_t span);
 
-extern const vision_ui_pop_up_t *vision_ui_pop_up_instance_get();
+extern const vision_ui_alert_t *vision_ui_alert_instance_get();
 
-extern vision_ui_pop_up_t *vision_ui_pop_up_mutable_instance_get();
+extern vision_ui_alert_t *vision_ui_alert_mutable_instance_get();
 
-extern void vision_ui_pop_up_push(const char *content, uint16_t span);
+extern void vision_ui_alert_push(const char *content, uint16_t span);
 
 extern vision_ui_list_item_t *vision_ui_root_list_get();
 

@@ -320,53 +320,53 @@ static void vision_ui_info_bar_render() {
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
 }
 
-static void vision_ui_pop_up_render() {
-    if (!vision_ui_pop_up_instance_get()->is_running) {
+static void vision_ui_alert_render() {
+    if (!vision_ui_alert_instance_get()->is_running) {
         return;
     }
 
     // 弹窗到位后才开始计算时间
-    if (vision_ui_pop_up_instance_get()->y_pop_up == vision_ui_pop_up_instance_get()->y_pop_up_trg) {
-        vision_ui_pop_up_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
+    if (vision_ui_alert_instance_get()->y_alert == vision_ui_alert_instance_get()->y_alert_trg) {
+        vision_ui_alert_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
     }
 
     // 时间到了就收回
-    if (vision_ui_pop_up_instance_get()->time - vision_ui_pop_up_instance_get()->time_start >= vision_ui_pop_up_instance_get()->span) {
-        vision_ui_pop_up_mutable_instance_get()->y_pop_up_trg = 0 - 2 * VISION_UI_POP_UP_HEIGHT; // 收回
-        if (vision_ui_pop_up_instance_get()->y_pop_up == vision_ui_pop_up_instance_get()->y_pop_up_trg) {
-            vision_ui_pop_up_mutable_instance_get()->is_running = false; // 等归位后结束生命周期
+    if (vision_ui_alert_instance_get()->time - vision_ui_alert_instance_get()->time_start >= vision_ui_alert_instance_get()->span) {
+        vision_ui_alert_mutable_instance_get()->y_alert_trg = 0 - 2 * VISION_UI_ALERT_HEIGHT; // 收回
+        if (vision_ui_alert_instance_get()->y_alert == vision_ui_alert_instance_get()->y_alert_trg) {
+            vision_ui_alert_mutable_instance_get()->is_running = false; // 等归位后结束生命周期
         }
     }
 
-    const int16_t x_pop_up = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_pop_up_instance_get()->w_pop_up / 2;
-    const int16_t y_pop_up = vision_ui_pop_up_instance_get()->y_pop_up + VISION_UI_POP_UP_HEIGHT;
+    const int16_t x_alert = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_alert_instance_get()->w_alert / 2;
+    const int16_t y_alert = vision_ui_alert_instance_get()->y_alert + VISION_UI_ALERT_HEIGHT;
 
     vision_ui_font_set(vision_ui_font_get());
 
     vision_ui_driver_color_draw(0); // 黑遮罩
-    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_pop_up_instance_get()->w_pop_up + 4) / 2 - 2),
-                                (int16_t) (vision_ui_pop_up_instance_get()->y_pop_up - 2),
-                                (int16_t) (vision_ui_pop_up_instance_get()->w_pop_up + 8), VISION_UI_POP_UP_HEIGHT + 4, 5);
+    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_alert_instance_get()->w_alert + 4) / 2 - 2),
+                                (int16_t) (vision_ui_alert_instance_get()->y_alert - 2),
+                                (int16_t) (vision_ui_alert_instance_get()->w_alert + 8), VISION_UI_ALERT_HEIGHT + 4, 5);
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_box_r_draw(x_pop_up - 2, (int16_t) vision_ui_pop_up_instance_get()->y_pop_up,
-                                (int16_t) (vision_ui_pop_up_instance_get()->w_pop_up + 4), VISION_UI_POP_UP_HEIGHT, 3);
+    vision_ui_driver_box_r_draw(x_alert - 2, (int16_t) vision_ui_alert_instance_get()->y_alert,
+                                (int16_t) (vision_ui_alert_instance_get()->w_alert + 4), VISION_UI_ALERT_HEIGHT, 3);
 
     vision_ui_driver_color_draw(2);
-    vision_ui_driver_line_h_draw(x_pop_up, y_pop_up - 2, (int16_t) vision_ui_pop_up_instance_get()->w_pop_up);
-    vision_ui_driver_pixel_draw(x_pop_up - 1, y_pop_up - 3);
-    vision_ui_driver_pixel_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 + vision_ui_pop_up_instance_get()->w_pop_up / 2), y_pop_up - 3);
+    vision_ui_driver_line_h_draw(x_alert, y_alert - 2, (int16_t) vision_ui_alert_instance_get()->w_alert);
+    vision_ui_driver_pixel_draw(x_alert - 1, y_alert - 3);
+    vision_ui_driver_pixel_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 + vision_ui_alert_instance_get()->w_alert / 2), y_alert - 3);
 
-    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_pop_up_instance_get()->content);
+    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_alert_instance_get()->content);
     const int16_t text_h = vision_ui_driver_str_height_get();
-    const int16_t text_x = x_pop_up + (int16_t) ((vision_ui_pop_up_instance_get()->w_pop_up - text_w) / 2);
-    const int16_t text_y = (int16_t) (vision_ui_pop_up_instance_get()->y_pop_up + vision_ui_driver_str_height_get() + 1);
+    const int16_t text_x = x_alert + (int16_t) ((vision_ui_alert_instance_get()->w_alert - text_w) / 2);
+    const int16_t text_y = (int16_t) (vision_ui_alert_instance_get()->y_alert + vision_ui_driver_str_height_get() + 1);
 
     vision_ui_driver_color_draw(0);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_str_utf8_draw(text_x, text_y, vision_ui_pop_up_instance_get()->content);
+    vision_ui_driver_str_utf8_draw(text_x, text_y, vision_ui_alert_instance_get()->content);
 
     vision_ui_driver_color_draw(2);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
@@ -614,7 +614,7 @@ void vision_ui_widget_render() {
         vision_ui_draw_background_blur_animation(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, 4);
     }
     vision_ui_info_bar_render();
-    vision_ui_pop_up_render();
+    vision_ui_alert_render();
 }
 
 void vision_ui_list_render() {

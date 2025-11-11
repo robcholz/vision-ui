@@ -19,10 +19,14 @@ static int16_t X_BOARD = -200;
 static int16_t Y_WIRE_1 = 200;
 static int16_t Y_WIRE_2 = 200;
 
-void animation(int16_t* pos, int16_t pos_trg, int16_t speed) {
+void animation(int16_t *pos, int16_t pos_trg, int16_t speed) {
     if (*pos != pos_trg) {
-        if (fabs(*pos - pos_trg) <= 1.0f) *pos = pos_trg;
-        else *pos += (pos_trg - *pos) / ((100 - speed) / 1.0f);
+        if (fabs(*pos - pos_trg) <= 1.0f) {
+
+            *pos = pos_trg;
+        } else {
+            *pos += (pos_trg - *pos) / ((100 - speed) / 1.0f);
+        }
     }
 }
 
@@ -66,17 +70,42 @@ void test_user_item_loop_function() {
     vision_ui_driver_line_v_draw(X_BOARD + 14, Y_WIRE_2 + 3, 3);
     vision_ui_driver_line_v_draw(X_BOARD + 15, Y_WIRE_2 + 6, 2);
 
-    if (time - TIME_START > 300) animation(&Y_LOGO, 15, 94);
-    if (time - TIME_START > 350) animation(&Y_VERSION, 14, 88);
-    if (time - TIME_START > 400) animation(&Y_BOX, 2, 92);
-    if (time - TIME_START > 450) animation(&Y_ASTRA, 36, 91);
-    if (time - TIME_START > 500) animation(&Y_NAME, 62, 94);
-    if (time - TIME_START > 550) animation(&X_BOARD, 102, 92);
-    if (time - TIME_START > 620) animation(&Y_WIRE_1, 56, 86);
-    if (time - TIME_START > 1400 && time - TIME_START < 1600) vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
-    if (time - TIME_START > 1800 && time - TIME_START < 1900) vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
-    if (time - TIME_START > 2200) vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
-    if (time - TIME_START > 2400) animation(&Y_WIRE_2, 56, 86);
+    if (time - TIME_START > 300) {
+        animation(&Y_LOGO, 15, 94);
+    }
+    if (time - TIME_START > 350) {
+        animation(&Y_VERSION, 14, 88);
+    }
+    if (time - TIME_START > 400) {
+        animation(&Y_BOX, 2, 92);
+    }
+    if (time - TIME_START > 450) {
+        animation(&Y_ASTRA, 36, 91);
+    }
+    if (time - TIME_START > 500) {
+
+        animation(&Y_NAME, 62, 94);
+    }
+    if (time - TIME_START > 550) {
+        animation(&X_BOARD, 102, 92);
+    }
+    if (time - TIME_START > 620) {
+        animation(&Y_WIRE_1, 56, 86);
+    }
+    if (time - TIME_START > 1400 && time - TIME_START < 1600) {
+        vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
+    }
+    if (time - TIME_START > 1800 && time - TIME_START < 1900) {
+        vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
+    }
+    if (time - TIME_START > 2200) {
+        vision_ui_driver_box_draw(X_BOARD + 5, 42, 19, 6);
+    }
+    if (time - TIME_START > 2400) {
+
+
+        animation(&Y_WIRE_2, 56, 86);
+    }
 }
 
 void test_user_item_exit_function() {
@@ -101,44 +130,33 @@ int main() {
 
     vision_ui_core_init();
 
-    vision_ui_font_set((void*) u8g2_font_my_chinese);
+    vision_ui_font_set((void *) u8g2_font_my_chinese);
 
-    vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new(10, "Board Settings");
+    vision_ui_list_item_t *launcher_setting_list_item = vision_ui_list_item_new(10, "Board Settings");
 
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Switch Screen", true, [](bool b) {
-    }));
+    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Switch Screen", true, [](bool b) {}));
     vision_ui_list_push_item(vision_ui_root_list_get(),
                              vision_ui_list_user_item_new(1, "Wiring Diagram...", test_user_item_init_function,
-                                                          test_user_item_loop_function,
-                                                          test_user_item_exit_function));
+                                                          test_user_item_loop_function, test_user_item_exit_function));
     vision_ui_list_push_item(vision_ui_root_list_get(),
                              vision_ui_list_user_item_new(1, "About the Board...", test_user_item_init_function,
-                                                          test_user_item_loop_function,
-                                                          test_user_item_exit_function));
+                                                          test_user_item_loop_function, test_user_item_exit_function));
     vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
-                                 vision_ui_pop_up_push("Hello", 5000);
-                             }));
+                             vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) { vision_ui_alert_push("Hello", 5000); }));
 
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {
-    }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {
-    }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_slider_item_new(
-                                 1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {
-                                 }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {
-    }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "MCU Serial Channel", false, [](bool b) {
-    }));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "External Serial Channel", false, [](bool b) {
-    }));
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {}));
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {}));
+    vision_ui_list_push_item(launcher_setting_list_item,
+                             vision_ui_list_slider_item_new(1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {}));
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {}));
+    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "MCU Serial Channel", false, [](bool b) {}));
+    vision_ui_list_push_item(launcher_setting_list_item,
+                             vision_ui_list_switch_item_new(1, "External Serial Channel", false, [](bool b) {}));
 
     vision_ui_render_init();
 
     float prev_ms = vision_ui_driver_ticks_ms_get();
-    float current_ms = prev_ms;
     float fps_timer = prev_ms;
     int frame_count = 0;
 

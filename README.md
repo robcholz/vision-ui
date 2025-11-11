@@ -128,13 +128,13 @@ while (!vision_ui_is_exited()) {
 
 Animations (selector easing, camera tracking, exit masks) are computed in `vision_ui_core.c`, so the loop stays minimal.
 
-## Notifications, Pop-ups, and Animations
+## Notifications, Alerts, and Animations
 
 - **Info bar**: `vision_ui_info_bar_push("Saved", 2000);`
-- **Pop-up toast**: `vision_ui_pop_up_push("Hello", 5000);`
+- **Alert toast**: `vision_ui_alert_push("Hello", 5000);`
 - **Exit animation hooks**: inspect `vision_ui_exit_animation_status_get()` if your user item needs to pause while the
   sand-glass animation runs.
-- **Background freeze**: call `vision_ui_is_background_frozen()` before changing state when a pop-up is visible.
+- **Background freeze**: call `vision_ui_is_background_frozen()` before changing state when an alert is visible.
 - **Text marquee**: list items automatically scroll oversized strings with configurable speed/pause constants from
   `vision_ui_config.h`.
 
@@ -148,7 +148,7 @@ Animations (selector easing, camera tracking, exit masks) are computed in `visio
 
 ## Roadmap
 
-- [ ] rename the pop_up to alert
+- [x] rename the pop-up widget to alert
 - [ ] rename the info bar to notification, add multiple notification animation
 - [ ] decouple the new page, user_item, list_view
 - [ ] add fade out effect on the top of current effect when switching the page

@@ -54,31 +54,31 @@ void vision_ui_info_bar_push(const char *content, const uint16_t span) {
     VISION_UI_INFO_BAR.w_info_bar_trg = vision_ui_driver_str_utf8_width_get(VISION_UI_INFO_BAR.content) + VISION_UI_INFO_BAR_WIDTH;
 }
 
-static vision_ui_pop_up_t VISION_UI_POP_UP = {0, 1, 0 - 2 * VISION_UI_POP_UP_HEIGHT, 0 - 2 * VISION_UI_POP_UP_HEIGHT, 80, 80, false, 0, 1};
+static vision_ui_alert_t VISION_UI_ALERT = {0, 1, 0 - 2 * VISION_UI_ALERT_HEIGHT, 0 - 2 * VISION_UI_ALERT_HEIGHT, 80, 80, false, 0, 1};
 
-const vision_ui_pop_up_t *vision_ui_pop_up_instance_get() {
-    return &VISION_UI_POP_UP;
+const vision_ui_alert_t *vision_ui_alert_instance_get() {
+    return &VISION_UI_ALERT;
 }
 
-vision_ui_pop_up_t *vision_ui_pop_up_mutable_instance_get() {
-    return &VISION_UI_POP_UP;
+vision_ui_alert_t *vision_ui_alert_mutable_instance_get() {
+    return &VISION_UI_ALERT;
 }
 
-void vision_ui_pop_up_push(const char *content, const uint16_t span) {
-    VISION_UI_POP_UP.time = vision_ui_driver_ticks_ms_get();
-    VISION_UI_POP_UP.content = content;
-    VISION_UI_POP_UP.span = span;
-    VISION_UI_POP_UP.is_running = false;
+void vision_ui_alert_push(const char *content, const uint16_t span) {
+    VISION_UI_ALERT.time = vision_ui_driver_ticks_ms_get();
+    VISION_UI_ALERT.content = content;
+    VISION_UI_ALERT.span = span;
+    VISION_UI_ALERT.is_running = false;
 
     // 弹出
-    if (!VISION_UI_POP_UP.is_running) {
-        VISION_UI_POP_UP.time_start = vision_ui_driver_ticks_ms_get();
-        VISION_UI_POP_UP.y_pop_up_trg = 20;
-        VISION_UI_POP_UP.is_running = true;
+    if (!VISION_UI_ALERT.is_running) {
+        VISION_UI_ALERT.time_start = vision_ui_driver_ticks_ms_get();
+        VISION_UI_ALERT.y_alert_trg = 20;
+        VISION_UI_ALERT.is_running = true;
     }
 
     vision_ui_font_set(vision_ui_font_get());
-    VISION_UI_POP_UP.w_pop_up_trg = vision_ui_driver_str_utf8_width_get(VISION_UI_POP_UP.content) + VISION_UI_POP_UP_WIDTH;
+    VISION_UI_ALERT.w_alert_trg = vision_ui_driver_str_utf8_width_get(VISION_UI_ALERT.content) + VISION_UI_ALERT_WIDTH;
 }
 
 // vision_ui_list_item_t vision_ui_list_item_root = {};
