@@ -47,4 +47,4 @@ extern bool vision_ui_is_exited();
 
 extern bool vision_ui_is_background_frozen();
 
-#endif //VISION_UI_VISION_UI_CORE_H
+#endif // VISION_UI_VISION_UI_CORE_H

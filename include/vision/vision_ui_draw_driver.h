@@ -15,17 +15,17 @@ extern uint32_t vision_ui_driver_ticks_ms_get();
 
 extern void vision_ui_driver_delay(uint32_t ms);
 
-extern void vision_ui_driver_bind(void* driver);
+extern void vision_ui_driver_bind(void *driver);
 
-extern void vision_ui_driver_font_set(const uint8_t* font);
+extern void vision_ui_driver_font_set(const uint8_t *font);
 
-extern void vision_ui_driver_str_draw(uint16_t x, uint16_t y, const char* str);
+extern void vision_ui_driver_str_draw(uint16_t x, uint16_t y, const char *str);
 
-extern void vision_ui_driver_str_utf8_draw(uint16_t x, uint16_t y, const char* str);
+extern void vision_ui_driver_str_utf8_draw(uint16_t x, uint16_t y, const char *str);
 
-extern uint16_t vision_ui_driver_str_width_get(const char* str);
+extern uint16_t vision_ui_driver_str_width_get(const char *str);
 
-extern uint16_t vision_ui_driver_str_utf8_width_get(const char* str);
+extern uint16_t vision_ui_driver_str_utf8_width_get(const char *str);
 
 extern uint16_t vision_ui_driver_str_height_get();
 
@@ -51,7 +51,7 @@ extern void vision_ui_driver_line_h_dotted_draw(uint16_t x, uint16_t y, uint16_t
 
 extern void vision_ui_driver_line_v_dotted_draw(uint16_t x, uint16_t y, uint16_t h);
 
-extern void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bit_map);
+extern void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *bit_map);
 
 extern void vision_ui_driver_color_draw(uint8_t color);
 
@@ -70,6 +70,6 @@ extern void vision_ui_driver_buffer_send();
 extern void vision_ui_driver_buffer_area_send(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
 /// @attention this should be a full size buffer
-extern void* vision_ui_driver_buffer_pointer_get();
+extern void *vision_ui_driver_buffer_pointer_get();
 
-#endif //VISION_UI_VISION_UI_DRAW_DRIVER_H
+#endif // VISION_UI_VISION_UI_DRAW_DRIVER_H

@@ -8,6 +8,6 @@
 
 #include <stdint.h>
 
-extern uint8_t U8G2_BUFFER[128*8];
+extern uint8_t U8G2_BUFFER[128 * 8];
 
-#endif //DRIVER_U8G2_H
+#endif // DRIVER_U8G2_H

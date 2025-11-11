@@ -11,17 +11,19 @@
 #include <SDL_events.h>
 #include <SDL_timer.h>
 
-static u8g2_t* S_U8G2 = NULL;
+static u8g2_t *S_U8G2 = NULL;
 
 uint8_t U8G2_BUFFER[128 * 8];
 
 static int get_key() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT)
+        if (event.type == SDL_QUIT) {
             return SDLK_ESCAPE;
-        if (event.type == SDL_KEYDOWN)
+        }
+        if (event.type == SDL_KEYDOWN) {
             return event.key.keysym.sym;
+        }
     }
     return -1;
 }
@@ -49,27 +51,27 @@ void vision_ui_driver_delay(uint32_t ms) {
     SDL_Delay(ms);
 }
 
-void vision_ui_driver_bind(void* driver) {
-    S_U8G2 = (u8g2_t*) driver;
+void vision_ui_driver_bind(void *driver) {
+    S_U8G2 = (u8g2_t *) driver;
 }
 
-void vision_ui_driver_font_set(const uint8_t* font) {
+void vision_ui_driver_font_set(const uint8_t *font) {
     u8g2_SetFont(S_U8G2, font);
 }
 
-void vision_ui_driver_str_draw(uint16_t x, const uint16_t y, const char* str) {
+void vision_ui_driver_str_draw(uint16_t x, const uint16_t y, const char *str) {
     u8g2_DrawStr(S_U8G2, x, y, str);
 }
 
-void vision_ui_driver_str_utf8_draw(uint16_t x, uint16_t y, const char* str) {
+void vision_ui_driver_str_utf8_draw(uint16_t x, uint16_t y, const char *str) {
     u8g2_DrawUTF8(S_U8G2, x, y, str);
 }
 
-uint16_t vision_ui_driver_str_width_get(const char* str) {
+uint16_t vision_ui_driver_str_width_get(const char *str) {
     return (uint16_t) u8g2_GetStrWidth(S_U8G2, str);
 }
 
-uint16_t vision_ui_driver_str_utf8_width_get(const char* str) {
+uint16_t vision_ui_driver_str_utf8_width_get(const char *str) {
     return (uint16_t) u8g2_GetUTF8Width(S_U8G2, str);
 }
 
@@ -132,7 +134,7 @@ void vision_ui_driver_line_v_dotted_draw(uint16_t x, uint16_t y, uint16_t h) {
 }
 
 /* 位图：假定 bitMap 为 XBM(1bpp) 布局（和 u8g2_DrawXBM 兼容） */
-void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bit_map) {
+void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *bit_map) {
     u8g2_DrawXBM(S_U8G2, x, y, w, h, bit_map);
 }
 
@@ -173,7 +175,7 @@ void vision_ui_driver_buffer_send(void) {
 void vision_ui_driver_buffer_area_send(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
     /* u8g2_UpdateDisplayArea 以 tile(8x8) 为单位；
        只有部分驱动/后端支持；否则该调用不会生效。 */
-#if U8G2_WITH_CLIP_WINDOW  /* 一些构建里会定义，但不可靠；做宽松处理 */
+#if U8G2_WITH_CLIP_WINDOW /* 一些构建里会定义，但不可靠；做宽松处理 */
     uint16_t x_end = x + w - 1;
     uint16_t y_end = y + h - 1;
     /* 像素->tile 的向下取整/向上取整 */
@@ -191,6 +193,6 @@ void vision_ui_driver_buffer_area_send(uint16_t x, uint16_t y, uint16_t w, uint1
 #endif
 }
 
-extern void* vision_ui_driver_buffer_pointer_get() {
+extern void *vision_ui_driver_buffer_pointer_get() {
     return U8G2_BUFFER;
 }

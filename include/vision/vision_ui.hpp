@@ -6,9 +6,9 @@
 #define VISION_UI_VISION_UI_HPP
 
 extern "C" {
+#include "vision_ui_core.h"
 #include "vision_ui_draw_driver.h"
 #include "vision_ui_item.h"
-#include "vision_ui_core.h"
 }
 
-#endif //VISION_UI_VISION_UI_HPP
+#endif // VISION_UI_VISION_UI_HPP
