@@ -17,7 +17,7 @@ typedef struct {
     uint8_t col[3];
 } vision_ui_block3x3_t;
 
-static vision_ui_block3x3_t vision_ui_sample_block3x3(const uint8_t *buffer, const uint16_t cx, const uint16_t cy) {
+static vision_ui_block3x3_t vision_ui_sample_block3x3(const uint8_t* buffer, const uint16_t cx, const uint16_t cy) {
     vision_ui_block3x3_t sample = {0, {0, 0, 0}};
     if (buffer == NULL) {
         return sample;
@@ -45,7 +45,7 @@ static vision_ui_block3x3_t vision_ui_sample_block3x3(const uint8_t *buffer, con
     return sample;
 }
 
-static bool vision_ui_block_is_thin_vertical(const vision_ui_block3x3_t *sample) {
+static bool vision_ui_block_is_thin_vertical(const vision_ui_block3x3_t* sample) {
     const uint8_t side_sum = (uint8_t) (sample->col[0] + sample->col[2]);
     return (sample->col[1] >= 2) && (side_sum <= 1);
 }
@@ -63,7 +63,7 @@ static void vision_ui_background_blur_animation_render(const uint16_t x0, const 
         return;
     }
 
-    const uint8_t *buffer_live = vision_ui_driver_buffer_pointer_get();
+    const uint8_t* buffer_live = vision_ui_driver_buffer_pointer_get();
     if (buffer_live == NULL) {
         return;
     }
@@ -321,9 +321,9 @@ static void vision_ui_list_appearance_render() {
 
     vision_ui_driver_line_v_draw(VISION_UI_SCREEN_WIDTH - 2, 0, VISION_UI_SCREEN_HEIGHT);
 
-    const vision_ui_list_item_t *parent_item = vision_ui_selector_instance_get()->selected_item->parent;
-    vision_ui_page_t *page = parent_item != NULL ? parent_item->page : vision_ui_page_active_get();
-    const vision_ui_list_scroll_state_t *scroll = (page != NULL && page->view_type == VISION_UI_VIEW_LIST) ? &page->view.list.scroll : NULL;
+    const vision_ui_list_item_t* parent_item = vision_ui_selector_instance_get()->selected_item->parent;
+    vision_ui_page_t* page = parent_item != NULL ? parent_item->page : vision_ui_page_active_get();
+    const vision_ui_list_scroll_state_t* scroll = (page != NULL && page->view_type == VISION_UI_VIEW_LIST) ? &page->view.list.scroll : NULL;
 
     const int16_t slider_top_px = scroll ? scroll->top_px : 0;
     const int16_t slider_h_px = scroll ? scroll->height_px : VISION_UI_SCREEN_HEIGHT;
@@ -348,7 +348,7 @@ static void vision_ui_list_appearance_render() {
     }
 }
 
-static void vision_ui_text_draw(const char *text, uint32_t *text_scroll_anchor, const int16_t x0, const int16_t y0, const int16_t x1,
+static void vision_ui_text_draw(const char* text, uint32_t* text_scroll_anchor, const int16_t x0, const int16_t y0, const int16_t x1,
                                 const int16_t y1, const uint16_t scroll_speed_s, const uint16_t scroll_pause_ms) {
     // 当前字体行高
     const int16_t line_h = vision_ui_driver_str_height_get();
@@ -405,7 +405,7 @@ static void vision_ui_text_draw(const char *text, uint32_t *text_scroll_anchor, 
     }
 }
 
-static void vision_ui_text_list_item_draw(vision_ui_list_item_t *list, const int16_t x0, const int16_t y0, const int16_t x1,
+static void vision_ui_text_list_item_draw(vision_ui_list_item_t* list, const int16_t x0, const int16_t y0, const int16_t x1,
                                           const int16_t y1) {
     vision_ui_text_draw(list->content, &list->text_scroll_anchor, x0, y0, x1, y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
                         VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
@@ -429,7 +429,7 @@ static void vision_ui_draw_list_header() {
     };
 
     for (uint8_t i = 0; i < vision_ui_selector_mutable_instance_get()->selected_item->parent->child_num; i++) {
-        const vision_ui_list_item_t *current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
+        const vision_ui_list_item_t* current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
         const int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera +
                                     (VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_HEADER_MAX_HEIGHT) / 2;
@@ -477,7 +477,7 @@ static void vision_ui_draw_list_footer() {
     };
 
     for (uint8_t i = 0; i < vision_ui_selector_instance_get()->selected_item->parent->child_num; i++) {
-        vision_ui_list_item_t *current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
+        vision_ui_list_item_t* current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
         const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
         // draw header
@@ -486,7 +486,7 @@ static void vision_ui_draw_list_footer() {
         const int16_t frame_y = y_list_item + (VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_FOOTER_MAX_HEIGHT) / 2;
         if (current_list_item->type == LIST_ITEM) {
         } else if (current_list_item->type == SWITCH_ITEM) {
-            vision_ui_switch_item_t *switch_item = vision_ui_to_list_switch_item(current_list_item);
+            vision_ui_switch_item_t* switch_item = vision_ui_to_list_switch_item(current_list_item);
             if (switch_item->is_stateless) {
                 continue;
             }
@@ -494,11 +494,11 @@ static void vision_ui_draw_list_footer() {
             if (switch_item->value == true) {
                 vision_ui_driver_color_draw(1);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                                          (uint8_t *) footer_switch_on);
+                                          (uint8_t*) footer_switch_on);
             } else {
                 vision_ui_driver_color_draw(1);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                                          (uint8_t *) footer_switch_off);
+                                          (uint8_t*) footer_switch_off);
             }
         } else if (current_list_item->type == SLIDER_ITEM) {
             const uint16_t shrink_width = VISION_UI_LIST_FOOTER_MAX_WIDTH - 4;
@@ -517,7 +517,7 @@ static void vision_ui_draw_list_footer() {
             if (vision_ui_to_list_slider_item(current_list_item)->is_confirmed) {
                 vision_ui_driver_color_draw(2);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                                          (uint8_t *) footer_slider);
+                                          (uint8_t*) footer_slider);
             }
         }
     }
@@ -528,7 +528,7 @@ static void vision_ui_list_item_render() {
     vision_ui_draw_list_footer();
 
     for (uint8_t i = 0; i < vision_ui_selector_instance_get()->selected_item->parent->child_num; i++) {
-        vision_ui_list_item_t *current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
+        vision_ui_list_item_t* current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
         const int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
@@ -561,7 +561,7 @@ static void vision_ui_selector_render() {
     vision_ui_driver_line_h_draw(x_selector + 2, y_selector + selector_h - 2, selector_w - 4);
 }
 
-void vision_ui_icon_render(const vision_ui_page_t *page) {
+void vision_ui_icon_render(const vision_ui_page_t* page) {
     (void) page;
     // TODO: implement icon view rendering
 }

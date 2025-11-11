@@ -155,7 +155,7 @@ Animations (selector easing, camera tracking, exit masks) are computed in `visio
 - [x] add fade out effect on the top of current effect when switching the page
 - [x] add animation for scroll bar
 - [ ] add icon view
-- [ ] use the correct format
+- [x] use the correct format
 - [ ] use 2nd ODE for animation and fix the animation rate
 
 ## License

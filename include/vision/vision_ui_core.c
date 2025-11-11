@@ -19,7 +19,7 @@ void vision_ui_render_init() {
     IS_IN_VISION_UI = true;
 }
 
-void vision_ui_animation_do(float *pos, const float pos_trg, const float speed) {
+void vision_ui_animation_do(float* pos, const float pos_trg, const float speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) {
             *pos = pos_trg;
@@ -69,14 +69,14 @@ static void vision_ui_widget_core_position_update() {
 
 static void vision_ui_list_init() {
     // 做动画
-    vision_ui_list_item_t *root = vision_ui_root_list_get();
+    vision_ui_list_item_t* root = vision_ui_root_list_get();
     for (uint8_t i = 0; i < root->child_num; i++) {
-        vision_ui_list_item_t *list = root->child_list_item[i];
+        vision_ui_list_item_t* list = root->child_list_item[i];
         list->y_list_item = 0;
 
-        vision_ui_page_t *page = list->page;
+        vision_ui_page_t* page = list->page;
         if (page != NULL && page->view_type == VISION_UI_VIEW_LIST) {
-            vision_ui_list_scroll_state_t *scroll = &page->view.list.scroll;
+            vision_ui_list_scroll_state_t* scroll = &page->view.list.scroll;
             scroll->top = 0.f;
             scroll->top_trg = 0.f;
             scroll->height = 0.f;
@@ -87,7 +87,7 @@ static void vision_ui_list_init() {
             scroll->height_px = VISION_UI_SCREEN_HEIGHT;
         }
     }
-    vision_ui_selector_t *selector = vision_ui_selector_mutable_instance_get();
+    vision_ui_selector_t* selector = vision_ui_selector_mutable_instance_get();
     selector->scroll_bar_scale_parent = NULL;
     selector->scroll_bar_scale_part_shared = 0.f;
     selector->selected_index = 0;
@@ -104,13 +104,13 @@ void vision_ui_core_init() {
 }
 
 static void vision_ui_list_item_position_update() {
-    vision_ui_selector_t *selector_mut = vision_ui_selector_mutable_instance_get();
-    const vision_ui_selector_t *selector = vision_ui_selector_instance_get();
+    vision_ui_selector_t* selector_mut = vision_ui_selector_mutable_instance_get();
+    const vision_ui_selector_t* selector = vision_ui_selector_instance_get();
     if (selector->selected_item == NULL) {
         return;
     }
 
-    vision_ui_list_item_t *parent_item = selector->selected_item->parent;
+    vision_ui_list_item_t* parent_item = selector->selected_item->parent;
     if (parent_item == NULL) {
         return;
     }
@@ -119,12 +119,12 @@ static void vision_ui_list_item_position_update() {
         vision_ui_animation_do(&parent_item->child_list_item[i]->y_list_item, parent_item->child_list_item[i]->y_list_item_trg, 84);
     }
 
-    vision_ui_page_t *page = parent_item->page;
+    vision_ui_page_t* page = parent_item->page;
     if (page == NULL || page->view_type != VISION_UI_VIEW_LIST) {
         return;
     }
 
-    vision_ui_list_scroll_state_t *scroll = &page->view.list.scroll;
+    vision_ui_list_scroll_state_t* scroll = &page->view.list.scroll;
 
     const uint8_t child_cnt = parent_item->child_num > 0 ? parent_item->child_num : 1;
     const float part = (float) VISION_UI_SCREEN_HEIGHT / child_cnt;
@@ -135,7 +135,7 @@ static void vision_ui_list_item_position_update() {
     scroll->height_trg = slider_h_trg;
     scroll->scale_part_trg = part;
 
-    vision_ui_page_t *const prev_page = selector_mut->scroll_bar_scale_parent;
+    vision_ui_page_t* const prev_page = selector_mut->scroll_bar_scale_parent;
     if (page != prev_page) {
         if (prev_page != NULL && prev_page->view_type == VISION_UI_VIEW_LIST) {
             scroll->top = prev_page->view.list.scroll.top;
@@ -220,9 +220,9 @@ static void vision_ui_main_core_step() {
         return;
     }
 
-    vision_ui_list_item_t *selected_item = vision_ui_selector_instance_get()->selected_item;
-    vision_ui_page_t *selected_page = vision_ui_page_from_item(selected_item);
-    vision_ui_custom_view_t *custom_view = NULL;
+    vision_ui_list_item_t* selected_item = vision_ui_selector_instance_get()->selected_item;
+    vision_ui_page_t* selected_page = vision_ui_page_from_item(selected_item);
+    vision_ui_custom_view_t* custom_view = NULL;
 
     if (selected_item != NULL && selected_page != NULL && selected_page->view_type == VISION_UI_VIEW_CUSTOM) {
         custom_view = &selected_page->view.custom;
@@ -256,7 +256,7 @@ static void vision_ui_main_core_step() {
             custom_view->loop_function();
         }
     } else {
-        vision_ui_page_t *active_page = vision_ui_page_active_get();
+        vision_ui_page_t* active_page = vision_ui_page_active_get();
         if (active_page != NULL) {
             switch (active_page->view_type) {
                 case VISION_UI_VIEW_LIST:
