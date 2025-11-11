@@ -270,18 +270,65 @@ static void vision_ui_notification_render() {
         return;
     }
 
-    // 弹窗到位后才开始计算时间
-    if (vision_ui_notification_instance_get()->y_notification == vision_ui_notification_instance_get()->y_notification_trg) {
-        vision_ui_notification_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
+    const uint32_t now = vision_ui_driver_ticks_ms_get();
+
+    if (vision_ui_notification_instance_get()->is_dismissing) {
+        const bool reached_target =
+                vision_ui_notification_instance_get()->y_notification ==
+                vision_ui_notification_instance_get()->y_notification_trg;
+        const bool removal_time_elapsed =
+                now - vision_ui_notification_instance_get()->dismiss_start >= VISION_UI_NOTIFICATION_DISMISS_DURATION_MS;
+
+        if (removal_time_elapsed || reached_target) {
+            if (!reached_target) {
+                vision_ui_notification_mutable_instance_get()->y_notification =
+                        vision_ui_notification_instance_get()->y_notification_trg;
+            }
+
+            if (vision_ui_notification_instance_get()->has_pending) {
+                vision_ui_notification_mutable_instance_get()->is_dismissing = false;
+                vision_ui_notification_mutable_instance_get()->content =
+                        vision_ui_notification_instance_get()->pending_content;
+                vision_ui_notification_mutable_instance_get()->span =
+                        vision_ui_notification_instance_get()->pending_span;
+                vision_ui_notification_mutable_instance_get()->pending_content = NULL;
+                vision_ui_notification_mutable_instance_get()->pending_span = 0;
+                vision_ui_notification_mutable_instance_get()->has_pending = false;
+                vision_ui_notification_mutable_instance_get()->time_start = now;
+                vision_ui_notification_mutable_instance_get()->time = now;
+                vision_ui_notification_mutable_instance_get()->y_notification_trg = 0;
+                vision_ui_notification_mutable_instance_get()->dismiss_start = 0;
+                vision_ui_font_set(vision_ui_font_get());
+                vision_ui_notification_mutable_instance_get()->w_notification_trg =
+                        vision_ui_driver_str_utf8_width_get(vision_ui_notification_instance_get()->content) +
+                        VISION_UI_NOTIFICATION_WIDTH;
+                vision_ui_notification_mutable_instance_get()->is_running = true;
+            } else {
+                vision_ui_notification_mutable_instance_get()->is_running = false;
+                vision_ui_notification_mutable_instance_get()->is_dismissing = false;
+                vision_ui_notification_mutable_instance_get()->dismiss_start = 0;
+                vision_ui_notification_mutable_instance_get()->has_pending = false;
+                vision_ui_notification_mutable_instance_get()->pending_content = NULL;
+                vision_ui_notification_mutable_instance_get()->pending_span = 0;
+                return;
+            }
+        }
+    } else {
+        if (vision_ui_notification_instance_get()->y_notification ==
+            vision_ui_notification_instance_get()->y_notification_trg) {
+            vision_ui_notification_mutable_instance_get()->time = now;
+        }
+
+        if (vision_ui_notification_instance_get()->time - vision_ui_notification_instance_get()->time_start >=
+            vision_ui_notification_instance_get()->span) {
+            vision_ui_notification_mutable_instance_get()->y_notification_trg = 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT;
+            vision_ui_notification_mutable_instance_get()->is_dismissing = true;
+            vision_ui_notification_mutable_instance_get()->dismiss_start = now;
+        }
     }
 
-    // 时间到了就收回
-    if (vision_ui_notification_instance_get()->time - vision_ui_notification_instance_get()->time_start >=
-        vision_ui_notification_instance_get()->span) {
-        vision_ui_notification_mutable_instance_get()->y_notification_trg = 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT; // 收回
-        if (vision_ui_notification_instance_get()->y_notification == vision_ui_notification_instance_get()->y_notification_trg) {
-            vision_ui_notification_mutable_instance_get()->is_running = false; // 等归位后结束生命周期
-        }
+    if (!vision_ui_notification_instance_get()->is_running) {
+        return;
     }
 
     const int16_t x_notification = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_notification_instance_get()->w_notification / 2;
