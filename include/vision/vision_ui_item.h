@@ -32,7 +32,9 @@ typedef struct vision_ui_info_bar_t {
     uint32_t time;
 } vision_ui_info_bar_t;
 
-extern vision_ui_info_bar_t VISION_UI_INFO_BAR;
+extern const vision_ui_info_bar_t* vision_ui_info_bar_instance_get();
+
+extern vision_ui_info_bar_t* vision_ui_info_bar_mutable_instance_get();
 
 extern void vision_ui_info_bar_push(char* content, uint16_t span);
 
@@ -51,7 +53,9 @@ typedef struct vision_ui_pop_up_t {
     uint32_t time;
 } vision_ui_pop_up_t;
 
-extern vision_ui_pop_up_t VISION_UI_POP_UP;
+extern const vision_ui_pop_up_t* vision_ui_pop_up_instance_get();
+
+extern vision_ui_pop_up_t* vision_ui_pop_up_mutable_instance_get();
 
 extern void vision_ui_pop_up_push(char* content, uint16_t span);
 
@@ -240,9 +244,13 @@ typedef struct vision_ui_camera_t {
     vision_ui_selector_t* selector;
 } vision_ui_camera_t;
 
-extern vision_ui_camera_t VISION_UI_CAMERA;
+extern const vision_ui_camera_t* vision_ui_camera_instance_get();
 
-extern vision_ui_camera_t* vision_ui_camera_instance_get();
+extern vision_ui_camera_t* vision_ui_camera_mutable_instance_get();
+
+extern void vision_ui_camera_instance_x_trg_set(float x_trg);
+
+extern void vision_ui_camera_instance_y_trg_set(float y_trg);
 
 extern void vision_ui_camera_bind_selector(vision_ui_selector_t* selector);
 

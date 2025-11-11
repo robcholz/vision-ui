@@ -22,7 +22,17 @@ void* vision_ui_font_get() {
     return VISION_UI_FONT;
 }
 
-vision_ui_info_bar_t VISION_UI_INFO_BAR = {0, 1, 0 - 2 * VISION_UI_INFO_BAR_HEIGHT, 0 - 2 * VISION_UI_INFO_BAR_HEIGHT, 80, 80, false, 0, 1};
+static vision_ui_info_bar_t VISION_UI_INFO_BAR = {
+    0, 1, 0 - 2 * VISION_UI_INFO_BAR_HEIGHT, 0 - 2 * VISION_UI_INFO_BAR_HEIGHT, 80, 80, false, 0, 1
+};
+
+extern const vision_ui_info_bar_t* vision_ui_info_bar_instance_get() {
+    return &VISION_UI_INFO_BAR;
+}
+
+vision_ui_info_bar_t* vision_ui_info_bar_mutable_instance_get() {
+    return &VISION_UI_INFO_BAR;
+}
 
 void vision_ui_info_bar_push(char* content, const uint16_t span) {
     //设定显示时间的概念，超过了显示时间，就将ytrg设为初始位置，如果在显示时间之内，有新的消息涌入，则y和ytrg都不变，继续显示，且显示时间清零
@@ -44,7 +54,15 @@ void vision_ui_info_bar_push(char* content, const uint16_t span) {
     VISION_UI_INFO_BAR.w_info_bar_trg = vision_ui_driver_str_utf8_width_get(VISION_UI_INFO_BAR.content) + VISION_UI_INFO_BAR_WIDTH;
 }
 
-vision_ui_pop_up_t VISION_UI_POP_UP = {0, 1, 0 - 2 * VISION_UI_POP_UP_HEIGHT, 0 - 2 * VISION_UI_POP_UP_HEIGHT, 80, 80, false, 0, 1};
+static vision_ui_pop_up_t VISION_UI_POP_UP = {0, 1, 0 - 2 * VISION_UI_POP_UP_HEIGHT, 0 - 2 * VISION_UI_POP_UP_HEIGHT, 80, 80, false, 0, 1};
+
+const vision_ui_pop_up_t* vision_ui_pop_up_instance_get() {
+    return &VISION_UI_POP_UP;
+}
+
+vision_ui_pop_up_t* vision_ui_pop_up_mutable_instance_get() {
+    return &VISION_UI_POP_UP;
+}
 
 void vision_ui_pop_up_push(char* content, const uint16_t span) {
     VISION_UI_POP_UP.time = vision_ui_driver_ticks_ms_get();
@@ -378,7 +396,23 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
     return true;
 }
 
-vision_ui_camera_t VISION_UI_CAMERA = {0, 0, 0, 0}; //在refresh加上camera的坐标
+static vision_ui_camera_t VISION_UI_CAMERA = {0, 0, 0, 0}; //在refresh加上camera的坐标
+
+const vision_ui_camera_t* vision_ui_camera_instance_get() {
+    return &VISION_UI_CAMERA;
+}
+
+extern vision_ui_camera_t* vision_ui_camera_mutable_instance_get() {
+    return &VISION_UI_CAMERA;
+}
+
+void vision_ui_camera_instance_x_trg_set(const float x_trg) {
+    VISION_UI_CAMERA.x_camera_trg = x_trg;
+}
+
+void vision_ui_camera_instance_y_trg_set(const float y_trg) {
+    VISION_UI_CAMERA.y_camera_trg = y_trg;
+}
 
 void vision_ui_camera_bind_selector(vision_ui_selector_t* selector) {
     if (selector == NULL) return;

@@ -2,6 +2,7 @@
 // Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
 #include "vision_ui_core.h"
+#include "vision_ui_item.h"
 
 #include <stdio.h>
 #include <tgmath.h>
@@ -70,32 +71,35 @@ void vision_ui_animation_do(float* pos, float pos_trg, float speed) {
 }
 
 void vision_ui_info_bar_update() {
-    vision_ui_animation_do(&VISION_UI_INFO_BAR.y_info_bar, VISION_UI_INFO_BAR.y_info_bar_trg, 94);
-    vision_ui_animation_do(&VISION_UI_INFO_BAR.w_info_bar, VISION_UI_INFO_BAR.w_info_bar_trg, 95);
+    vision_ui_animation_do(&vision_ui_info_bar_mutable_instance_get()->y_info_bar,
+                           vision_ui_info_bar_mutable_instance_get()->y_info_bar_trg, 94);
+    vision_ui_animation_do(&vision_ui_info_bar_mutable_instance_get()->w_info_bar,
+                           vision_ui_info_bar_mutable_instance_get()->w_info_bar_trg, 95);
 }
 
 void vision_ui_pop_up_update() {
-    vision_ui_animation_do(&VISION_UI_POP_UP.y_pop_up, VISION_UI_POP_UP.y_pop_up_trg, 94);
-    vision_ui_animation_do(&VISION_UI_POP_UP.w_pop_up, VISION_UI_POP_UP.w_pop_up_trg, 96);
+    vision_ui_animation_do(&vision_ui_pop_up_mutable_instance_get()->y_pop_up, vision_ui_pop_up_mutable_instance_get()->y_pop_up_trg, 94);
+    vision_ui_animation_do(&vision_ui_pop_up_mutable_instance_get()->w_pop_up, vision_ui_pop_up_mutable_instance_get()->w_pop_up_trg, 96);
 }
 
 void vision_ui_camera_position_update() {
-    if (VISION_UI_CAMERA.selector->y_selector_trg + VISION_UI_LIST_SELECTOR_FIXED_HEIGHT + VISION_UI_CAMERA.y_camera_trg >
+    if (vision_ui_camera_instance_get()->selector->y_selector_trg + VISION_UI_LIST_SELECTOR_FIXED_HEIGHT + vision_ui_camera_instance_get()->
+        y_camera_trg >
         VISION_UI_SCREEN_HEIGHT) {
         //向下超出屏幕 需要向下移动
-        VISION_UI_CAMERA.y_camera_trg =
-                VISION_UI_SCREEN_HEIGHT - VISION_UI_CAMERA.selector->y_selector_trg - VISION_UI_LIST_SELECTOR_FIXED_HEIGHT;
+        vision_ui_camera_instance_y_trg_set(
+            VISION_UI_SCREEN_HEIGHT - vision_ui_camera_instance_get()->selector->y_selector_trg - VISION_UI_LIST_SELECTOR_FIXED_HEIGHT);
     }
 
     const float top_padding = VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING;
-    if (VISION_UI_CAMERA.selector->y_selector_trg + VISION_UI_CAMERA.y_camera_trg < top_padding) {
+    if (vision_ui_camera_instance_get()->selector->y_selector_trg + vision_ui_camera_instance_get()->y_camera_trg < top_padding) {
         //向上超出屏幕 需要向上移动
-        VISION_UI_CAMERA.y_camera_trg = top_padding - VISION_UI_CAMERA.selector->y_selector_trg;
+        vision_ui_camera_instance_y_trg_set(top_padding - vision_ui_camera_instance_get()->selector->y_selector_trg);
     }
 
-    VISION_UI_CAMERA.x_camera_trg = 0;
-    vision_ui_animation_do(&VISION_UI_CAMERA.x_camera, VISION_UI_CAMERA.x_camera_trg, 95);
-    vision_ui_animation_do(&VISION_UI_CAMERA.y_camera, VISION_UI_CAMERA.y_camera_trg, 96);
+    vision_ui_camera_instance_x_trg_set(0);
+    vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95);
+    vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96);
 }
 
 void vision_ui_widget_core_position_update() {
@@ -133,7 +137,7 @@ void vision_ui_list_item_position_update() {
 
     for (uint8_t i = 0; i < parent->child_num; i++)
         vision_ui_animation_do(&parent->child_list_item[i]->y_list_item,
-                            parent->child_list_item[i]->y_list_item_trg, 84);
+                               parent->child_list_item[i]->y_list_item_trg, 84);
 
     const uint8_t child_cnt = parent->child_num > 0 ? parent->child_num : 1;
     const float part = (float) VISION_UI_SCREEN_HEIGHT / child_cnt;
@@ -229,7 +233,7 @@ void vision_ui_main_core_step() {
     if (!IS_IN_VISION_UI) return;
 
     //切换in user item的逻辑
-    if (VISION_UI_EXIT_ANIMATION_STATUS == 1) {
+    if (vision_ui_exit_animation_status_get() == EXIT_MASK_FALL_COMPLETE) {
         if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM) {
             vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
             if (selected_user_item->entering_user_item)
@@ -264,7 +268,7 @@ void vision_ui_main_core_step() {
         vision_ui_list_render();
     }
 
-    IS_BACKGROUND_FROZEN = VISION_UI_POP_UP.is_running;
+    IS_BACKGROUND_FROZEN = vision_ui_pop_up_instance_get()->is_running;
 
     //退场动画
     //上面都是正常应当绘制的内容 退场动画需要绘制时 只需要在上面的基础上绘制遮罩即可

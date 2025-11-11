@@ -2,6 +2,7 @@
 // Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
 #include "vision_ui_renderer.h"
+#include "vision_ui_item.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -17,14 +18,13 @@ static void vision_ui_exit_animation_step(float* pos, float pos_trg, float speed
     }
 }
 
-uint8_t VISION_UI_EXIT_ANIMATION_STATUS = 0;
+static vision_ui_exit_animation_status_t VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_FALL;
+
+vision_ui_exit_animation_status_t vision_ui_exit_animation_status_get() {
+    return VISION_UI_EXIT_ANIMATION_STATUS;
+}
 
 void vision_ui_exit_animation_render() {
-    //完成完整的退场动画 VISION_UI_EXIT_ANIMATION_STATUS 的取值依次如下
-    //0 触发退场动画 遮罩开始落下
-    //1 遮罩落下完成 此时屏幕被遮罩填满 开始变更背景内容
-    //2 遮罩开始抬升
-    //0 遮罩抬升完成 退场动画完成
     static float temp_h = -8;
     static float temp_h_trg = VISION_UI_SCREEN_HEIGHT + 8;
 
@@ -98,22 +98,22 @@ void vision_ui_exit_animation_render() {
     vision_ui_exit_animation_step(&temp_h, temp_h_trg, 94);
 
     //下落过程
-    if (VISION_UI_EXIT_ANIMATION_STATUS == 0 && temp_h == temp_h_trg && temp_h == VISION_UI_SCREEN_HEIGHT + 8) {
-        VISION_UI_EXIT_ANIMATION_STATUS = 1; //落下来了
+    if (VISION_UI_EXIT_ANIMATION_STATUS == EXIT_MASK_FALL && temp_h == temp_h_trg && temp_h == VISION_UI_SCREEN_HEIGHT + 8) {
+        VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_FALL_COMPLETE; //落下来了
         return;
     }
 
     //上面 VISION_UI_EXIT_ANIMATION_STATUS = 1 之后 return 了 进到 core 里刷新了背景显示内容 下一次进到本函数就可以把标志位置为 2
-    if (VISION_UI_EXIT_ANIMATION_STATUS == 1) {
+    if (VISION_UI_EXIT_ANIMATION_STATUS == EXIT_MASK_FALL_COMPLETE) {
         // _temp_h_trg = OLED_HEIGHT + 8;
         temp_h_trg = -8; //使其开始上升
-        VISION_UI_EXIT_ANIMATION_STATUS = 2; //开始抬起
+        VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_RISE; //开始抬起
         return;
     }
 
-    if (VISION_UI_EXIT_ANIMATION_STATUS == 2 && temp_h == temp_h_trg && temp_h == -8) {
+    if (VISION_UI_EXIT_ANIMATION_STATUS == EXIT_MASK_RISE && temp_h == temp_h_trg && temp_h == -8) {
         vision_ui_exit_animation_set_is_finished();
-        VISION_UI_EXIT_ANIMATION_STATUS = 0; //退场动画完成
+        VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_FALL; //退场动画完成
         temp_h = -8;
         temp_h_trg = VISION_UI_SCREEN_HEIGHT + 8;
         return;
@@ -264,98 +264,108 @@ static void vision_ui_draw_background_blur_animation(uint16_t x0, uint16_t y0, u
 }
 
 static void vision_ui_info_bar_render() {
-    if (!VISION_UI_INFO_BAR.is_running) {
+    if (!vision_ui_info_bar_instance_get()->is_running) {
         return;
     }
 
     //弹窗到位后才开始计算时间
-    if (VISION_UI_INFO_BAR.y_info_bar == VISION_UI_INFO_BAR.y_info_bar_trg) VISION_UI_INFO_BAR.time = vision_ui_driver_ticks_ms_get();
-
-    //时间到了就收回
-    if (VISION_UI_INFO_BAR.time - VISION_UI_INFO_BAR.time_start >= VISION_UI_INFO_BAR.span) {
-        VISION_UI_INFO_BAR.y_info_bar_trg = 0 - 2 * VISION_UI_INFO_BAR_HEIGHT; //收回
-        if (VISION_UI_INFO_BAR.y_info_bar == VISION_UI_INFO_BAR.y_info_bar_trg) VISION_UI_INFO_BAR.is_running = false; //等归位后结束生命周期
+    if (vision_ui_info_bar_instance_get()->y_info_bar == vision_ui_info_bar_instance_get()->y_info_bar_trg) {
+        vision_ui_info_bar_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
     }
 
-    int16_t x_info_bar = VISION_UI_SCREEN_WIDTH / 2 - VISION_UI_INFO_BAR.w_info_bar / 2;
-    int16_t y_info_bar_1 = VISION_UI_INFO_BAR.y_info_bar - 4;
-    int16_t y_info_bar_2 = VISION_UI_INFO_BAR.y_info_bar + VISION_UI_INFO_BAR_HEIGHT;
+    //时间到了就收回
+    if (vision_ui_info_bar_instance_get()->time - vision_ui_info_bar_instance_get()->time_start >= vision_ui_info_bar_instance_get()->
+        span) {
+        vision_ui_info_bar_mutable_instance_get()->y_info_bar_trg = 0 - 2 * VISION_UI_INFO_BAR_HEIGHT; //收回
+        if (vision_ui_info_bar_instance_get()->y_info_bar == vision_ui_info_bar_instance_get()->y_info_bar_trg) {
+            vision_ui_info_bar_mutable_instance_get()->is_running = false; //等归位后结束生命周期
+        }
+    }
+
+    int16_t x_info_bar = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_info_bar_instance_get()->w_info_bar / 2;
+    int16_t y_info_bar_1 = vision_ui_info_bar_instance_get()->y_info_bar - 4;
+    int16_t y_info_bar_2 = vision_ui_info_bar_instance_get()->y_info_bar + VISION_UI_INFO_BAR_HEIGHT;
 
     vision_ui_font_set(vision_ui_font_get());
 
     vision_ui_driver_color_draw(0); //黑遮罩打底
-    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (VISION_UI_INFO_BAR.w_info_bar + 4) / 2), y_info_bar_1,
-                                (int16_t) (VISION_UI_INFO_BAR.w_info_bar + 4), VISION_UI_INFO_BAR_HEIGHT + 6, 4);
+    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_info_bar_instance_get()->w_info_bar + 4) / 2),
+                                y_info_bar_1,
+                                (int16_t) (vision_ui_info_bar_instance_get()->w_info_bar + 4), VISION_UI_INFO_BAR_HEIGHT + 6, 4);
 
     vision_ui_driver_color_draw(1);
     vision_ui_driver_box_r_draw(x_info_bar, y_info_bar_1,
-                                (int16_t) VISION_UI_INFO_BAR.w_info_bar, VISION_UI_INFO_BAR_HEIGHT + 4, 3);
+                                (int16_t) vision_ui_info_bar_instance_get()->w_info_bar, VISION_UI_INFO_BAR_HEIGHT + 4, 3);
     //向上移动四个像素 同时向下多画四个像素 只用下半部分圆角
 
     vision_ui_driver_color_draw(2);
-    vision_ui_driver_line_h_draw(x_info_bar + 2, y_info_bar_2 - 2, (int16_t) (VISION_UI_INFO_BAR.w_info_bar - 4));
+    vision_ui_driver_line_h_draw(x_info_bar + 2, y_info_bar_2 - 2, (int16_t) (vision_ui_info_bar_instance_get()->w_info_bar - 4));
     vision_ui_driver_pixel_draw(x_info_bar + 1, y_info_bar_2 - 3);
     vision_ui_driver_pixel_draw(x_info_bar + 1, y_info_bar_2 - 3);
 
-    const int16_t text_w = vision_ui_driver_str_width_get(VISION_UI_INFO_BAR.content);
+    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_info_bar_instance_get()->content);
     const int16_t text_h = vision_ui_driver_str_height_get();
-    const int16_t text_x = x_info_bar + (int16_t) ((VISION_UI_INFO_BAR.w_info_bar - text_w) / 2);
-    const int16_t text_y = (int16_t) (VISION_UI_INFO_BAR.y_info_bar + vision_ui_driver_str_height_get() - 2);
+    const int16_t text_x = x_info_bar + (int16_t) ((vision_ui_info_bar_instance_get()->w_info_bar - text_w) / 2);
+    const int16_t text_y = (int16_t) (vision_ui_info_bar_instance_get()->y_info_bar + vision_ui_driver_str_height_get() - 2);
 
     vision_ui_driver_color_draw(0);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_str_utf8_draw(text_x, text_y, VISION_UI_INFO_BAR.content);
+    vision_ui_driver_str_utf8_draw(text_x, text_y, vision_ui_info_bar_instance_get()->content);
 
     vision_ui_driver_color_draw(2);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
 }
 
 static void vision_ui_pop_up_render() {
-    if (!VISION_UI_POP_UP.is_running) {
+    if (!vision_ui_pop_up_instance_get()->is_running) {
         return;
     }
 
     //弹窗到位后才开始计算时间
-    if (VISION_UI_POP_UP.y_pop_up == VISION_UI_POP_UP.y_pop_up_trg) VISION_UI_POP_UP.time = vision_ui_driver_ticks_ms_get();
-
-    //时间到了就收回
-    if (VISION_UI_POP_UP.time - VISION_UI_POP_UP.time_start >= VISION_UI_POP_UP.span) {
-        VISION_UI_POP_UP.y_pop_up_trg = 0 - 2 * VISION_UI_POP_UP_HEIGHT; //收回
-        if (VISION_UI_POP_UP.y_pop_up == VISION_UI_POP_UP.y_pop_up_trg) VISION_UI_POP_UP.is_running = false; //等归位后结束生命周期
+    if (vision_ui_pop_up_instance_get()->y_pop_up == vision_ui_pop_up_instance_get()->y_pop_up_trg) {
+        vision_ui_pop_up_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
     }
 
-    int16_t x_pop_up = VISION_UI_SCREEN_WIDTH / 2 - VISION_UI_POP_UP.w_pop_up / 2;
-    const int16_t y_pop_up = VISION_UI_POP_UP.y_pop_up + VISION_UI_POP_UP_HEIGHT;
+    //时间到了就收回
+    if (vision_ui_pop_up_instance_get()->time - vision_ui_pop_up_instance_get()->time_start >= vision_ui_pop_up_instance_get()->span) {
+        vision_ui_pop_up_mutable_instance_get()->y_pop_up_trg = 0 - 2 * VISION_UI_POP_UP_HEIGHT; //收回
+        if (vision_ui_pop_up_instance_get()->y_pop_up == vision_ui_pop_up_instance_get()->y_pop_up_trg) {
+            vision_ui_pop_up_mutable_instance_get()->is_running = false; //等归位后结束生命周期
+        }
+    }
+
+    int16_t x_pop_up = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_pop_up_instance_get()->w_pop_up / 2;
+    const int16_t y_pop_up = vision_ui_pop_up_instance_get()->y_pop_up + VISION_UI_POP_UP_HEIGHT;
 
     vision_ui_font_set(vision_ui_font_get());
 
     vision_ui_driver_color_draw(0); //黑遮罩
-    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (VISION_UI_POP_UP.w_pop_up + 4) / 2 - 2),
-                                (int16_t) (VISION_UI_POP_UP.y_pop_up - 2),
-                                (int16_t) (VISION_UI_POP_UP.w_pop_up + 8), VISION_UI_POP_UP_HEIGHT + 4, 5);
+    vision_ui_driver_box_r_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_pop_up_instance_get()->w_pop_up + 4) / 2 - 2),
+                                (int16_t) (vision_ui_pop_up_instance_get()->y_pop_up - 2),
+                                (int16_t) (vision_ui_pop_up_instance_get()->w_pop_up + 8), VISION_UI_POP_UP_HEIGHT + 4, 5);
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_box_r_draw(x_pop_up - 2, (int16_t) VISION_UI_POP_UP.y_pop_up,
-                                (int16_t) (VISION_UI_POP_UP.w_pop_up + 4),
+    vision_ui_driver_box_r_draw(x_pop_up - 2, (int16_t) vision_ui_pop_up_instance_get()->y_pop_up,
+                                (int16_t) (vision_ui_pop_up_instance_get()->w_pop_up + 4),
                                 VISION_UI_POP_UP_HEIGHT, 3);
 
     vision_ui_driver_color_draw(2);
-    vision_ui_driver_line_h_draw(x_pop_up, y_pop_up - 2, (int16_t) VISION_UI_POP_UP.w_pop_up);
+    vision_ui_driver_line_h_draw(x_pop_up, y_pop_up - 2, (int16_t) vision_ui_pop_up_instance_get()->w_pop_up);
     vision_ui_driver_pixel_draw(x_pop_up - 1, y_pop_up - 3);
-    vision_ui_driver_pixel_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 + VISION_UI_POP_UP.w_pop_up / 2), y_pop_up - 3);
+    vision_ui_driver_pixel_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 + vision_ui_pop_up_instance_get()->w_pop_up / 2), y_pop_up - 3);
 
-    const int16_t text_w = vision_ui_driver_str_width_get(VISION_UI_POP_UP.content);
+    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_pop_up_instance_get()->content);
     const int16_t text_h = vision_ui_driver_str_height_get();
-    const int16_t text_x = x_pop_up + (int16_t) ((VISION_UI_POP_UP.w_pop_up - text_w) / 2);
-    const int16_t text_y = (int16_t) (VISION_UI_POP_UP.y_pop_up + vision_ui_driver_str_height_get() + 1);
+    const int16_t text_x = x_pop_up + (int16_t) ((vision_ui_pop_up_instance_get()->w_pop_up - text_w) / 2);
+    const int16_t text_y = (int16_t) (vision_ui_pop_up_instance_get()->y_pop_up + vision_ui_driver_str_height_get() + 1);
 
     vision_ui_driver_color_draw(0);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_str_utf8_draw(text_x, text_y, VISION_UI_POP_UP.content);
+    vision_ui_driver_str_utf8_draw(text_x, text_y, vision_ui_pop_up_instance_get()->content);
 
     vision_ui_driver_color_draw(2);
     vision_ui_driver_box_draw(text_x, text_y - text_h, text_w, text_h);
@@ -502,8 +512,8 @@ static void vision_ui_draw_list_header() {
 
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->child_num; i++) {
         vision_ui_list_item_t* current_list_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[i];
-        int16_t x_list_item = VISION_UI_CAMERA.x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
-        int16_t y_list_item = current_list_item->y_list_item + VISION_UI_CAMERA.y_camera + (
+        int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
+        int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera + (
                                   VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_HEADER_MAX_HEIGHT) / 2;
         // draw header
         vision_ui_driver_color_draw(1);
@@ -571,7 +581,7 @@ static void vision_ui_draw_list_footer() {
 
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->child_num; i++) {
         vision_ui_list_item_t* current_list_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[i];
-        int16_t y_list_item = current_list_item->y_list_item + VISION_UI_CAMERA.y_camera;
+        int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
         // draw header
         const int16_t frame_x = VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_SCROLL_BAR_WIDTH - VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING -
@@ -622,8 +632,8 @@ static void vision_ui_list_item_render() {
 
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->child_num; i++) {
         vision_ui_list_item_t* current_list_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[i];
-        const int16_t x_list_item = VISION_UI_CAMERA.x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
-        const int16_t y_list_item = current_list_item->y_list_item + VISION_UI_CAMERA.y_camera;
+        const int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
+        const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
         const int16_t frame_x = current_list_item->type == TITLE_ITEM
                                     ? x_list_item
@@ -642,9 +652,10 @@ static void vision_ui_list_item_render() {
 }
 
 static void vision_ui_selector_render() {
-    const int16_t x_selector = (int16_t) (lrintf(VISION_UI_CAMERA.x_camera) + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING -
+    const int16_t x_selector = (int16_t) (lrintf(vision_ui_camera_instance_get()->x_camera) + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING
+                                          -
                                           VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING);
-    const int16_t y_selector = (int16_t) lrintf(VISION_UI_SELECTOR.y_selector + VISION_UI_CAMERA.y_camera);
+    const int16_t y_selector = (int16_t) lrintf(VISION_UI_SELECTOR.y_selector + vision_ui_camera_instance_get()->y_camera);
 
     vision_ui_driver_color_draw(1);
     const int16_t selector_w = (int16_t) lrintf(VISION_UI_SELECTOR.w_selector);

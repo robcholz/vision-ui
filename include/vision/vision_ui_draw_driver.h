@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-extern enum vision_ui_action_t vision_ui_driver_action_get();
+extern vision_ui_action_t vision_ui_driver_action_get();
 
 extern uint32_t vision_ui_driver_ticks_ms_get();
 

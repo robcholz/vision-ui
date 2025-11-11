@@ -9,13 +9,13 @@
 
 #define VISION_UI_ALLOW_EXIT_BY_USER 0 //允许用户在最浅层级退出vision ui lite
 
-enum vision_ui_action_t {
+typedef enum vision_ui_action_t {
     UI_ACTION_NONE,
     UI_ACTION_GO_PREV,
     UI_ACTION_GO_NEXT,
     UI_ACTION_ENTER,
     UI_ACTION_EXIT,
-};
+} vision_ui_action_t;
 
 extern bool IS_IN_VISION_UI;
 

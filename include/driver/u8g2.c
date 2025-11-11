@@ -1,11 +1,10 @@
 //
 // Created by Finn Sheng (Ziheng Sheng) on 11/10/25.
 //
-#pragma once
 
 #include "u8g2.h"
 
-#include "vision/vision_ui_renderer.h"
+#include "vision/vision_ui_core.h"
 
 #include <u8g2.h>
 
@@ -27,7 +26,7 @@ static int get_key() {
     return -1;
 }
 
-enum vision_ui_action_t vision_ui_driver_action_get(void) {
+vision_ui_action_t vision_ui_driver_action_get() {
     switch (get_key()) {
         case SDLK_UP:
             return UI_ACTION_GO_PREV;
@@ -42,7 +41,7 @@ enum vision_ui_action_t vision_ui_driver_action_get(void) {
     }
 }
 
-uint32_t vision_ui_driver_ticks_ms_get(void) {
+uint32_t vision_ui_driver_ticks_ms_get() {
     return SDL_GetTicks();
 }
 
@@ -74,7 +73,7 @@ uint16_t vision_ui_driver_str_utf8_width_get(const char* str) {
     return (uint16_t) u8g2_GetUTF8Width(S_U8G2, str);
 }
 
-uint16_t vision_ui_driver_str_height_get(void) {
+uint16_t vision_ui_driver_str_height_get() {
     /* 更稳妥：使用 Ascent/Descent 计算文字高度 */
     int8_t ascent = u8g2_GetAscent(S_U8G2);
     int8_t descent = u8g2_GetDescent(S_U8G2); /* 注意：通常为负值 */
