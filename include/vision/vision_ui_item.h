@@ -18,7 +18,7 @@ extern bool vision_ui_exit_animation_is_finished();
 extern void vision_ui_exit_animation_set_is_finished();
 
 typedef struct vision_ui_info_bar_t {
-    char* content;
+    const char* content;
     uint16_t span;
 
     float y_info_bar;
@@ -36,10 +36,10 @@ extern const vision_ui_info_bar_t* vision_ui_info_bar_instance_get();
 
 extern vision_ui_info_bar_t* vision_ui_info_bar_mutable_instance_get();
 
-extern void vision_ui_info_bar_push(char* content, uint16_t span);
+extern void vision_ui_info_bar_push(const char* content, uint16_t span);
 
 typedef struct vision_ui_pop_up_t {
-    char* content;
+    const char* content;
     uint16_t span;
 
     float y_pop_up;
@@ -57,7 +57,7 @@ extern const vision_ui_pop_up_t* vision_ui_pop_up_instance_get();
 
 extern vision_ui_pop_up_t* vision_ui_pop_up_mutable_instance_get();
 
-extern void vision_ui_pop_up_push(char* content, uint16_t span);
+extern void vision_ui_pop_up_push(const char* content, uint16_t span);
 
 /*** 弹窗 ***/
 
@@ -124,7 +124,7 @@ typedef enum {
 typedef struct vision_ui_list_item_t {
     vision_ui_list_item_type_t type;
 
-    char* content;
+    const char* content;
     uint32_t text_scroll_anchor;
 
     float scroll_bar_top;
@@ -193,16 +193,16 @@ extern vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_ite
 
 extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item);
 
-extern vision_ui_list_item_t* vision_ui_list_item_new(char* content);
+extern vision_ui_list_item_t* vision_ui_list_item_new(const char* content);
 
 extern vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title);
 
-extern vision_ui_list_item_t* vision_ui_list_switch_item_new(char* content, bool default_value, void (*on_changed)(bool value));
+extern vision_ui_list_item_t* vision_ui_list_switch_item_new(const char* content, bool default_value, void (*on_changed)(bool value));
 
-extern vision_ui_list_item_t* vision_ui_list_slider_item_new(char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max,
+extern vision_ui_list_item_t* vision_ui_list_slider_item_new(const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max,
                                                              void (*on_changed)(int16_t value));
 
-extern vision_ui_list_item_t* vision_ui_list_user_item_new(char* content, void (*init_function)(), void (*loop_function)(),
+extern vision_ui_list_item_t* vision_ui_list_user_item_new(const char* content, void (*init_function)(), void (*loop_function)(),
                                                            void (*exit_function)());
 
 extern bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child);

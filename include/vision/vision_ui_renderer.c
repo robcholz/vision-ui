@@ -11,7 +11,7 @@
 
 #include "vision_ui_core.h"
 
-static void vision_ui_exit_animation_step(float* pos, float pos_trg, float speed) {
+static void vision_ui_exit_animation_step(float* pos, const float pos_trg, const float speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) *pos = pos_trg;
         else *pos += (pos_trg - *pos) / (100.0f - speed) / 1.0f;
@@ -33,8 +33,8 @@ void vision_ui_exit_animation_render() {
     vision_ui_driver_color_draw(1);
 
     // 沙漏
-    uint8_t x_hourglass_offset = VISION_UI_SCREEN_WIDTH / 2 - 8;
-    int8_t y_hourglass = temp_h - VISION_UI_SCREEN_HEIGHT / 2 - 18;
+    const uint8_t x_hourglass_offset = VISION_UI_SCREEN_WIDTH / 2 - 8;
+    const int8_t y_hourglass = temp_h - VISION_UI_SCREEN_HEIGHT / 2 - 18;
     if (y_hourglass + 20 >= 0) {
         // 绘制顶部和底部矩形及中间擦除
         vision_ui_driver_box_draw(x_hourglass_offset, y_hourglass + 2, 13, 3);
@@ -48,8 +48,8 @@ void vision_ui_exit_animation_render() {
 
         // 斜线部分循环绘制
         for (uint8_t i = 0; i < 5; ++i) {
-            int8_t current_y = y_hourglass + 8 + i;
-            int8_t left_x = (i < 3) ? (x_hourglass_offset + 1 + i) : (x_hourglass_offset + 4);
+            const int8_t current_y = y_hourglass + 8 + i;
+            const int8_t left_x = (i < 3) ? (x_hourglass_offset + 1 + i) : (x_hourglass_offset + 4);
             const int8_t right_x = (i < 3) ? (x_hourglass_offset + 10 - i) : (x_hourglass_offset + 7);
             vision_ui_driver_line_h_draw(left_x, current_y, 2);
             vision_ui_driver_line_h_draw(right_x, current_y, 2);
@@ -57,7 +57,7 @@ void vision_ui_exit_animation_render() {
 
         // 中间收口部分
         for (uint8_t i = 0; i < 3; ++i) {
-            int8_t current_y = y_hourglass + 13 + i;
+            const int8_t current_y = y_hourglass + 13 + i;
             vision_ui_driver_line_h_draw(x_hourglass_offset + 3 - i, current_y, 2);
             vision_ui_driver_line_h_draw(x_hourglass_offset + 8 + i, current_y, 2);
         }
@@ -105,7 +105,7 @@ void vision_ui_exit_animation_render() {
 
     //上面 VISION_UI_EXIT_ANIMATION_STATUS = 1 之后 return 了 进到 core 里刷新了背景显示内容 下一次进到本函数就可以把标志位置为 2
     if (VISION_UI_EXIT_ANIMATION_STATUS == EXIT_MASK_FALL_COMPLETE) {
-        // _temp_h_trg = OLED_HEIGHT + 8;
+        // _temp_h_trg = SCREEN_HEIGHT + 8;
         temp_h_trg = -8; //使其开始上升
         VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_RISE; //开始抬起
         return;
@@ -126,8 +126,8 @@ typedef struct {
 } vision_ui_block3x3_t;
 
 static vision_ui_block3x3_t vision_ui_sample_block3x3(const uint8_t* buffer,
-                                                      uint16_t cx,
-                                                      uint16_t cy) {
+                                                      const uint16_t cx,
+                                                      const uint16_t cy) {
     vision_ui_block3x3_t sample = {0, {0, 0, 0}};
     if (buffer == NULL) return sample;
 
@@ -157,7 +157,11 @@ static bool vision_ui_block_is_thin_vertical(const vision_ui_block3x3_t* sample)
     return (sample->col[1] >= 2) && (side_sum <= 1);
 }
 
-static void vision_ui_draw_background_blur_animation(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint8_t fade_level) {
+static void vision_ui_draw_background_blur_animation(const uint16_t x0,
+                                                     const uint16_t y0,
+                                                     uint16_t width,
+                                                     uint16_t height,
+                                                     const uint8_t fade_level) {
     if (x0 + width > VISION_UI_SCREEN_WIDTH) {
         width = VISION_UI_SCREEN_WIDTH - x0;
     }
@@ -278,9 +282,9 @@ static void vision_ui_info_bar_render() {
         }
     }
 
-    int16_t x_info_bar = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_info_bar_instance_get()->w_info_bar / 2;
-    int16_t y_info_bar_1 = vision_ui_info_bar_instance_get()->y_info_bar - 4;
-    int16_t y_info_bar_2 = vision_ui_info_bar_instance_get()->y_info_bar + VISION_UI_INFO_BAR_HEIGHT;
+    const int16_t x_info_bar = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_info_bar_instance_get()->w_info_bar / 2;
+    const int16_t y_info_bar_1 = vision_ui_info_bar_instance_get()->y_info_bar - 4;
+    const int16_t y_info_bar_2 = vision_ui_info_bar_instance_get()->y_info_bar + VISION_UI_INFO_BAR_HEIGHT;
 
     vision_ui_font_set(vision_ui_font_get());
 
@@ -332,7 +336,7 @@ static void vision_ui_pop_up_render() {
         }
     }
 
-    int16_t x_pop_up = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_pop_up_instance_get()->w_pop_up / 2;
+    const int16_t x_pop_up = VISION_UI_SCREEN_WIDTH / 2 - vision_ui_pop_up_instance_get()->w_pop_up / 2;
     const int16_t y_pop_up = vision_ui_pop_up_instance_get()->y_pop_up + VISION_UI_POP_UP_HEIGHT;
 
     vision_ui_font_set(vision_ui_font_get());
@@ -507,10 +511,10 @@ static void vision_ui_draw_list_header() {
     };
 
     for (uint8_t i = 0; i < vision_ui_selector_mutable_instance_get()->selected_item->parent->child_num; i++) {
-        vision_ui_list_item_t* current_list_item = vision_ui_selector_mutable_instance_get()->selected_item->parent->child_list_item[i];
-        int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
-        int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera + (
-                                  VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_HEADER_MAX_HEIGHT) / 2;
+        const vision_ui_list_item_t* current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
+        const int16_t x_list_item = vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
+        const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera + (
+                                        VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_HEADER_MAX_HEIGHT) / 2;
         // draw header
         vision_ui_driver_color_draw(1);
         const uint16_t header_base_x = x_list_item;
@@ -577,7 +581,7 @@ static void vision_ui_draw_list_footer() {
 
     for (uint8_t i = 0; i < vision_ui_selector_instance_get()->selected_item->parent->child_num; i++) {
         vision_ui_list_item_t* current_list_item = vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
-        int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
+        const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
         // draw header
         const int16_t frame_x = VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_SCROLL_BAR_WIDTH - VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING -
@@ -588,11 +592,11 @@ static void vision_ui_draw_list_footer() {
             if (vision_ui_to_list_switch_item(current_list_item)->value == true) {
                 vision_ui_driver_color_draw(1);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                                          footer_switch_on);
+                                          (uint8_t*) footer_switch_on);
             } else {
                 vision_ui_driver_color_draw(1);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                                          footer_switch_off);
+                                          (uint8_t*) footer_switch_off);
             }
         } else if (current_list_item->type == SLIDER_ITEM) {
             const uint16_t shrink_width = VISION_UI_LIST_FOOTER_MAX_WIDTH - 4;
@@ -616,7 +620,7 @@ static void vision_ui_draw_list_footer() {
             if (vision_ui_to_list_slider_item(current_list_item)->is_confirmed) {
                 vision_ui_driver_color_draw(2);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                                          footer_slider);
+                                          (uint8_t*) footer_slider);
             }
         }
     }

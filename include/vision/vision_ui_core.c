@@ -14,53 +14,8 @@ bool IS_IN_VISION_UI;
 
 static bool IS_BACKGROUND_FROZEN = false;
 
-static bool vision_ui_start() {
-    /**自行修改**/
-    if (IS_IN_VISION_UI) {
-        return true;
-    }
-    static int64_t key_press_span = 0;
-    static uint32_t key_start_time = 0;
-    static bool key_clicked = false;
-    static char msg[100] = {};
-
-    if (true) {
-        if (!key_clicked) {
-            key_clicked = true;
-            key_start_time = vision_ui_driver_ticks_ms_get();
-            //变量上限是0xFFFF 65535
-        }
-        if (vision_ui_driver_ticks_ms_get() - key_start_time > 1000 && key_clicked) {
-            key_press_span = vision_ui_driver_ticks_ms_get() - key_start_time;
-            if (key_press_span <= 2500) {
-                sprintf(msg, "继续长按%.2f秒进入.", (2500 - key_press_span) / 1000.0f);
-                vision_ui_info_bar_push(msg, 2000);
-            } else if (key_press_span > 2500) {
-                vision_ui_info_bar_push("have fun! :p", 2000);
-                IS_IN_VISION_UI = true;
-                vision_ui_list_init();
-                key_clicked = false;
-                key_start_time = 0;
-                key_press_span = 0;
-            }
-        }
-    } else {
-        key_clicked = false;
-        if (key_press_span != 0) {
-            vision_ui_info_bar_push("bye!", 2000);
-            key_press_span = 0;
-        }
-    }
-    return false;
-}
-
 void vision_ui_render_init() {
-    bool init = false;
-    while (!init) {
-        vision_ui_driver_buffer_clear();
-        init = vision_ui_start();
-        vision_ui_driver_buffer_send();
-    }
+    IS_IN_VISION_UI = true;
 }
 
 void vision_ui_animation_do(float* pos, const float pos_trg, const float speed) {
@@ -187,7 +142,9 @@ void vision_ui_selector_position_update() {
                                                       vision_ui_selector_instance_get()->selected_item->content) +
                                                   VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING
                                                   + VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
-    vision_ui_selector_mutable_instance_get()->w_selector_trg = selector_current_width > selector_max_width ? selector_max_width : selector_current_width;
+    vision_ui_selector_mutable_instance_get()->w_selector_trg = selector_current_width > selector_max_width
+                                                                    ? selector_max_width
+                                                                    : selector_current_width;
     vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->y_selector, vision_ui_selector_instance_get()->y_selector_trg, 91);
     vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->w_selector, vision_ui_selector_instance_get()->w_selector_trg, 92);
     vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->h_selector, vision_ui_selector_instance_get()->h_selector_trg, 93);
@@ -247,7 +204,8 @@ void vision_ui_main_core_step() {
     }
 
     //渲染的逻辑
-    if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM && vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item)->
+    if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM && vision_ui_to_list_user_item(
+            vision_ui_selector_instance_get()->selected_item)->
         in_user_item) {
         vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
         //初始化

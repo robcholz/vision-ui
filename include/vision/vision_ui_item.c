@@ -34,7 +34,7 @@ vision_ui_info_bar_t* vision_ui_info_bar_mutable_instance_get() {
     return &VISION_UI_INFO_BAR;
 }
 
-void vision_ui_info_bar_push(char* content, const uint16_t span) {
+void vision_ui_info_bar_push(const char* content, const uint16_t span) {
     //设定显示时间的概念，超过了显示时间，就将ytrg设为初始位置，如果在显示时间之内，有新的消息涌入，则y和ytrg都不变，继续显示，且显示时间清零
     //只有显示时间到了的时候，才会复位
 
@@ -64,7 +64,7 @@ vision_ui_pop_up_t* vision_ui_pop_up_mutable_instance_get() {
     return &VISION_UI_POP_UP;
 }
 
-void vision_ui_pop_up_push(char* content, const uint16_t span) {
+void vision_ui_pop_up_push(const char* content, const uint16_t span) {
     VISION_UI_POP_UP.time = vision_ui_driver_ticks_ms_get();
     VISION_UI_POP_UP.content = content;
     VISION_UI_POP_UP.span = span;
@@ -117,7 +117,7 @@ vision_ui_list_item_t* vision_ui_root_list_get() {
     return vision_ui_root_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_item_new(char* content) {
+vision_ui_list_item_t* vision_ui_list_item_new(const char* content) {
     vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_list_item_t));
     memset(list_item, 0, sizeof(vision_ui_list_item_t));
     list_item->type = LIST_ITEM;
@@ -134,7 +134,7 @@ vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title) {
     return list_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_switch_item_new(char* content, const bool default_value, void (*on_changed)(bool value)) {
+vision_ui_list_item_t* vision_ui_list_switch_item_new(const char* content, const bool default_value, void (*on_changed)(bool value)) {
     vision_ui_switch_item_t* switch_item = malloc(sizeof(vision_ui_switch_item_t));
     memset(switch_item, 0, sizeof(vision_ui_switch_item_t));
     switch_item->base_item.type = SWITCH_ITEM;
@@ -144,7 +144,11 @@ vision_ui_list_item_t* vision_ui_list_switch_item_new(char* content, const bool 
     return (vision_ui_list_item_t*) switch_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_slider_item_new(char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max,
+vision_ui_list_item_t* vision_ui_list_slider_item_new(const char* content,
+                                                      const int16_t default_value,
+                                                      const uint8_t step,
+                                                      const int16_t min,
+                                                      const int16_t max,
                                                       void (*on_changed)(int16_t value)) {
     vision_ui_slider_item_t* slider_item = malloc(sizeof(vision_ui_slider_item_t));
     memset(slider_item, 0, sizeof(vision_ui_slider_item_t));
@@ -158,7 +162,7 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(char* content, int16_t def
     return (vision_ui_list_item_t*) slider_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_user_item_new(char* content, void (*init_function)(), void (*loop_function)(),
+vision_ui_list_item_t* vision_ui_list_user_item_new(const char* content, void (*init_function)(), void (*loop_function)(),
                                                     void (*exit_function)()) {
     vision_ui_user_item_t* user_item = malloc(sizeof(vision_ui_user_item_t));
     memset(user_item, 0, sizeof(vision_ui_user_item_t));
@@ -378,7 +382,7 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
     vision_ui_font_set(vision_ui_font_get());
     float next_y = VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING;
     if (parent->child_num > 0) {
-        vision_ui_list_item_t* last_child = parent->child_list_item[parent->child_num - 1];
+        const vision_ui_list_item_t* last_child = parent->child_list_item[parent->child_num - 1];
         const uint8_t gap_after_last = (last_child->type == TITLE_ITEM)
                                            ? VISION_UI_LIST_TITLE_TO_FRAME_PADDING
                                            : VISION_UI_LIST_FRAME_BETWEEN_PADDING;

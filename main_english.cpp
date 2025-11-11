@@ -1,7 +1,7 @@
 #include <tgmath.h>
 #include <u8g2.h>
 
-#include <vision/vision_ui.h>
+#include <vision/vision_ui.hpp>
 
 #include "driver/u8g2.h"
 
