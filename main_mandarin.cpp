@@ -136,12 +136,11 @@ int main() {
 
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "切换屏幕", true, [](bool b) {}));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_user_item_new(1, "接线图...", test_user_item_init_function, test_user_item_loop_function,
-                                                          test_user_item_exit_function));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_user_item_new(1, "关于开发板...", test_user_item_init_function, test_user_item_loop_function,
-                                                          test_user_item_exit_function));
+    static vision_ui_page_t *page =
+            vision_ui_custom_page_create(test_user_item_init_function, test_user_item_loop_function, test_user_item_exit_function);
+    static vision_ui_list_item_t *about_the_board_item = vision_ui_list_switch_item_stateless_new(1, "关于开发板...", [](bool) {});
+    vision_ui_custom_page_bind_to_item(page, about_the_board_item);
+    vision_ui_list_push_item(vision_ui_root_list_get(), about_the_board_item);
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification", false, [](bool b) {
                                  vision_ui_notification_push("Notification Test", 5000);
                              }));
