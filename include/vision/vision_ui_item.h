@@ -170,6 +170,8 @@ extern vision_ui_list_item_t *vision_ui_list_title_item_new(size_t capacity, con
 extern vision_ui_list_item_t *vision_ui_list_switch_item_new(size_t capacity, const char *content, bool default_value,
                                                              void (*on_changed)(bool value));
 
+extern vision_ui_list_item_t *vision_ui_list_switch_item_stateless_new(size_t capacity, const char *content);
+
 extern vision_ui_list_item_t *vision_ui_list_slider_item_new(size_t capacity, const char *content, int16_t default_value, uint8_t step,
                                                              int16_t min, int16_t max, void (*on_changed)(int16_t value));
 

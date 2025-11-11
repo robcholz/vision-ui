@@ -262,6 +262,10 @@ vision_ui_list_item_t *vision_ui_list_switch_item_new(const size_t capacity, con
     return (vision_ui_list_item_t *) switch_item;
 }
 
+vision_ui_list_item_t *vision_ui_list_switch_item_stateless_new(const size_t capacity, const char *content) {
+    return vision_ui_list_switch_item_new(capacity, content, false, NULL);
+}
+
 vision_ui_list_item_t *vision_ui_list_slider_item_new(const size_t capacity, const char *content, const int16_t default_value,
                                                       const uint8_t step, const int16_t min, const int16_t max,
                                                       void (*on_changed)(int16_t value)) {
@@ -431,7 +435,9 @@ void vision_ui_selector_jump_to_selected_item() {
     if (VISION_UI_SELECTOR.selected_item->type == SWITCH_ITEM) {
         vision_ui_switch_item_t *selected_switch_item = vision_ui_to_list_switch_item(VISION_UI_SELECTOR.selected_item);
         selected_switch_item->value = !selected_switch_item->value;
-        selected_switch_item->on_changed(selected_switch_item->value);
+        if (selected_switch_item->on_changed != NULL) {
+            selected_switch_item->on_changed(selected_switch_item->value);
+        }
         return;
     }
 

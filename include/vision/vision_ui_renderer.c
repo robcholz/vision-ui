@@ -585,7 +585,12 @@ static void vision_ui_draw_list_footer() {
         const int16_t frame_y = y_list_item + (VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_FOOTER_MAX_HEIGHT) / 2;
         if (current_list_item->type == LIST_ITEM) {
         } else if (current_list_item->type == SWITCH_ITEM) {
-            if (vision_ui_to_list_switch_item(current_list_item)->value == true) {
+            vision_ui_switch_item_t *switch_item = vision_ui_to_list_switch_item(current_list_item);
+            if (switch_item->on_changed == NULL) {
+                continue;
+            }
+
+            if (switch_item->value == true) {
                 vision_ui_driver_color_draw(1);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
                                           (uint8_t *) footer_switch_on);
