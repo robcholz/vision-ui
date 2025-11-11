@@ -138,8 +138,11 @@ int main() {
     vision_ui_list_push_item(vision_ui_root_list_get(),
                              vision_ui_list_user_item_new(1, "About the Board...", test_user_item_init_function,
                                                           test_user_item_loop_function, test_user_item_exit_function));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test", 5000);
+    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 1", false, [](bool b) {
+                                 vision_ui_notification_push("Notification Test 1", 5000);
+                             }));
+    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2", false, [](bool b) {
+                                 vision_ui_notification_push("Notification Test 2", 5000);
                              }));
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
                                  vision_ui_alert_push("Alert Test", 5000);
