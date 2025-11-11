@@ -77,6 +77,8 @@ static void vision_ui_list_init() {
         list->scroll_bar_top_trg = 0;
         list->scroll_bar_height = 0;
         list->scroll_bar_height_trg = 0;
+        list->scroll_bar_scale_part = 0;
+        list->scroll_bar_scale_part_trg = 0;
         list->scroll_bar_top_px = 0;
         list->scroll_bar_height_px = VISION_UI_SCREEN_HEIGHT;
     }
@@ -106,6 +108,7 @@ static void vision_ui_list_item_position_update() {
 
     parent->scroll_bar_top_trg = slider_top_trg;
     parent->scroll_bar_height_trg = slider_h_trg;
+    parent->scroll_bar_scale_part_trg = part;
 
     const bool scroll_bar_uninitialized = parent->scroll_bar_height == 0.f && parent->scroll_bar_height_trg == 0.f;
     if (scroll_bar_uninitialized) {
@@ -114,6 +117,15 @@ static void vision_ui_list_item_position_update() {
     } else {
         vision_ui_animation_do(&parent->scroll_bar_top, parent->scroll_bar_top_trg, VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED);
         vision_ui_animation_do(&parent->scroll_bar_height, parent->scroll_bar_height_trg, VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED);
+    }
+
+    const bool scroll_bar_scale_uninitialized =
+            parent->scroll_bar_scale_part == 0.f && parent->scroll_bar_scale_part_trg == 0.f;
+    if (scroll_bar_scale_uninitialized) {
+        parent->scroll_bar_scale_part = parent->scroll_bar_scale_part_trg;
+    } else {
+        vision_ui_animation_do(&parent->scroll_bar_scale_part, parent->scroll_bar_scale_part_trg,
+                               VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED);
     }
 
     int16_t slider_top_px = (int16_t) lrintf(parent->scroll_bar_top);
