@@ -421,8 +421,7 @@ static void vision_ui_list_appearance_render() {
 
     const vision_ui_list_item_t *parent_item = vision_ui_selector_instance_get()->selected_item->parent;
     vision_ui_page_t *page = parent_item != NULL ? parent_item->page : vision_ui_page_active_get();
-    const vision_ui_list_scroll_state_t *scroll =
-            (page != NULL && page->view_type == VISION_UI_VIEW_LIST) ? &page->view.list.scroll : NULL;
+    const vision_ui_list_scroll_state_t *scroll = (page != NULL && page->view_type == VISION_UI_VIEW_LIST) ? &page->view.list.scroll : NULL;
 
     const int16_t slider_top_px = scroll ? scroll->top_px : 0;
     const int16_t slider_h_px = scroll ? scroll->height_px : VISION_UI_SCREEN_HEIGHT;
