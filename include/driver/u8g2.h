@@ -22,6 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-extern uint8_t buffer[128*8];
+extern uint8_t U8G2_BUFFER[128*8];
 
 #endif //DRIVER_U8G2_H

@@ -5,8 +5,9 @@
 #ifndef FUCKCLION_CORE_SRC_ASTRA_UI_LITE_ASTRA_UI_ITEM_H_
 #define FUCKCLION_CORE_SRC_ASTRA_UI_LITE_ASTRA_UI_ITEM_H_
 
-#include "astra_ui_draw_driver.h"
 #include <stdbool.h>
+
+#include "astra_ui_draw_driver.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,11 +16,11 @@ extern "C" {
 
 #endif
 
-extern void* astra_font;
+extern void* ASTRA_FONT;
 
-extern void astra_set_font(void* _font);
+extern void astra_set_font(void* font);
 
-extern bool astra_exit_animation_finished;
+extern bool ASTRA_EXIT_ANIMATION_FINISHED;
 
 typedef struct astra_info_bar_t {
     char* content;
@@ -36,9 +37,9 @@ typedef struct astra_info_bar_t {
     uint32_t time;
 } astra_info_bar_t;
 
-extern astra_info_bar_t astra_info_bar;
+extern astra_info_bar_t ASTRA_INFO_BAR;
 
-extern void astra_push_info_bar(char* _content, const uint16_t _span);
+extern void astra_push_info_bar(char* content, uint16_t span);
 
 typedef struct astra_pop_up_t {
     char* content;
@@ -49,9 +50,9 @@ typedef struct astra_pop_up_t {
     uint32_t time;
 } astra_pop_up_t;
 
-extern astra_pop_up_t astra_pop_up;
+extern astra_pop_up_t ASTRA_POP_UP;
 
-extern void astra_push_pop_up(char* _content, const uint16_t _span);
+extern void astra_push_pop_up(char* content, uint16_t span);
 
 /*** 弹窗 ***/
 
@@ -108,11 +109,11 @@ extern void astra_push_pop_up(char* _content, const uint16_t _span);
 #define LIST_TEXT_MAX_WIDTH (SCREEN_WIDTH-LIST_FOOTER_TO_SCROLL_BAR_PADDING-LIST_FOOTER_MAX_WIDTH-LIST_FOOTER_TO_LEFT_PADDING-LIST_HEADER_TO_TEXT_PADDING-LIST_HEADER_MAX_WIDTH-LIST_HEADER_TO_LEFT_DISPLAY_PADDING)
 
 typedef enum {
-    list_item,
-    title_item,
-    switch_item,
-    slider_item,
-    user_item,
+    LIST_ITEM,
+    TITLE_ITEM,
+    SWITCH_ITEM,
+    SLIDER_ITEM,
+    USER_ITEM,
 } astra_list_item_type_t;
 
 typedef struct astra_list_item_t {
@@ -181,29 +182,29 @@ typedef struct astra_user_item_t {
 
 extern astra_list_item_t* astra_get_root_list();
 
-extern astra_switch_item_t* astra_to_switch_item(astra_list_item_t* _astra_list_item);
+extern astra_switch_item_t* astra_to_switch_item(astra_list_item_t* astra_list_item);
 
-extern astra_slider_item_t* astra_to_slider_item(astra_list_item_t* _astra_list_item);
+extern astra_slider_item_t* astra_to_slider_item(astra_list_item_t* astra_list_item);
 
-extern astra_user_item_t* astra_to_user_item(astra_list_item_t* _astra_list_item);
+extern astra_user_item_t* astra_to_user_item(astra_list_item_t* astra_list_item);
 
-extern astra_list_item_t* astra_new_list_item(char* _content);
+extern astra_list_item_t* astra_new_list_item(char* content);
 
 extern astra_list_item_t* astra_new_title_item(const char* title);
 
-extern astra_list_item_t* astra_new_switch_item(char* _content, bool defaultValue, void (*on_changed)(bool value));
+extern astra_list_item_t* astra_new_switch_item(char* content, bool default_value, void (*on_changed)(bool value));
 
-extern astra_list_item_t* astra_new_slider_item(char* _content, int16_t defaultValue, uint8_t _step, int16_t _min, int16_t _max,
+extern astra_list_item_t* astra_new_slider_item(char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max,
                                                 void (*on_changed)(int16_t value));
 
-extern astra_list_item_t* astra_new_user_item(char* _content, void (*_init_function)(), void (*_loop_function)(), void (*_exit_function)());
+extern astra_list_item_t* astra_new_user_item(char* content, void (*init_function)(), void (*loop_function)(), void (*exit_function)());
 
 //正确用法：astra_push_item_to_list(astra_get_root_list(), astra_new_user_item(...));
 
 //此种方法合理且安全，本质是将user item类转换为了基类，用于渲染
 //在此过程中，派生类的专有变量不会丢失内容，selector发现是user type后再转换回派生类执行对应内部函数即可
 
-extern bool astra_push_item_to_list(astra_list_item_t* _parent, astra_list_item_t* _child);
+extern bool astra_push_item_to_list(astra_list_item_t* parent, astra_list_item_t* child);
 
 /*** 列表项 ***/
 
@@ -214,11 +215,11 @@ typedef struct astra_selector_t {
     astra_list_item_t* selected_item;
 } astra_selector_t;
 
-extern astra_selector_t astra_selector;
+extern astra_selector_t ASTRA_SELECTOR;
 
 extern astra_selector_t* astra_get_selector();
 
-extern bool astra_bind_item_to_selector(astra_list_item_t* _item);
+extern bool astra_bind_item_to_selector(astra_list_item_t* item);
 
 extern void astra_selector_go_next_item();
 
@@ -232,15 +233,18 @@ extern void astra_selector_exit_current_item();
 
 /*** 相机 ***/
 typedef struct astra_camera_t {
-    float x_camera, x_camera_trg, y_camera, y_camera_trg;
+    float x_camera;
+    float x_camera_trg;
+    float y_camera;
+    float y_camera_trg;
     astra_selector_t* selector;
 } astra_camera_t;
 
-extern astra_camera_t astra_camera;
+extern astra_camera_t ASTRA_CAMERA;
 
 extern astra_camera_t* astra_get_camera();
 
-extern void astra_bind_selector_to_camera(astra_selector_t* _selector);
+extern void astra_bind_selector_to_camera(astra_selector_t* selector);
 
 /*** 相机 ***/
 

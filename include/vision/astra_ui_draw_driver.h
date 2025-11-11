@@ -13,15 +13,15 @@ extern "C" {
 
 #endif
 
-enum UIAction {
-    UIActionNone,
-    UIActionGoPrev,
-    UIActionGoNext,
-    UIActionEnter,
-    UIActionExit,
+enum ui_action_t {
+    UI_ACTION_NONE,
+    UI_ACTION_GO_PREV,
+    UI_ACTION_GO_NEXT,
+    UI_ACTION_ENTER,
+    UI_ACTION_EXIT,
 };
 
-extern enum UIAction vision_ui_get_ui_action(void);
+extern enum ui_action_t vision_ui_get_ui_action(void);
 
 extern uint32_t get_ticks_ms(void);
 

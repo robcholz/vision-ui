@@ -8,96 +8,96 @@
 
 #include "font/chinese.h"
 
-u8g2_t u8g2;
+u8g2_t U8G2;
 
-uint32_t time_start = 0;
-static int16_t y_logo = 200;
-static int16_t y_version = 200;
-static int16_t y_name = -200;
-static int16_t y_astra = -200;
-static int16_t y_box = 200;
-static int16_t x_board = -200;
-static int16_t y_wire_1 = 200;
-static int16_t y_wire_2 = 200;
+uint32_t TIME_START = 0;
+static int16_t Y_LOGO = 200;
+static int16_t Y_VERSION = 200;
+static int16_t Y_NAME = -200;
+static int16_t Y_ASTRA = -200;
+static int16_t Y_BOX = 200;
+static int16_t X_BOARD = -200;
+static int16_t Y_WIRE_1 = 200;
+static int16_t Y_WIRE_2 = 200;
 
-void animation(int16_t* _pos, int16_t _posTrg, int16_t _speed) {
-    if (*_pos != _posTrg) {
-        if (fabs(*_pos - _posTrg) <= 1.0f) *_pos = _posTrg;
-        else *_pos += (_posTrg - *_pos) / ((100 - _speed) / 1.0f);
+void animation(int16_t* pos, int16_t pos_trg, int16_t speed) {
+    if (*pos != pos_trg) {
+        if (fabs(*pos - pos_trg) <= 1.0f) *pos = pos_trg;
+        else *pos += (pos_trg - *pos) / ((100 - speed) / 1.0f);
     }
 }
 
 void test_user_item_init_function() {
-    time_start = get_ticks_ms();
+    TIME_START = get_ticks_ms();
 }
 
 void test_user_item_loop_function() {
-    uint32_t _time = get_ticks_ms();
+    uint32_t time = get_ticks_ms();
 
     oled_set_draw_color(1);
-    oled_draw_R_box(2, y_box - 1, oled_get_UTF8_width("「astraLauncher」") + 4, oled_get_str_height() + 2, 1);
+    oled_draw_R_box(2, Y_BOX - 1, oled_get_UTF8_width("「astraLauncher」") + 4, oled_get_str_height() + 2, 1);
     oled_set_draw_color(2);
-    oled_draw_UTF8(4, y_logo - 2, "「astraLauncher」");
+    oled_draw_UTF8(4, Y_LOGO - 2, "「astraLauncher」");
 
     oled_set_draw_color(1);
-    oled_draw_str(106, y_version, "v1.0");
-    oled_draw_UTF8(2, y_name, "by Rational Works.");
-    oled_draw_UTF8(2, y_astra, "Powered by Astra UI Lite v1.1");
-    oled_draw_UTF8(2, y_astra + 14, "Engine.");
-    oled_draw_frame(x_board, 38, 28, 20);
-    oled_draw_frame(x_board + 2, 40, 24, 10);
-    oled_draw_box(x_board + 2, 40, 2, 10);
-    oled_draw_pixel(x_board + 25, 51);
-    oled_draw_pixel(x_board + 25, 53);
-    oled_draw_pixel(x_board + 25, 55);
-    oled_draw_box(x_board + 21, 51, 3, 2);
-    oled_draw_box(x_board + 21, 54, 3, 2);
-    oled_draw_box(x_board + 17, 53, 3, 3);
+    oled_draw_str(106, Y_VERSION, "v1.0");
+    oled_draw_UTF8(2, Y_NAME, "by Rational Works.");
+    oled_draw_UTF8(2, Y_ASTRA, "Powered by Astra UI Lite v1.1");
+    oled_draw_UTF8(2, Y_ASTRA + 14, "Engine.");
+    oled_draw_frame(X_BOARD, 38, 28, 20);
+    oled_draw_frame(X_BOARD + 2, 40, 24, 10);
+    oled_draw_box(X_BOARD + 2, 40, 2, 10);
+    oled_draw_pixel(X_BOARD + 25, 51);
+    oled_draw_pixel(X_BOARD + 25, 53);
+    oled_draw_pixel(X_BOARD + 25, 55);
+    oled_draw_box(X_BOARD + 21, 51, 3, 2);
+    oled_draw_box(X_BOARD + 21, 54, 3, 2);
+    oled_draw_box(X_BOARD + 17, 53, 3, 3);
 
-    oled_draw_box(x_board + 12, 53, 4, 3);
-    oled_draw_box(x_board + 7, 53, 4, 3);
-    oled_draw_box(x_board + 2, 53, 4, 3);
+    oled_draw_box(X_BOARD + 12, 53, 4, 3);
+    oled_draw_box(X_BOARD + 7, 53, 4, 3);
+    oled_draw_box(X_BOARD + 2, 53, 4, 3);
 
-    oled_draw_box(x_board + 7, y_wire_1, 4, 3);
-    oled_draw_V_line(x_board + 9, y_wire_1 + 3, 3);
-    oled_draw_V_line(x_board + 8, y_wire_1 + 6, 2);
+    oled_draw_box(X_BOARD + 7, Y_WIRE_1, 4, 3);
+    oled_draw_V_line(X_BOARD + 9, Y_WIRE_1 + 3, 3);
+    oled_draw_V_line(X_BOARD + 8, Y_WIRE_1 + 6, 2);
 
-    oled_draw_box(x_board + 12, y_wire_2, 4, 3);
-    oled_draw_V_line(x_board + 14, y_wire_2 + 3, 3);
-    oled_draw_V_line(x_board + 15, y_wire_2 + 6, 2);
+    oled_draw_box(X_BOARD + 12, Y_WIRE_2, 4, 3);
+    oled_draw_V_line(X_BOARD + 14, Y_WIRE_2 + 3, 3);
+    oled_draw_V_line(X_BOARD + 15, Y_WIRE_2 + 6, 2);
 
-    if (_time - time_start > 300) animation(&y_logo, 15, 94);
-    if (_time - time_start > 350) animation(&y_version, 14, 88);
-    if (_time - time_start > 400) animation(&y_box, 2, 92);
-    if (_time - time_start > 450) animation(&y_astra, 36, 91);
-    if (_time - time_start > 500) animation(&y_name, 62, 94);
-    if (_time - time_start > 550) animation(&x_board, 102, 92);
-    if (_time - time_start > 620) animation(&y_wire_1, 56, 86);
-    if (_time - time_start > 1400 && _time - time_start < 1600) oled_draw_box(x_board + 5, 42, 19, 6);
-    if (_time - time_start > 1800 && _time - time_start < 1900) oled_draw_box(x_board + 5, 42, 19, 6);
-    if (_time - time_start > 2200) oled_draw_box(x_board + 5, 42, 19, 6);
-    if (_time - time_start > 2400) animation(&y_wire_2, 56, 86);
+    if (time - TIME_START > 300) animation(&Y_LOGO, 15, 94);
+    if (time - TIME_START > 350) animation(&Y_VERSION, 14, 88);
+    if (time - TIME_START > 400) animation(&Y_BOX, 2, 92);
+    if (time - TIME_START > 450) animation(&Y_ASTRA, 36, 91);
+    if (time - TIME_START > 500) animation(&Y_NAME, 62, 94);
+    if (time - TIME_START > 550) animation(&X_BOARD, 102, 92);
+    if (time - TIME_START > 620) animation(&Y_WIRE_1, 56, 86);
+    if (time - TIME_START > 1400 && time - TIME_START < 1600) oled_draw_box(X_BOARD + 5, 42, 19, 6);
+    if (time - TIME_START > 1800 && time - TIME_START < 1900) oled_draw_box(X_BOARD + 5, 42, 19, 6);
+    if (time - TIME_START > 2200) oled_draw_box(X_BOARD + 5, 42, 19, 6);
+    if (time - TIME_START > 2400) animation(&Y_WIRE_2, 56, 86);
 }
 
 void test_user_item_exit_function() {
-    time_start = 0;
-    y_logo = 200;
-    y_version = 200;
-    y_name = -200;
-    y_astra = -200;
-    y_box = 200;
-    x_board = -200;
-    y_wire_1 = 200;
-    y_wire_2 = 200;
+    TIME_START = 0;
+    Y_LOGO = 200;
+    Y_VERSION = 200;
+    Y_NAME = -200;
+    Y_ASTRA = -200;
+    Y_BOX = 200;
+    X_BOARD = -200;
+    Y_WIRE_1 = 200;
+    Y_WIRE_2 = 200;
 }
 
 int main() {
-    u8x8_Setup_SDL_128x64(u8g2_GetU8x8(&u8g2));
-    u8g2_SetupBuffer(&u8g2, buffer, 8, u8g2_ll_hvline_vertical_top_lsb, U8G2_R0);
-    u8g2_InitDisplay(&u8g2);
-    u8g2_SetPowerSave(&u8g2, 0);
+    u8x8_Setup_SDL_128x64(u8g2_GetU8x8(&U8G2));
+    u8g2_SetupBuffer(&U8G2, U8G2_BUFFER, 8, u8g2_ll_hvline_vertical_top_lsb, U8G2_R0);
+    u8g2_InitDisplay(&U8G2);
+    u8g2_SetPowerSave(&U8G2, 0);
 
-    vision_ui_bind_driver(&u8g2);
+    vision_ui_bind_driver(&U8G2);
 
     astra_init_core();
 

@@ -10,10 +10,9 @@
 
 #ifdef __cplusplus
 extern "C" {
-
 #endif
 
-extern bool in_astra;
+extern bool IS_IN_ASTRA;
 
 extern void vision_ui_render_init();
 

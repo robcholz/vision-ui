@@ -101,8 +101,6 @@ int main() {
 
     vision_ui_bind_driver(&u8g2);
 
-    bool test_bool = false; // 开关项的变量
-
     // Astra UI初始化
     astra_init_core();
 

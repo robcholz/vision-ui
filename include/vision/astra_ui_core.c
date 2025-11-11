@@ -10,45 +10,45 @@
 #include "astra_ui_drawer.h"
 #include "astra_ui_draw_driver.h"
 
-bool in_astra = false;
+bool IS_IN_ASTRA;
 
-static bool is_background_frozen = false;
+static bool IS_BACKGROUND_FROZEN = false;
 
 static bool vision_ui_start() {
     /**自行修改**/
-    if (in_astra) {
+    if (IS_IN_ASTRA) {
         return true;
     }
-    static int64_t _key_press_span = 0;
-    static uint32_t _key_start_time = 0;
-    static bool _key_clicked = false;
-    static char _msg[100] = {};
+    static int64_t key_press_span = 0;
+    static uint32_t key_start_time = 0;
+    static bool key_clicked = false;
+    static char msg[100] = {};
 
     if (true) {
-        if (!_key_clicked) {
-            _key_clicked = true;
-            _key_start_time = get_ticks_ms();
+        if (!key_clicked) {
+            key_clicked = true;
+            key_start_time = get_ticks_ms();
             //变量上限是0xFFFF 65535
         }
-        if (get_ticks_ms() - _key_start_time > 1000 && _key_clicked) {
-            _key_press_span = get_ticks_ms() - _key_start_time;
-            if (_key_press_span <= 2500) {
-                sprintf(_msg, "继续长按%.2f秒进入.", (2500 - _key_press_span) / 1000.0f);
-                astra_push_info_bar(_msg, 2000);
-            } else if (_key_press_span > 2500) {
+        if (get_ticks_ms() - key_start_time > 1000 && key_clicked) {
+            key_press_span = get_ticks_ms() - key_start_time;
+            if (key_press_span <= 2500) {
+                sprintf(msg, "继续长按%.2f秒进入.", (2500 - key_press_span) / 1000.0f);
+                astra_push_info_bar(msg, 2000);
+            } else if (key_press_span > 2500) {
                 astra_push_info_bar("have fun! :p", 2000);
-                in_astra = true;
+                IS_IN_ASTRA = true;
                 astra_init_list();
-                _key_clicked = false;
-                _key_start_time = 0;
-                _key_press_span = 0;
+                key_clicked = false;
+                key_start_time = 0;
+                key_press_span = 0;
             }
         }
     } else {
-        _key_clicked = false;
-        if (_key_press_span != 0) {
+        key_clicked = false;
+        if (key_press_span != 0) {
             astra_push_info_bar("bye!", 2000);
-            _key_press_span = 0;
+            key_press_span = 0;
         }
     }
     return false;
@@ -63,38 +63,38 @@ void vision_ui_render_init() {
     }
 }
 
-void astra_animation(float* _pos, float _posTrg, float _speed) {
-    if (*_pos != _posTrg) {
-        if (fabs(*_pos - _posTrg) <= 1.0f) *_pos = _posTrg;
-        else *_pos += (_posTrg - *_pos) / (100.0f - _speed) / 1.0f;
+void astra_animation(float* pos, float pos_trg, float speed) {
+    if (*pos != pos_trg) {
+        if (fabs(*pos - pos_trg) <= 1.0f) *pos = pos_trg;
+        else *pos += (pos_trg - *pos) / (100.0f - speed) / 1.0f;
     }
 }
 
 void astra_refresh_info_bar() {
-    astra_animation(&astra_info_bar.y_info_bar, astra_info_bar.y_info_bar_trg, 94);
-    astra_animation(&astra_info_bar.w_info_bar, astra_info_bar.w_info_bar_trg, 95);
+    astra_animation(&ASTRA_INFO_BAR.y_info_bar, ASTRA_INFO_BAR.y_info_bar_trg, 94);
+    astra_animation(&ASTRA_INFO_BAR.w_info_bar, ASTRA_INFO_BAR.w_info_bar_trg, 95);
 }
 
 void astra_refresh_pop_up() {
-    astra_animation(&astra_pop_up.y_pop_up, astra_pop_up.y_pop_up_trg, 94);
-    astra_animation(&astra_pop_up.w_pop_up, astra_pop_up.w_pop_up_trg, 96);
+    astra_animation(&ASTRA_POP_UP.y_pop_up, ASTRA_POP_UP.y_pop_up_trg, 94);
+    astra_animation(&ASTRA_POP_UP.w_pop_up, ASTRA_POP_UP.w_pop_up_trg, 96);
 }
 
 void astra_refresh_camera_position() {
-    if (astra_camera.selector->y_selector_trg + LIST_SELECTOR_FIXED_HEIGHT + astra_camera.y_camera_trg > SCREEN_HEIGHT) {
+    if (ASTRA_CAMERA.selector->y_selector_trg + LIST_SELECTOR_FIXED_HEIGHT + ASTRA_CAMERA.y_camera_trg > SCREEN_HEIGHT) {
         //向下超出屏幕 需要向下移动
-        astra_camera.y_camera_trg = SCREEN_HEIGHT - astra_camera.selector->y_selector_trg - LIST_SELECTOR_FIXED_HEIGHT;
+        ASTRA_CAMERA.y_camera_trg = SCREEN_HEIGHT - ASTRA_CAMERA.selector->y_selector_trg - LIST_SELECTOR_FIXED_HEIGHT;
     }
 
-    const float TOP_PADDING = LIST_TITLE_TO_DISPLAY_TOP_PADDING;
-    if (astra_camera.selector->y_selector_trg + astra_camera.y_camera_trg < TOP_PADDING) {
+    const float top_padding = LIST_TITLE_TO_DISPLAY_TOP_PADDING;
+    if (ASTRA_CAMERA.selector->y_selector_trg + ASTRA_CAMERA.y_camera_trg < top_padding) {
         //向上超出屏幕 需要向上移动
-        astra_camera.y_camera_trg = TOP_PADDING - astra_camera.selector->y_selector_trg;
+        ASTRA_CAMERA.y_camera_trg = top_padding - ASTRA_CAMERA.selector->y_selector_trg;
     }
 
-    astra_camera.x_camera_trg = 0;
-    astra_animation(&astra_camera.x_camera, astra_camera.x_camera_trg, 95);
-    astra_animation(&astra_camera.y_camera, astra_camera.y_camera_trg, 96);
+    ASTRA_CAMERA.x_camera_trg = 0;
+    astra_animation(&ASTRA_CAMERA.x_camera, ASTRA_CAMERA.x_camera_trg, 95);
+    astra_animation(&ASTRA_CAMERA.y_camera, ASTRA_CAMERA.y_camera_trg, 96);
 }
 
 void astra_refresh_widget_core_position() {
@@ -115,10 +115,10 @@ void astra_init_list() {
         list->scroll_bar_top_px = 0;
         list->scroll_bar_height_px = SCREEN_HEIGHT;
     }
-    astra_selector.selected_index = 0;
-    astra_selector.selected_item = astra_get_root_list()->child_list_item[0];
-    astra_selector.y_selector = SCREEN_HEIGHT;
-    astra_selector.h_selector = SCREEN_HEIGHT;
+    ASTRA_SELECTOR.selected_index = 0;
+    ASTRA_SELECTOR.selected_item = astra_get_root_list()->child_list_item[0];
+    ASTRA_SELECTOR.y_selector = SCREEN_HEIGHT;
+    ASTRA_SELECTOR.h_selector = SCREEN_HEIGHT;
 }
 
 void astra_init_core() {
@@ -128,7 +128,7 @@ void astra_init_core() {
 }
 
 void astra_refresh_list_item_position() {
-    astra_list_item_t* parent = astra_selector.selected_item->parent;
+    astra_list_item_t* parent = ASTRA_SELECTOR.selected_item->parent;
 
     for (uint8_t i = 0; i < parent->child_num; i++)
         astra_animation(&parent->child_list_item[i]->y_list_item,
@@ -136,7 +136,7 @@ void astra_refresh_list_item_position() {
 
     const uint8_t child_cnt = parent->child_num > 0 ? parent->child_num : 1;
     const float part = (float) SCREEN_HEIGHT / child_cnt;
-    const float slider_top_trg = part * astra_selector.selected_index;
+    const float slider_top_trg = part * ASTRA_SELECTOR.selected_index;
     const float slider_h_trg = fmaxf((float) LIST_FRAME_FIXED_HEIGHT / child_cnt, part);
 
     parent->scroll_bar_top_trg = slider_top_trg;
@@ -165,24 +165,24 @@ void astra_refresh_list_item_position() {
 }
 
 void astra_refresh_selector_position() {
-    astra_set_font(astra_font);
-    astra_selector.h_selector_trg = LIST_FRAME_FIXED_HEIGHT;
-    astra_selector.y_selector_trg = astra_selector.selected_item->y_list_item_trg;
-    const uint16_t SELECTOR_MAX_WIDTH = LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING +
+    astra_set_font(ASTRA_FONT);
+    ASTRA_SELECTOR.h_selector_trg = LIST_FRAME_FIXED_HEIGHT;
+    ASTRA_SELECTOR.y_selector_trg = ASTRA_SELECTOR.selected_item->y_list_item_trg;
+    const uint16_t selector_max_width = LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING +
                                         LIST_TEXT_MAX_WIDTH + LIST_SELECTOR_TO_INNER_WIDGET_PADDING + LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
-    const uint16_t selector_current_width = astra_selector.selected_item->type == title_item
+    const uint16_t selector_current_width = ASTRA_SELECTOR.selected_item->type == TITLE_ITEM
                                                 ? +oled_get_UTF8_width(
-                                                      astra_selector.selected_item->content) + LIST_SELECTOR_TO_INNER_WIDGET_PADDING
+                                                      ASTRA_SELECTOR.selected_item->content) + LIST_SELECTOR_TO_INNER_WIDGET_PADDING
                                                   + LIST_SELECTOR_TO_INNER_WIDGET_PADDING
                                                 : +LIST_HEADER_MAX_WIDTH + LIST_HEADER_TO_TEXT_PADDING
                                                   +
                                                   oled_get_UTF8_width(
-                                                      astra_selector.selected_item->content) + LIST_SELECTOR_TO_INNER_WIDGET_PADDING
+                                                      ASTRA_SELECTOR.selected_item->content) + LIST_SELECTOR_TO_INNER_WIDGET_PADDING
                                                   + LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
-    astra_selector.w_selector_trg = selector_current_width > SELECTOR_MAX_WIDTH ? SELECTOR_MAX_WIDTH : selector_current_width;
-    astra_animation(&astra_selector.y_selector, astra_selector.y_selector_trg, 91);
-    astra_animation(&astra_selector.w_selector, astra_selector.w_selector_trg, 92);
-    astra_animation(&astra_selector.h_selector, astra_selector.h_selector_trg, 93);
+    ASTRA_SELECTOR.w_selector_trg = selector_current_width > selector_max_width ? selector_max_width : selector_current_width;
+    astra_animation(&ASTRA_SELECTOR.y_selector, ASTRA_SELECTOR.y_selector_trg, 91);
+    astra_animation(&ASTRA_SELECTOR.w_selector, ASTRA_SELECTOR.w_selector_trg, 92);
+    astra_animation(&ASTRA_SELECTOR.h_selector, ASTRA_SELECTOR.h_selector_trg, 93);
 }
 
 void astra_refresh_main_core_position() {
@@ -191,20 +191,20 @@ void astra_refresh_main_core_position() {
 
 void vision_ui_render_loop() {
     switch (vision_ui_get_ui_action()) {
-        case UIActionGoPrev:
+        case UI_ACTION_GO_PREV:
             if (!vision_ui_is_background_frozon()) {
                 astra_selector_go_prev_item();
             }
             break;
-        case UIActionGoNext:
+        case UI_ACTION_GO_NEXT:
             if (!vision_ui_is_background_frozon()) {
                 astra_selector_go_next_item();
             }
             break;
-        case UIActionExit:
+        case UI_ACTION_EXIT:
             astra_selector_exit_current_item();
             break;
-        case UIActionEnter:
+        case UI_ACTION_ENTER:
             if (!vision_ui_is_background_frozon()) {
                 astra_selector_jump_to_selected_item();
             }
@@ -222,35 +222,35 @@ void astra_ui_widget_core() {
 }
 
 void astra_ui_main_core() {
-    if (!in_astra) return;
+    if (!IS_IN_ASTRA) return;
 
     //切换in user item的逻辑
-    if (astra_exit_animation_status == 1) {
-        if (astra_selector.selected_item->type == user_item) {
-            astra_user_item_t* _selected_user_item = astra_to_user_item(astra_selector.selected_item);
-            if (_selected_user_item->entering_user_item)
-                _selected_user_item->in_user_item = 1;
-            else if (_selected_user_item->exiting_user_item) {
-                if (_selected_user_item->user_item_inited && _selected_user_item->user_item_looping)
-                    _selected_user_item->exit_function();
-                _selected_user_item->in_user_item = 0;
+    if (ASTRA_EXIT_ANIMATION_STATUS == 1) {
+        if (ASTRA_SELECTOR.selected_item->type == USER_ITEM) {
+            astra_user_item_t* selected_user_item = astra_to_user_item(ASTRA_SELECTOR.selected_item);
+            if (selected_user_item->entering_user_item)
+                selected_user_item->in_user_item = 1;
+            else if (selected_user_item->exiting_user_item) {
+                if (selected_user_item->user_item_inited && selected_user_item->user_item_looping)
+                    selected_user_item->exit_function();
+                selected_user_item->in_user_item = 0;
             }
         }
     }
 
     //渲染的逻辑
-    if (astra_selector.selected_item->type == user_item && astra_to_user_item(astra_selector.selected_item)->in_user_item) {
-        astra_user_item_t* _selected_user_item = astra_to_user_item(astra_selector.selected_item);
+    if (ASTRA_SELECTOR.selected_item->type == USER_ITEM && astra_to_user_item(ASTRA_SELECTOR.selected_item)->in_user_item) {
+        astra_user_item_t* selected_user_item = astra_to_user_item(ASTRA_SELECTOR.selected_item);
         //初始化
-        if (!_selected_user_item->user_item_inited) {
-            if (_selected_user_item->init_function != NULL)
-                _selected_user_item->init_function();
-            _selected_user_item->user_item_inited = true;
+        if (!selected_user_item->user_item_inited) {
+            if (selected_user_item->init_function != NULL)
+                selected_user_item->init_function();
+            selected_user_item->user_item_inited = true;
         }
 
-        if (_selected_user_item->loop_function != NULL) {
-            _selected_user_item->user_item_looping = true;
-            _selected_user_item->loop_function();
+        if (selected_user_item->loop_function != NULL) {
+            selected_user_item->user_item_looping = true;
+            selected_user_item->loop_function();
         }
     } else {
         astra_refresh_main_core_position();
@@ -259,18 +259,18 @@ void astra_ui_main_core() {
         astra_draw_list();
     }
 
-    is_background_frozen = astra_pop_up.is_running;
+    IS_BACKGROUND_FROZEN = ASTRA_POP_UP.is_running;
 
     //退场动画
     //上面都是正常应当绘制的内容 退场动画需要绘制时 只需要在上面的基础上绘制遮罩即可
-    if (!astra_exit_animation_finished)
+    if (!ASTRA_EXIT_ANIMATION_FINISHED)
         astra_draw_exit_animation();
 }
 
 extern bool vision_ui_is_exited() {
-    return !in_astra;
+    return !IS_IN_ASTRA;
 }
 
 extern bool vision_ui_is_background_frozon() {
-    return is_background_frozen;
+    return IS_BACKGROUND_FROZEN;
 }

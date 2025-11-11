@@ -26,11 +26,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <SDL_events.h>
 #include <SDL_timer.h>
 
-static u8g2_t* s_u8g2 = NULL;
+static u8g2_t* S_U8G2 = NULL;
 
-uint8_t buffer[128*8];
+uint8_t U8G2_BUFFER[128 * 8];
 
-static int getKey() {
+static int get_key() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT)
@@ -41,18 +41,18 @@ static int getKey() {
     return -1;
 }
 
-enum UIAction vision_ui_get_ui_action(void) {
-    switch (getKey()) {
+enum ui_action_t vision_ui_get_ui_action(void) {
+    switch (get_key()) {
         case SDLK_UP:
-            return UIActionGoPrev;
+            return UI_ACTION_GO_PREV;
         case SDLK_DOWN:
-            return UIActionGoNext;
+            return UI_ACTION_GO_NEXT;
         case SDLK_ESCAPE:
-            return UIActionExit;
+            return UI_ACTION_EXIT;
         case SDLK_SPACE:
-            return UIActionEnter;
+            return UI_ACTION_ENTER;
         default:
-            return UIActionNone;
+            return UI_ACTION_NONE;
     }
 }
 
@@ -65,123 +65,123 @@ void delay(uint32_t ms) {
 }
 
 void vision_ui_bind_driver(void* driver) {
-    s_u8g2 = (u8g2_t*) driver;
+    S_U8G2 = (u8g2_t*) driver;
 }
 
 void oled_set_font(const uint8_t* font) {
-    u8g2_SetFont(s_u8g2, font);
+    u8g2_SetFont(S_U8G2, font);
 }
 
 void oled_draw_str(uint16_t x, const uint16_t y, const char* str) {
-    u8g2_DrawStr(s_u8g2, x, y, str);
+    u8g2_DrawStr(S_U8G2, x, y, str);
 }
 
 void oled_draw_UTF8(uint16_t x, uint16_t y, const char* str) {
-    u8g2_DrawUTF8(s_u8g2, x, y, str);
+    u8g2_DrawUTF8(S_U8G2, x, y, str);
 }
 
 uint16_t oled_get_str_width(const char* str) {
-    return (uint16_t) u8g2_GetStrWidth(s_u8g2, str);
+    return (uint16_t) u8g2_GetStrWidth(S_U8G2, str);
 }
 
 uint16_t oled_get_UTF8_width(const char* str) {
-    return (uint16_t) u8g2_GetUTF8Width(s_u8g2, str);
+    return (uint16_t) u8g2_GetUTF8Width(S_U8G2, str);
 }
 
 uint16_t oled_get_str_height(void) {
     /* 更稳妥：使用 Ascent/Descent 计算文字高度 */
-    int8_t ascent = u8g2_GetAscent(s_u8g2);
-    int8_t descent = u8g2_GetDescent(s_u8g2); /* 注意：通常为负值 */
+    int8_t ascent = u8g2_GetAscent(S_U8G2);
+    int8_t descent = u8g2_GetDescent(S_U8G2); /* 注意：通常为负值 */
     return (uint16_t) (ascent - descent);
 }
 
 /* 图元 */
 void oled_draw_pixel(uint16_t x, uint16_t y) {
-    u8g2_DrawPixel(s_u8g2, x, y);
+    u8g2_DrawPixel(S_U8G2, x, y);
 }
 
 void oled_draw_circle(uint16_t x, uint16_t y, uint16_t r) {
     /* u8g2_DrawCircle 画轮廓；若需实心可用 u8g2_DrawDisc */
-    u8g2_DrawCircle(s_u8g2, x, y, r, U8G2_DRAW_ALL);
+    u8g2_DrawCircle(S_U8G2, x, y, r, U8G2_DRAW_ALL);
 }
 
 void oled_draw_R_box(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r) {
-    u8g2_DrawRBox(s_u8g2, x, y, w, h, r);
+    u8g2_DrawRBox(S_U8G2, x, y, w, h, r);
 }
 
 void oled_draw_box(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-    u8g2_DrawBox(s_u8g2, x, y, w, h);
+    u8g2_DrawBox(S_U8G2, x, y, w, h);
 }
 
 void oled_draw_frame(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-    u8g2_DrawFrame(s_u8g2, x, y, w, h);
+    u8g2_DrawFrame(S_U8G2, x, y, w, h);
 }
 
 void oled_draw_R_frame(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r) {
-    u8g2_DrawRFrame(s_u8g2, x, y, w, h, r);
+    u8g2_DrawRFrame(S_U8G2, x, y, w, h, r);
 }
 
 void oled_draw_H_line(uint16_t x, uint16_t y, uint16_t l) {
-    u8g2_DrawHLine(s_u8g2, x, y, l);
+    u8g2_DrawHLine(S_U8G2, x, y, l);
 }
 
 void oled_draw_V_line(uint16_t x, uint16_t y, uint16_t h) {
-    u8g2_DrawVLine(s_u8g2, x, y, h);
+    u8g2_DrawVLine(S_U8G2, x, y, h);
 }
 
 void oled_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
-    u8g2_DrawLine(s_u8g2, x1, y1, x2, y2);
+    u8g2_DrawLine(S_U8G2, x1, y1, x2, y2);
 }
 
 /* 虚线：简单 1像素间隔（可按需改为更大的 dash/gap） */
 void oled_draw_H_dotted_line(uint16_t x, uint16_t y, uint16_t l) {
     for (uint16_t i = 0; i < l; i += 2) {
-        u8g2_DrawPixel(s_u8g2, x + i, y);
+        u8g2_DrawPixel(S_U8G2, x + i, y);
     }
 }
 
 void oled_draw_V_dotted_line(uint16_t x, uint16_t y, uint16_t h) {
     for (uint16_t i = 0; i < h; i += 2) {
-        u8g2_DrawPixel(s_u8g2, x, y + i);
+        u8g2_DrawPixel(S_U8G2, x, y + i);
     }
 }
 
 /* 位图：假定 bitMap 为 XBM(1bpp) 布局（和 u8g2_DrawXBM 兼容） */
-void oled_draw_bMP(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bitMap) {
-    u8g2_DrawXBM(s_u8g2, x, y, w, h, bitMap);
+void oled_draw_bMP(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bit_map) {
+    u8g2_DrawXBM(S_U8G2, x, y, w, h, bit_map);
 }
 
 /* 属性 */
 void oled_set_draw_color(uint8_t color) {
     /* u8g2: 0=clear, 1=set, 2=XOR (部分设备/后端可能不支持 XOR) */
-    u8g2_SetDrawColor(s_u8g2, color);
+    u8g2_SetDrawColor(S_U8G2, color);
 }
 
 void oled_set_font_mode(uint8_t mode) {
     /* 0=transparent, 1=solid */
-    u8g2_SetFontMode(s_u8g2, mode ? 1 : 0);
+    u8g2_SetFontMode(S_U8G2, mode ? 1 : 0);
 }
 
 void oled_set_font_direction(uint8_t dir) {
     /* 方向 0..3：0=左→右，1=下→上，2=右→左，3=上→下 */
-    u8g2_SetFontDirection(s_u8g2, (uint8_t) (dir & 0x03));
+    u8g2_SetFontDirection(S_U8G2, (uint8_t) (dir & 0x03));
 }
 
 void oled_set_clip_window(int16_t x0, int16_t y0, int16_t x1, int16_t y1) {
-    u8g2_SetClipWindow(s_u8g2, x0, y0, x1, y1);
+    u8g2_SetClipWindow(S_U8G2, x0, y0, x1, y1);
 }
 
 void oled_reset_clip_window(void) {
-    u8g2_SetMaxClipWindow(s_u8g2);
+    u8g2_SetMaxClipWindow(S_U8G2);
 }
 
 /* 缓冲区 */
 void oled_clear_buffer(void) {
-    u8g2_ClearBuffer(s_u8g2);
+    u8g2_ClearBuffer(S_U8G2);
 }
 
 void oled_send_buffer(void) {
-    u8g2_SendBuffer(s_u8g2);
+    u8g2_SendBuffer(S_U8G2);
 }
 
 /* 部分区域刷新（若驱动支持 tile-based 更新则调用；否则退化为全刷） */
@@ -202,10 +202,10 @@ void oled_send_area_buffer(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
     (void) y;
     (void) w;
     (void) h;
-    u8g2_SendBuffer(s_u8g2); /* 回退全刷 */
+    u8g2_SendBuffer(S_U8G2); /* 回退全刷 */
 #endif
 }
 
 extern void* oled_get_raw_buffer_pointer() {
-    return buffer;
+    return U8G2_BUFFER;
 }
