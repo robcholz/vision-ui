@@ -12,121 +12,6 @@
 #include "vision_ui_core.h"
 #include "vision_ui_item.h"
 
-static void vision_ui_exit_animation_step(float *pos, const float pos_trg, const float speed) {
-    if (*pos != pos_trg) {
-        if (fabs(*pos - pos_trg) <= 1.0f) {
-            *pos = pos_trg;
-        } else {
-            *pos += (pos_trg - *pos) / (100.0f - speed) / 1.0f;
-        }
-    }
-}
-
-static vision_ui_exit_animation_status_t VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_FALL;
-
-vision_ui_exit_animation_status_t vision_ui_exit_animation_status_get() {
-    return VISION_UI_EXIT_ANIMATION_STATUS;
-}
-
-void vision_ui_exit_animation_render() {
-    static float temp_h = -8;
-    static float temp_h_trg = VISION_UI_SCREEN_HEIGHT + 8;
-
-    vision_ui_driver_color_draw(0);
-    vision_ui_driver_box_draw(0, 0, VISION_UI_SCREEN_WIDTH, temp_h); // 遮罩
-    vision_ui_driver_color_draw(1);
-
-    // 沙漏
-    const uint8_t x_hourglass_offset = VISION_UI_SCREEN_WIDTH / 2 - 8;
-    const int8_t y_hourglass = temp_h - VISION_UI_SCREEN_HEIGHT / 2 - 18;
-    if (y_hourglass + 20 >= 0) {
-        // 绘制顶部和底部矩形及中间擦除
-        vision_ui_driver_box_draw(x_hourglass_offset, y_hourglass + 2, 13, 3);
-        vision_ui_driver_color_draw(0);
-        vision_ui_driver_line_h_draw(x_hourglass_offset + 2, y_hourglass + 3, 9);
-        vision_ui_driver_color_draw(1);
-
-        // 主体结构
-        vision_ui_driver_line_v_draw(x_hourglass_offset + 1, y_hourglass + 4, 5);
-        vision_ui_driver_line_v_draw(x_hourglass_offset + 11, y_hourglass + 4, 5);
-
-        // 斜线部分循环绘制
-        for (uint8_t i = 0; i < 5; ++i) {
-            const int8_t current_y = y_hourglass + 8 + i;
-            const int8_t left_x = (i < 3) ? (x_hourglass_offset + 1 + i) : (x_hourglass_offset + 4);
-            const int8_t right_x = (i < 3) ? (x_hourglass_offset + 10 - i) : (x_hourglass_offset + 7);
-            vision_ui_driver_line_h_draw(left_x, current_y, 2);
-            vision_ui_driver_line_h_draw(right_x, current_y, 2);
-        }
-
-        // 中间收口部分
-        for (uint8_t i = 0; i < 3; ++i) {
-            const int8_t current_y = y_hourglass + 13 + i;
-            vision_ui_driver_line_h_draw(x_hourglass_offset + 3 - i, current_y, 2);
-            vision_ui_driver_line_h_draw(x_hourglass_offset + 8 + i, current_y, 2);
-        }
-
-        // 底部竖线
-        vision_ui_driver_line_v_draw(x_hourglass_offset + 1, y_hourglass + 16, 3);
-        vision_ui_driver_line_v_draw(x_hourglass_offset + 11, y_hourglass + 16, 3);
-
-        // 底部矩形
-        vision_ui_driver_box_draw(x_hourglass_offset, y_hourglass + 19, 13, 3);
-        vision_ui_driver_color_draw(0);
-        vision_ui_driver_line_h_draw(x_hourglass_offset + 2, y_hourglass + 20, 9);
-        vision_ui_driver_color_draw(1);
-
-        // 散点像素数组化绘制
-        const uint8_t points[][2] = {{5, 7}, {7, 7}, {6, 8}, {6, 10}, {6, 14}, {6, 16}, {5, 17}, {7, 17}, {4, 18}, {6, 18}, {8, 18}};
-        for (uint8_t i = 0; i < sizeof(points) / sizeof(points[0]); ++i) {
-            vision_ui_driver_pixel_draw(x_hourglass_offset + points[i][0], y_hourglass + points[i][1]);
-        }
-    }
-
-    if (temp_h + 3 >= 0) {
-        // 下面是遮罩下方横线
-        for (uint8_t i = 0; i <= 3; ++i) {
-            vision_ui_driver_line_h_draw(0, temp_h + i, VISION_UI_SCREEN_WIDTH);
-        }
-    }
-
-    // 棋盘格过渡
-    for (int16_t i = 0; i <= VISION_UI_SCREEN_WIDTH; i += 2) {
-        for (int16_t j = temp_h - 5; j <= temp_h - 1; j++) {
-            if (j % 2 == 0) {
-                vision_ui_driver_pixel_draw(i + 1, j);
-            }
-            if (j % 2 == 1) {
-                vision_ui_driver_pixel_draw(i, j);
-            }
-        }
-    }
-
-    vision_ui_exit_animation_step(&temp_h, temp_h_trg, 94);
-
-    // 下落过程
-    if (VISION_UI_EXIT_ANIMATION_STATUS == EXIT_MASK_FALL && temp_h == temp_h_trg && temp_h == VISION_UI_SCREEN_HEIGHT + 8) {
-        VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_FALL_COMPLETE; // 落下来了
-        return;
-    }
-
-    // 上面 VISION_UI_EXIT_ANIMATION_STATUS = 1 之后 return 了 进到 core 里刷新了背景显示内容 下一次进到本函数就可以把标志位置为 2
-    if (VISION_UI_EXIT_ANIMATION_STATUS == EXIT_MASK_FALL_COMPLETE) {
-        // _temp_h_trg = SCREEN_HEIGHT + 8;
-        temp_h_trg = -8; // 使其开始上升
-        VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_RISE; // 开始抬起
-        return;
-    }
-
-    if (VISION_UI_EXIT_ANIMATION_STATUS == EXIT_MASK_RISE && temp_h == temp_h_trg && temp_h == -8) {
-        vision_ui_exit_animation_set_is_finished();
-        VISION_UI_EXIT_ANIMATION_STATUS = EXIT_MASK_FALL; // 退场动画完成
-        temp_h = -8;
-        temp_h_trg = VISION_UI_SCREEN_HEIGHT + 8;
-        return;
-    }
-}
-
 typedef struct {
     uint8_t total;
     uint8_t col[3];
@@ -165,8 +50,8 @@ static bool vision_ui_block_is_thin_vertical(const vision_ui_block3x3_t *sample)
     return (sample->col[1] >= 2) && (side_sum <= 1);
 }
 
-static void vision_ui_draw_background_blur_animation(const uint16_t x0, const uint16_t y0, uint16_t width, uint16_t height,
-                                                     const uint8_t fade_level) {
+static void vision_ui_background_blur_animation_render(const uint16_t x0, const uint16_t y0, uint16_t width, uint16_t height,
+                                                       const uint8_t fade_level) {
     if (x0 + width > VISION_UI_SCREEN_WIDTH) {
         width = VISION_UI_SCREEN_WIDTH - x0;
     }
@@ -263,6 +148,23 @@ static void vision_ui_draw_background_blur_animation(const uint16_t x0, const ui
     }
 
     vision_ui_driver_color_draw(1);
+}
+
+void vision_ui_exit_animation_render() {
+    static uint8_t fadeout_sequence;
+    static uint8_t state = 0;
+    if (state == 0) {
+        fadeout_sequence = 1;
+        state = 1;
+    }
+    if (state == 1) {
+        vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fadeout_sequence);
+        ++fadeout_sequence;
+        if (fadeout_sequence > 5) {
+            vision_ui_exit_animation_set_is_finished();
+            state = 0;
+        }
+    }
 }
 
 static void vision_ui_notification_render() {
@@ -669,7 +571,7 @@ void vision_ui_widget_render() {
 
     // everything else should be blured except the alert object
     if (vision_ui_is_background_frozen()) {
-        vision_ui_draw_background_blur_animation(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, 4);
+        vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, 4);
     }
     vision_ui_alert_render();
 }

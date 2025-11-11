@@ -228,7 +228,7 @@ static void vision_ui_main_core_step() {
         custom_view = &selected_page->view.custom;
     }
 
-    if (vision_ui_exit_animation_status_get() == EXIT_MASK_FALL_COMPLETE && custom_view != NULL) {
+    if (vision_ui_exit_animation_is_finished() && custom_view != NULL) {
         if (custom_view->entering) {
             custom_view->entering = false;
             custom_view->active = true;
