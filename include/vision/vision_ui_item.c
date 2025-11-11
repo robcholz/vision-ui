@@ -263,8 +263,9 @@ vision_ui_list_item_t *vision_ui_list_switch_item_new(const size_t capacity, con
     return (vision_ui_list_item_t *) switch_item;
 }
 
-vision_ui_list_item_t *vision_ui_list_switch_item_stateless_new(const size_t capacity, const char *content) {
-    vision_ui_list_item_t *list_item = vision_ui_list_switch_item_new(capacity, content, false, NULL);
+vision_ui_list_item_t *vision_ui_list_switch_item_stateless_new(const size_t capacity, const char *content,
+                                                                void (*on_changed)(bool value)) {
+    vision_ui_list_item_t *list_item = vision_ui_list_switch_item_new(capacity, content, false, on_changed);
     vision_ui_switch_item_t *switch_item = vision_ui_to_list_switch_item(list_item);
     switch_item->is_stateless = true;
     return list_item;
@@ -356,8 +357,7 @@ void vision_ui_selector_go_next_item() {
         return;
     }
 
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM &&
-        vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
+    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM && vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
         return;
     }
 
@@ -383,8 +383,7 @@ void vision_ui_selector_go_prev_item() {
         return;
     }
 
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM &&
-        vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
+    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM && vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
         return;
     }
 
@@ -486,8 +485,7 @@ void vision_ui_selector_exit_current_item() {
         }
     }
 
-    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM &&
-        vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
+    if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM && vision_ui_user_item_is_active(VISION_UI_SELECTOR.selected_item)) {
         VISION_UI_EXIT_ANIMATION_FINISHED = false; // 需要重新绘制退场动画
         vision_ui_custom_view_t *custom = vision_ui_custom_view_from_item(VISION_UI_SELECTOR.selected_item);
         if (custom != NULL) {

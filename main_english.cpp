@@ -144,7 +144,7 @@ int main() {
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2", false, [](bool b) {
                                  vision_ui_notification_push("Notification Test 2", 5000);
                              }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
+    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_stateless_new(1, "Test Alert", [](bool b) {
                                  vision_ui_alert_push("Alert Test", 5000);
                              }));
 
