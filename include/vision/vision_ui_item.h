@@ -23,6 +23,11 @@ typedef struct vision_ui_notification_t {
     bool is_running;
     uint32_t time_start;
     uint32_t time;
+    bool is_dismissing;
+    uint32_t dismiss_start;
+    const char *pending_content;
+    uint16_t pending_span;
+    bool has_pending;
 } vision_ui_notification_t;
 
 typedef struct vision_ui_alert_t {
