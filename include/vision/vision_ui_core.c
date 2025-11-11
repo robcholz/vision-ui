@@ -30,19 +30,19 @@ void vision_ui_animation_do(float *pos, const float pos_trg, const float speed) 
     }
 }
 
-void vision_ui_info_bar_update() {
+static void vision_ui_info_bar_update() {
     vision_ui_animation_do(&vision_ui_info_bar_mutable_instance_get()->y_info_bar,
                            vision_ui_info_bar_mutable_instance_get()->y_info_bar_trg, 94);
     vision_ui_animation_do(&vision_ui_info_bar_mutable_instance_get()->w_info_bar,
                            vision_ui_info_bar_mutable_instance_get()->w_info_bar_trg, 95);
 }
 
-void vision_ui_pop_up_update() {
+static void vision_ui_pop_up_update() {
     vision_ui_animation_do(&vision_ui_pop_up_mutable_instance_get()->y_pop_up, vision_ui_pop_up_mutable_instance_get()->y_pop_up_trg, 94);
     vision_ui_animation_do(&vision_ui_pop_up_mutable_instance_get()->w_pop_up, vision_ui_pop_up_mutable_instance_get()->w_pop_up_trg, 96);
 }
 
-void vision_ui_camera_position_update() {
+static void vision_ui_camera_position_update() {
     if (vision_ui_camera_instance_get()->selector->y_selector_trg + VISION_UI_LIST_SELECTOR_FIXED_HEIGHT +
                 vision_ui_camera_instance_get()->y_camera_trg >
         VISION_UI_SCREEN_HEIGHT) {
@@ -62,13 +62,13 @@ void vision_ui_camera_position_update() {
     vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96);
 }
 
-void vision_ui_widget_core_position_update() {
+static void vision_ui_widget_core_position_update() {
     // 需要调用所有的widget update
     vision_ui_info_bar_update();
     vision_ui_pop_up_update();
 }
 
-void vision_ui_list_init() {
+static void vision_ui_list_init() {
     // 做动画
     for (uint8_t i = 0; i < vision_ui_root_list_get()->child_num; i++) {
         vision_ui_list_item_t *list = vision_ui_root_list_get()->child_list_item[i];
@@ -92,7 +92,7 @@ void vision_ui_core_init() {
     vision_ui_camera_bind_selector(vision_ui_selector_mutable_instance_get());
 }
 
-void vision_ui_list_item_position_update() {
+static void vision_ui_list_item_position_update() {
     vision_ui_list_item_t *parent = vision_ui_selector_instance_get()->selected_item->parent;
 
     for (uint8_t i = 0; i < parent->child_num; i++) {
@@ -138,7 +138,7 @@ void vision_ui_list_item_position_update() {
     parent->scroll_bar_height_px = slider_h_px;
 }
 
-void vision_ui_selector_position_update() {
+static void vision_ui_selector_position_update() {
     vision_ui_font_set(vision_ui_font_get());
     vision_ui_selector_mutable_instance_get()->h_selector_trg = VISION_UI_LIST_FRAME_FIXED_HEIGHT;
     vision_ui_selector_mutable_instance_get()->y_selector_trg = vision_ui_selector_instance_get()->selected_item->y_list_item_trg;
@@ -159,43 +159,16 @@ void vision_ui_selector_position_update() {
     vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->h_selector, vision_ui_selector_instance_get()->h_selector_trg, 93);
 }
 
-void vision_ui_main_core_position_update() {
+static void vision_ui_main_core_position_update() {
     vision_ui_list_item_position_update();
 }
 
-void vision_ui_step_render() {
-    switch (vision_ui_driver_action_get()) {
-        case UI_ACTION_GO_PREV:
-            if (!vision_ui_is_background_frozen()) {
-                vision_ui_selector_go_prev_item();
-            }
-            break;
-        case UI_ACTION_GO_NEXT:
-            if (!vision_ui_is_background_frozen()) {
-                vision_ui_selector_go_next_item();
-            }
-            break;
-        case UI_ACTION_EXIT:
-            vision_ui_selector_exit_current_item();
-            break;
-        case UI_ACTION_ENTER:
-            if (!vision_ui_is_background_frozen()) {
-                vision_ui_selector_jump_to_selected_item();
-            }
-            break;
-        default:
-            break;
-    }
-    vision_ui_main_core_step(); // 核心处理函数
-    vision_ui_widget_core_step(); // 弹窗处理函数
-}
-
-void vision_ui_widget_core_step() {
+static void vision_ui_widget_core_step() {
     vision_ui_widget_core_position_update();
     vision_ui_widget_render();
 }
 
-void vision_ui_main_core_step() {
+static void vision_ui_main_core_step() {
     if (!IS_IN_VISION_UI) {
         return;
     }
@@ -245,6 +218,33 @@ void vision_ui_main_core_step() {
     if (!vision_ui_exit_animation_is_finished()) {
         vision_ui_exit_animation_render();
     }
+}
+
+void vision_ui_step_render() {
+    switch (vision_ui_driver_action_get()) {
+        case UI_ACTION_GO_PREV:
+            if (!vision_ui_is_background_frozen()) {
+                vision_ui_selector_go_prev_item();
+            }
+            break;
+        case UI_ACTION_GO_NEXT:
+            if (!vision_ui_is_background_frozen()) {
+                vision_ui_selector_go_next_item();
+            }
+            break;
+        case UI_ACTION_EXIT:
+            vision_ui_selector_exit_current_item();
+            break;
+        case UI_ACTION_ENTER:
+            if (!vision_ui_is_background_frozen()) {
+                vision_ui_selector_jump_to_selected_item();
+            }
+            break;
+        default:
+            break;
+    }
+    vision_ui_main_core_step(); // 核心处理函数
+    vision_ui_widget_core_step(); // 弹窗处理函数
 }
 
 extern bool vision_ui_is_exited() {

@@ -19,29 +19,9 @@ extern bool IS_IN_VISION_UI;
 
 extern void vision_ui_render_init();
 
-extern void vision_ui_info_bar_update();
-
-extern void vision_ui_pop_up_update();
-
-extern void vision_ui_camera_position_update();
-
-extern void vision_ui_widget_core_position_update();
-
-extern void vision_ui_list_init();
-
 extern void vision_ui_core_init();
 
-extern void vision_ui_list_item_position_update();
-
-extern void vision_ui_selector_position_update();
-
-extern void vision_ui_main_core_position_update();
-
 extern void vision_ui_step_render();
-
-extern void vision_ui_widget_core_step();
-
-extern void vision_ui_main_core_step();
 
 extern bool vision_ui_is_exited();
 
