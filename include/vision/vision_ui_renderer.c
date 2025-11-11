@@ -419,16 +419,18 @@ static void vision_ui_list_appearance_render() {
 
     vision_ui_driver_line_v_draw(VISION_UI_SCREEN_WIDTH - 2, 0, VISION_UI_SCREEN_HEIGHT);
 
-    const vision_ui_list_item_t *parent = vision_ui_selector_mutable_instance_get()->selected_item->parent;
+    const vision_ui_list_item_t *parent_item = vision_ui_selector_instance_get()->selected_item->parent;
+    vision_ui_page_t *page = parent_item != NULL ? parent_item->page : vision_ui_page_active_get();
+    const vision_ui_list_scroll_state_t *scroll = (page != NULL && page->view_type == VISION_UI_VIEW_LIST) ? &page->view.list.scroll : NULL;
 
-    const int16_t slider_top_px = parent ? parent->scroll_bar_top_px : 0;
-    const int16_t slider_h_px = parent ? parent->scroll_bar_height_px : VISION_UI_SCREEN_HEIGHT;
+    const int16_t slider_top_px = scroll ? scroll->top_px : 0;
+    const int16_t slider_h_px = scroll ? scroll->height_px : VISION_UI_SCREEN_HEIGHT;
 
     vision_ui_driver_box_draw(VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_SCROLL_BAR_WIDTH, slider_top_px, VISION_UI_LIST_SCROLL_BAR_WIDTH,
                               slider_h_px);
 
-    const uint8_t child_cnt = parent ? parent->child_num : 1;
-    const float scale_part = parent ? parent->scroll_bar_scale_part : (float) VISION_UI_SCREEN_HEIGHT;
+    const uint8_t child_cnt = parent_item ? parent_item->child_num : 1;
+    const float scale_part = scroll ? scroll->scale_part : (float) VISION_UI_SCREEN_HEIGHT;
     const uint8_t mark_cnt = child_cnt > 0 ? child_cnt : 1;
 
     const int16_t track_x = VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_SCROLL_BAR_WIDTH;
@@ -582,7 +584,12 @@ static void vision_ui_draw_list_footer() {
         const int16_t frame_y = y_list_item + (VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_FOOTER_MAX_HEIGHT) / 2;
         if (current_list_item->type == LIST_ITEM) {
         } else if (current_list_item->type == SWITCH_ITEM) {
-            if (vision_ui_to_list_switch_item(current_list_item)->value == true) {
+            vision_ui_switch_item_t *switch_item = vision_ui_to_list_switch_item(current_list_item);
+            if (switch_item->is_stateless) {
+                continue;
+            }
+
+            if (switch_item->value == true) {
                 vision_ui_driver_color_draw(1);
                 vision_ui_driver_bmp_draw(frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT,
                                           (uint8_t *) footer_switch_on);
@@ -650,6 +657,11 @@ static void vision_ui_selector_render() {
     vision_ui_driver_box_draw(x_selector + 1, y_selector + 2, selector_w - 2, selector_h - 4);
     vision_ui_driver_line_h_draw(x_selector + 2, y_selector + 1, selector_w - 4);
     vision_ui_driver_line_h_draw(x_selector + 2, y_selector + selector_h - 2, selector_w - 4);
+}
+
+void vision_ui_icon_render(const vision_ui_page_t *page) {
+    (void) page;
+    // TODO: implement icon view rendering
 }
 
 void vision_ui_widget_render() {
