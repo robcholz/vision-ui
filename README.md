@@ -150,7 +150,7 @@ Animations (selector easing, camera tracking, exit masks) are computed in `visio
 
 - [x] rename the pop-up widget to alert
 - [x] rename the info bar to notification
-- [ ] add multiple notification animation
+- [x] add multiple notification animation
 - [ ] decouple the new page, user_item, list_view
 - [ ] add fade out effect on the top of current effect when switching the page
 - [ ] add animation for scroll bar
