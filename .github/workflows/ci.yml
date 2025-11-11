@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang clang-tidy clang-format xmake libsdl2-dev
+
+      - name: Configure project
+        run: xmake f -y
+
+      - name: Generate compilation database
+        run: xmake project -k compile_commands
+
+      - name: Clang-Format check
+        run: |
+          set -e
+          files=$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hh' '*.hxx')
+          if [ -n "$files" ]; then
+            clang-format --style=file --dry-run --Werror $files
+          fi
+
+      - name: Clang-Tidy check
+        run: |
+          run-clang-tidy -p build -warnings-as-errors='*'
+
+      - name: Build
+        run: xmake
