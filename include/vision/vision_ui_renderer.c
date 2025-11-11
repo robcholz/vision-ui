@@ -428,11 +428,12 @@ static void vision_ui_list_appearance_render() {
                               slider_h_px);
 
     const uint8_t child_cnt = parent ? parent->child_num : 1;
-    const float part = child_cnt > 0 ? (float) VISION_UI_SCREEN_HEIGHT / child_cnt : VISION_UI_SCREEN_HEIGHT;
+    const float scale_part = parent ? parent->scroll_bar_scale_part : (float) VISION_UI_SCREEN_HEIGHT;
+    const uint8_t mark_cnt = child_cnt > 0 ? child_cnt : 1;
 
     const int16_t track_x = VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_SCROLL_BAR_WIDTH;
-    for (uint8_t i = 0; i <= child_cnt; ++i) {
-        const int16_t y = lrintf(part * i);
+    for (uint8_t i = 0; i <= mark_cnt; ++i) {
+        const int16_t y = lrintf(scale_part * i);
         if (y >= 0 && y < VISION_UI_SCREEN_HEIGHT) {
             if (i % 2 == 0) {
                 vision_ui_driver_line_h_draw(track_x, y, VISION_UI_LIST_SCROLL_BAR_WIDTH);

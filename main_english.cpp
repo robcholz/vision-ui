@@ -135,10 +135,6 @@ int main() {
     vision_ui_list_item_t *launcher_setting_list_item = vision_ui_list_item_new(10, "Board Settings");
 
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Switch Screen", true, [](bool b) {}));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_user_item_new(1, "Wiring Diagram...", test_user_item_init_function,
-                                                          test_user_item_loop_function, test_user_item_exit_function));
     vision_ui_list_push_item(vision_ui_root_list_get(),
                              vision_ui_list_user_item_new(1, "About the Board...", test_user_item_init_function,
                                                           test_user_item_loop_function, test_user_item_exit_function));
