@@ -120,6 +120,41 @@ void test_user_item_exit_function() {
     Y_WIRE_2 = 200;
 }
 
+#include <stdint.h>
+
+const uint8_t bitmap_30x30[30 * 4] = {
+    0b10000000, 0b00000000, 0b00000000, 0b00000001,
+    0b01000000, 0b00000000, 0b00000000, 0b00000010,
+    0b00100000, 0b00000000, 0b00000000, 0b00000100,
+    0b00010000, 0b00000000, 0b00000000, 0b00001000,
+    0b00001000, 0b00000000, 0b00000000, 0b00010000,
+    0b00000100, 0b00000000, 0b00000000, 0b00100000,
+    0b00000010, 0b00000000, 0b00000000, 0b01000000,
+    0b00000001, 0b00000000, 0b00000000, 0b10000000,
+    0b00000001, 0b00000000, 0b00000000, 0b10000000,
+    0b00000010, 0b00000000, 0b00000000, 0b01000000,
+    0b00000100, 0b00000000, 0b00000000, 0b00100000,
+    0b00001000, 0b00000000, 0b00000000, 0b00010000,
+    0b00010000, 0b00000000, 0b00000000, 0b00001000,
+    0b00100000, 0b00000000, 0b00000000, 0b00000100,
+    0b01000000, 0b00000000, 0b00000000, 0b00000010,
+    0b10000000, 0b00000000, 0b00000000, 0b00000001,
+    0b01000000, 0b00000000, 0b00000000, 0b00000010,
+    0b00100000, 0b00000000, 0b00000000, 0b00000100,
+    0b00010000, 0b00000000, 0b00000000, 0b00001000,
+    0b00001000, 0b00000000, 0b00000000, 0b00010000,
+    0b00000100, 0b00000000, 0b00000000, 0b00100000,
+    0b00000010, 0b00000000, 0b00000000, 0b01000000,
+    0b00000001, 0b00000000, 0b00000000, 0b10000000,
+    0b00000001, 0b00000000, 0b00000000, 0b10000000,
+    0b00000010, 0b00000000, 0b00000000, 0b01000000,
+    0b00000100, 0b00000000, 0b00000000, 0b00100000,
+    0b00001000, 0b00000000, 0b00000000, 0b00010000,
+    0b00010000, 0b00000000, 0b00000000, 0b00001000,
+    0b00100000, 0b00000000, 0b00000000, 0b00000100,
+    0b01000000, 0b00000000, 0b00000000, 0b00000010,
+};
+
 int main() {
     u8x8_Setup_SDL_128x64(u8g2_GetU8x8(&U8G2));
     u8g2_SetupBuffer(&U8G2, U8G2_BUFFER, 8, u8g2_ll_hvline_vertical_top_lsb, U8G2_R0);
@@ -137,7 +172,7 @@ int main() {
 
     vision_ui_list_push_item(launcher_setting_list_item_2, vision_ui_list_icon_item_new(1, NULL, "Icon 1", "Example Icon 1"));
     vision_ui_list_push_item(launcher_setting_list_item_2,
-                             vision_ui_list_icon_item_new(1, NULL, "Icon Super Looooooooong", "Example Icon 2"));
+                             vision_ui_list_icon_item_new(1, bitmap_30x30, "Icon Super Looooooooong", "Example Icon 2"));
     vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(1, NULL, "Icon Item 3", NULL);
     vision_ui_list_item_t* list3 = vision_ui_list_item_new(10, false, "Board Settings3");
     vision_ui_list_push_item(icon, list3);
@@ -175,7 +210,7 @@ int main() {
     float fps_timer = prev_ms;
     int frame_count = 0;
 
-    constexpr float target_ms = 1000.0f / 60.0f;
+    constexpr float target_ms = 1000.0f / 120.0f;
 
     while (!vision_ui_is_exited()) {
         const float frame_begin = vision_ui_driver_ticks_ms_get();
