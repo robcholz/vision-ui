@@ -182,9 +182,6 @@ int main() {
     vision_ui_list_push_item(launcher_setting_list_item,
                              vision_ui_list_slider_item_new(1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {}));
     vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "MCU Serial Channel", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item,
-                             vision_ui_list_switch_item_new(1, "External Serial Channel", false, [](bool b) {}));
 
     vision_ui_render_init();
 

@@ -7,6 +7,8 @@
 
 #define VISION_UI_ALLOW_EXIT_BY_USER 0 // 允许用户在最浅层级退出vision ui lite
 #define VISION_UI_LIST_ROOT_ICON_VIEW 0
+// control whether items animate into place when a new list opens
+#define VISION_UI_LIST_ENTRY_ANIMATION 0
 
 /*** 列表项 ***/
 #define VISION_UI_LIST_ROOT_CAPACITY 10

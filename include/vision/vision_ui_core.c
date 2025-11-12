@@ -156,7 +156,11 @@ static void vision_ui_list_item_position_update() {
     }
 
     for (uint8_t i = 0; i < parent->child_num; i++) {
+#if VISION_UI_LIST_ENTRY_ANIMATION
         vision_ui_animation_do(&parent->child_list_item[i]->y_list_item, parent->child_list_item[i]->y_list_item_trg, 84);
+#else
+        parent->child_list_item[i]->y_list_item = parent->child_list_item[i]->y_list_item_trg;
+#endif
     }
 
     const uint8_t child_cnt = parent->child_num > 0 ? parent->child_num : 1;
