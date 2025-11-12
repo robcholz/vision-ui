@@ -150,6 +150,11 @@ static void vision_ui_background_blur_animation_render(const uint16_t x0, const 
     vision_ui_driver_color_draw(1);
 }
 
+static bool vision_ui_icon_view_is_active() {
+    const vision_ui_selector_t* selector = vision_ui_selector_instance_get();
+    return selector->selected_item != NULL && selector->selected_item->parent != NULL && selector->selected_item->parent->icon_view_mode;
+}
+
 void vision_ui_exit_animation_render() {
     static uint8_t fadeout_sequence;
     static uint8_t state = 0;
@@ -402,7 +407,6 @@ static void vision_ui_text_draw(const char* text, uint32_t* text_scroll_anchor, 
         }
     }
 }
-
 static void vision_ui_text_list_item_draw(vision_ui_list_item_t* list, const int16_t x0, const int16_t y0, const int16_t x1,
                                           const int16_t y1) {
     vision_ui_text_draw(list->content, &list->text_scroll_anchor, x0, y0, x1, y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
@@ -538,6 +542,84 @@ static void vision_ui_list_item_render() {
     }
 }
 
+static void vision_ui_icon_view_render() {
+    const vision_ui_selector_t* selector = vision_ui_selector_instance_get();
+    if (selector->selected_item == NULL || selector->selected_item->parent == NULL) {
+        return;
+    }
+
+    vision_ui_list_item_t* parent = selector->selected_item->parent;
+    const float scroll_offset = parent->icon_scroll_offset;
+    const float item_span = (float) (VISION_UI_ICON_VIEW_ICON_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);
+    const int16_t center_x = VISION_UI_SCREEN_WIDTH / 2;
+
+    for (uint8_t i = 0; i < parent->child_num; ++i) {
+        vision_ui_list_item_t* child = parent->child_list_item[i];
+        if (child->type != ICON_ITEM) {
+            continue;
+        }
+
+        const float icon_center = (float) center_x + scroll_offset + (float) i * item_span;
+        const int16_t icon_x = (int16_t) lrintf(icon_center) - VISION_UI_ICON_VIEW_ICON_SIZE / 2;
+        if (icon_x + VISION_UI_ICON_VIEW_ICON_SIZE < 0 || icon_x > VISION_UI_SCREEN_WIDTH) {
+            continue;
+        }
+
+        const vision_ui_icon_item_t* icon_item = vision_ui_to_list_icon_item(child);
+        vision_ui_driver_color_draw(1);
+        if (icon_item->icon != NULL) {
+            vision_ui_driver_bmp_draw(icon_x, VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING, VISION_UI_ICON_VIEW_ICON_SIZE,
+                                      VISION_UI_ICON_VIEW_ICON_SIZE, icon_item->icon);
+        } else {
+            vision_ui_driver_frame_draw(icon_x, VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING, VISION_UI_ICON_VIEW_ICON_SIZE,
+                                        VISION_UI_ICON_VIEW_ICON_SIZE);
+            vision_ui_driver_line_h_dotted_draw(icon_x, VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING + VISION_UI_ICON_VIEW_ICON_SIZE / 2,
+                                                VISION_UI_ICON_VIEW_ICON_SIZE);
+        }
+    }
+
+    if (selector->selected_item->type == ICON_ITEM) {
+        const int16_t title_area_y0 = VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING + VISION_UI_ICON_VIEW_ICON_SIZE +
+                                      VISION_UI_ICON_VIEW_ICON_TO_TITLE_AREA_PADDING;
+        const int16_t title_bar_x0 = VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING;
+        const int16_t title_x0 = title_bar_x0 + VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH + VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING;
+        const int16_t title_x1 = VISION_UI_SCREEN_WIDTH - VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING;
+        const int16_t title_y0 = title_area_y0;
+        const int16_t title_y1 = title_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+
+        vision_ui_driver_color_draw(1);
+        vision_ui_driver_box_draw(title_bar_x0, title_area_y0, VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH, VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT);
+
+        const vision_ui_icon_item_t* selected_icon = vision_ui_to_list_icon_item(selector->selected_item);
+        const float title_offset = selected_icon->title_y;
+        const int16_t title_offset_px = (int16_t) lrintf(title_offset);
+
+        vision_ui_text_draw(selector->selected_item->content, &selector->selected_item->text_scroll_anchor, title_x0,
+                            title_y0 + title_offset_px, title_x1, title_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
+                            VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
+
+        if (selected_icon->description != NULL) {
+            uint16_t spacing;
+            if (vision_ui_driver_str_width_get(selected_icon->description) >
+                VISION_UI_SCREEN_WIDTH - 2 * VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING) {
+                spacing = VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING;
+            } else {
+                spacing = (VISION_UI_SCREEN_WIDTH - vision_ui_driver_str_width_get(selected_icon->description)) / 2;
+            }
+            const uint16_t description_x0 = spacing;
+            const uint16_t description_x1 = VISION_UI_SCREEN_WIDTH - spacing;
+            const uint16_t description_y0 =
+                    title_area_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT + VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING;
+            const uint16_t description_y1 = description_y0 + vision_ui_driver_str_height_get();
+            vision_ui_driver_color_draw(1);
+            vision_ui_text_draw(selected_icon->description,
+                                &vision_ui_to_list_icon_item(selector->selected_item)->description_scroll_anchor, description_x0,
+                                description_y0, description_x1, description_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
+                                VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
+        }
+    }
+}
+
 static void vision_ui_selector_render() {
     const int16_t x_selector = (int16_t) (lrintf(vision_ui_camera_instance_get()->x_camera) +
                                           VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING - VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING);
@@ -565,6 +647,11 @@ void vision_ui_widget_render() {
 }
 
 void vision_ui_list_render() {
+    if (vision_ui_icon_view_is_active()) {
+        vision_ui_icon_view_render();
+        return;
+    }
+
     // 调用所有的列表相关draw函数
     vision_ui_list_appearance_render();
     vision_ui_list_item_render();

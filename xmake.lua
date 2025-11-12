@@ -28,9 +28,6 @@ target("vision_ui")
 target("vision_ui_simulator")
     set_kind("binary")
     local simulator_main = "main_english.cpp"
-if get_config("language") == "mandarin" then
-    simulator_main = "main_mandarin.cpp"
-end
     add_files(
         simulator_main,
         "components/u8g2/sys/sdl/common/u8x8_d_sdl_128x64.c",

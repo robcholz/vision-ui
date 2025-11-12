@@ -42,18 +42,34 @@ static void vision_ui_alert_update() {
 }
 
 static void vision_ui_camera_position_update() {
-    if (vision_ui_camera_instance_get()->selector->y_selector_trg + VISION_UI_LIST_SELECTOR_FIXED_HEIGHT +
-                vision_ui_camera_instance_get()->y_camera_trg >
+    vision_ui_selector_t* selector = vision_ui_camera_instance_get()->selector;
+    if (selector == NULL || selector->selected_item == NULL) {
+        vision_ui_camera_instance_x_trg_set(0);
+        vision_ui_camera_instance_y_trg_set(0);
+        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95);
+        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96);
+        return;
+    }
+
+    const bool icon_view_active = selector->selected_item->parent != NULL && selector->selected_item->parent->icon_view_mode;
+    if (icon_view_active) {
+        vision_ui_camera_instance_x_trg_set(0);
+        vision_ui_camera_instance_y_trg_set(0);
+        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95);
+        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96);
+        return;
+    }
+
+    if (selector->y_selector_trg + VISION_UI_LIST_SELECTOR_FIXED_HEIGHT + vision_ui_camera_instance_get()->y_camera_trg >
         VISION_UI_SCREEN_HEIGHT) {
         // 向下超出屏幕 需要向下移动
-        vision_ui_camera_instance_y_trg_set(VISION_UI_SCREEN_HEIGHT - vision_ui_camera_instance_get()->selector->y_selector_trg -
-                                            VISION_UI_LIST_SELECTOR_FIXED_HEIGHT);
+        vision_ui_camera_instance_y_trg_set(VISION_UI_SCREEN_HEIGHT - selector->y_selector_trg - VISION_UI_LIST_SELECTOR_FIXED_HEIGHT);
     }
 
     const float top_padding = VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING;
-    if (vision_ui_camera_instance_get()->selector->y_selector_trg + vision_ui_camera_instance_get()->y_camera_trg < top_padding) {
+    if (selector->y_selector_trg + vision_ui_camera_instance_get()->y_camera_trg < top_padding) {
         // 向上超出屏幕 需要向上移动
-        vision_ui_camera_instance_y_trg_set(top_padding - vision_ui_camera_instance_get()->selector->y_selector_trg);
+        vision_ui_camera_instance_y_trg_set(top_padding - selector->y_selector_trg);
     }
 
     vision_ui_camera_instance_x_trg_set(0);
@@ -98,7 +114,45 @@ void vision_ui_core_init() {
 static void vision_ui_list_item_position_update() {
     vision_ui_selector_t* selector_mut = vision_ui_selector_mutable_instance_get();
     const vision_ui_selector_t* selector = vision_ui_selector_instance_get();
+
+    if (selector->selected_item == NULL) {
+        return;
+    }
+
     vision_ui_list_item_t* parent = selector->selected_item->parent;
+    if (parent == NULL) {
+        return;
+    }
+
+    if (parent->icon_view_mode) {
+        for (uint8_t i = 0; i < parent->child_num; i++) {
+            vision_ui_icon_item_t* item = vision_ui_to_list_icon_item(parent->child_list_item[i]);
+            item->base_item.y_list_item = 0;
+            item->base_item.y_list_item_trg = 0;
+
+            item->title_y_trg = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+
+            const bool is_selected = parent->child_list_item[i] == selector->selected_item;
+            item->title_y_trg = is_selected ? 0.f : VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+            vision_ui_animation_do(&item->title_y, item->title_y_trg, 90);
+        }
+
+        const float icon_item_span = (float) (VISION_UI_ICON_VIEW_ICON_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);
+        parent->icon_scroll_offset_trg = -icon_item_span * selector->selected_index;
+        vision_ui_animation_do(&parent->icon_scroll_offset, parent->icon_scroll_offset_trg, VISION_UI_ICON_VIEW_SCROLL_SPEED);
+
+        parent->scroll_bar_top = 0;
+        parent->scroll_bar_top_trg = 0;
+        parent->scroll_bar_height = 0;
+        parent->scroll_bar_height_trg = 0;
+        parent->scroll_bar_scale_part = 0;
+        parent->scroll_bar_scale_part_trg = 0;
+        parent->scroll_bar_top_px = 0;
+        parent->scroll_bar_height_px = 0;
+        selector_mut->scroll_bar_scale_parent = NULL;
+        selector_mut->scroll_bar_scale_part_shared = 0.f;
+        return;
+    }
 
     for (uint8_t i = 0; i < parent->child_num; i++) {
         vision_ui_animation_do(&parent->child_list_item[i]->y_list_item, parent->child_list_item[i]->y_list_item_trg, 84);

@@ -121,6 +121,14 @@ vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* li
     return (vision_ui_slider_item_t*) vision_ui_root_list_get();
 }
 
+vision_ui_icon_item_t* vision_ui_to_list_icon_item(vision_ui_list_item_t* list_item) {
+    if (list_item != NULL && list_item->type == ICON_ITEM) {
+        return (vision_ui_icon_item_t*) list_item;
+    }
+
+    return (vision_ui_icon_item_t*) vision_ui_root_list_get();
+}
+
 vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item) {
     if (list_item != NULL && list_item->type == USER_ITEM) {
         return (vision_ui_user_item_t*) list_item;
@@ -136,32 +144,49 @@ vision_ui_list_item_t* vision_ui_root_list_get() {
         vision_ui_root_item = malloc(sizeof(vision_ui_list_item_t));
         memset(vision_ui_root_item, 0, sizeof(vision_ui_list_item_t));
         vision_ui_root_item->type = LIST_ITEM;
+        vision_ui_root_item->icon_view_mode = VISION_UI_LIST_ROOT_ICON_VIEW;
         vision_ui_root_item->content = "VisionUI";
         vision_ui_root_item->capacity = VISION_UI_LIST_ROOT_CAPACITY;
         vision_ui_root_item->child_list_item = malloc(vision_ui_root_item->capacity * sizeof(vision_ui_list_item_t*));
-        vision_ui_list_push_item(vision_ui_root_item, vision_ui_list_title_item_new(1, vision_ui_root_item->content));
     }
     return vision_ui_root_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_item_new(const size_t capacity, const char* content) {
+vision_ui_list_item_t* vision_ui_list_item_new(const size_t capacity, const bool icon_mode, const char* content) {
     vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_list_item_t));
     memset(list_item, 0, sizeof(vision_ui_list_item_t));
     list_item->type = LIST_ITEM;
+    list_item->icon_view_mode = icon_mode;
     list_item->content = content;
     list_item->capacity = capacity;
     list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
-    vision_ui_list_push_item(list_item, vision_ui_list_title_item_new(1, list_item->content));
     return list_item;
 }
 
 vision_ui_list_item_t* vision_ui_list_title_item_new(const size_t capacity, const char* title) {
-    vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_list_item_t));
-    memset(list_item, 0, sizeof(vision_ui_list_item_t));
+    vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_title_item_t));
+    memset(list_item, 0, sizeof(vision_ui_title_item_t));
     list_item->type = TITLE_ITEM;
     list_item->content = title;
     list_item->capacity = capacity;
     list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
+    return list_item;
+}
+
+vision_ui_list_item_t* vision_ui_list_icon_item_new(const size_t capacity, const uint8_t* icon, const char* title,
+                                                    const char* description) {
+    vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_icon_item_t));
+    memset(list_item, 0, sizeof(vision_ui_icon_item_t));
+    list_item->type = ICON_ITEM;
+    list_item->content = title;
+    list_item->capacity = capacity;
+    list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
+
+    ((vision_ui_icon_item_t*) list_item)->icon = icon;
+    ((vision_ui_icon_item_t*) list_item)->description = description;
+    // start hidden so the first selection animates the slide-in
+    ((vision_ui_icon_item_t*) list_item)->title_y = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+    ((vision_ui_icon_item_t*) list_item)->title_y_trg = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
     return list_item;
 }
 
