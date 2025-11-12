@@ -126,8 +126,15 @@ static void vision_ui_list_item_position_update() {
 
     if (parent->icon_view_mode) {
         for (uint8_t i = 0; i < parent->child_num; i++) {
-            parent->child_list_item[i]->y_list_item = 0;
-            parent->child_list_item[i]->y_list_item_trg = 0;
+            vision_ui_icon_item_t* item = vision_ui_to_list_icon_item(parent->child_list_item[i]);
+            item->base_item.y_list_item = 0;
+            item->base_item.y_list_item_trg = 0;
+
+            item->title_y_trg = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+
+            const bool is_selected = parent->child_list_item[i] == selector->selected_item;
+            item->title_y_trg = is_selected ? 0.f : VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+            vision_ui_animation_do(&item->title_y, item->title_y_trg, 90);
         }
 
         const float icon_item_span = (float) (VISION_UI_ICON_VIEW_ICON_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);

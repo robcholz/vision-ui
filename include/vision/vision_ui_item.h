@@ -112,6 +112,9 @@ typedef struct vision_ui_title_item_t {
 typedef struct vision_ui_icon_item_t {
     vision_ui_list_item_t base_item;
 
+    float title_y;
+    float title_y_trg;
+
     const uint8_t* icon; // 30*30 bitmap, can be null
     const char* description; // can be null
 

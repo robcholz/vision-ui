@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include "../vision_ui_config.h"
-#include "u8g2.h"
 #include "vision_ui_core.h"
 #include "vision_ui_item.h"
 
@@ -591,10 +590,14 @@ static void vision_ui_icon_view_render() {
         vision_ui_driver_color_draw(1);
         vision_ui_driver_box_draw(title_bar_x0, title_area_y0, VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH, VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT);
 
-        vision_ui_text_draw(selector->selected_item->content, &selector->selected_item->text_scroll_anchor, title_x0, title_y0, title_x1,
-                            title_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S, VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
-
         const vision_ui_icon_item_t* selected_icon = vision_ui_to_list_icon_item(selector->selected_item);
+        const float title_offset = selected_icon->title_y;
+        const int16_t title_offset_px = (int16_t) lrintf(title_offset);
+
+        vision_ui_text_draw(selector->selected_item->content, &selector->selected_item->text_scroll_anchor, title_x0,
+                            title_y0 + title_offset_px, title_x1, title_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
+                            VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
+
         if (selected_icon->description != NULL) {
             uint16_t spacing;
             if (vision_ui_driver_str_width_get(selected_icon->description) >

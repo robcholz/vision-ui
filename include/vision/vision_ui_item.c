@@ -184,6 +184,9 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(const size_t capacity, const
 
     ((vision_ui_icon_item_t*) list_item)->icon = icon;
     ((vision_ui_icon_item_t*) list_item)->description = description;
+    // start hidden so the first selection animates the slide-in
+    ((vision_ui_icon_item_t*) list_item)->title_y = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+    ((vision_ui_icon_item_t*) list_item)->title_y_trg = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
     return list_item;
 }
 
