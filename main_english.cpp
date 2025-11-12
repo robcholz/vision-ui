@@ -146,6 +146,7 @@ int main() {
 
     vision_ui_core_init();
 
+    vision_ui_font_set_title((void*) u8g2_font_prospero_bold_nbp_tf);
     vision_ui_font_set((void*) u8g2_font_my_chinese);
 
     vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new(10, false, "Board Settings");

@@ -594,9 +594,11 @@ static void vision_ui_icon_view_render() {
         const float title_offset = selected_icon->title_y;
         const int16_t title_offset_px = (int16_t) lrintf(title_offset);
 
+        vision_ui_driver_font_set(vision_ui_font_get_title());
         vision_ui_text_draw(selector->selected_item->content, &selector->selected_item->text_scroll_anchor, title_x0,
                             title_y0 + title_offset_px, title_x1, title_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
                             VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
+        vision_ui_driver_font_set(vision_ui_font_get());
 
         if (selected_icon->description != NULL) {
             uint16_t spacing;

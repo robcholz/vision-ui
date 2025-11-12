@@ -17,6 +17,7 @@ bool IS_IN_VISION_UI;
 static bool IS_BACKGROUND_FROZEN = false;
 void vision_ui_render_init() {
     IS_IN_VISION_UI = true;
+    vision_ui_driver_font_set(vision_ui_font_get());
 }
 
 void vision_ui_animation_do(float* pos, const float pos_trg, const float speed) {

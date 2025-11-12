@@ -165,7 +165,11 @@ typedef struct vision_ui_camera_t {
 
 extern void vision_ui_font_set(void* font);
 
+extern void vision_ui_font_set_title(void* font);
+
 extern void* vision_ui_font_get();
+
+extern void* vision_ui_font_get_title();
 
 extern bool vision_ui_exit_animation_is_finished();
 

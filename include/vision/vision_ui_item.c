@@ -11,16 +11,26 @@
 #include "vision_ui_core.h"
 
 static void* VISION_UI_FONT;
+static void* VISION_UI_TITLE_FONT;
 
 void vision_ui_font_set(void* font) {
     if (font != VISION_UI_FONT) {
-        vision_ui_driver_font_set(font);
         VISION_UI_FONT = font;
+    }
+}
+
+void vision_ui_font_set_title(void* font) {
+    if (font != VISION_UI_TITLE_FONT) {
+        VISION_UI_TITLE_FONT = font;
     }
 }
 
 void* vision_ui_font_get() {
     return VISION_UI_FONT;
+}
+
+void* vision_ui_font_get_title() {
+    return VISION_UI_TITLE_FONT;
 }
 
 static vision_ui_notification_t VISION_UI_NOTIFICATION = {0,

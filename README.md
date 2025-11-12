@@ -155,7 +155,6 @@ Animations (selector easing, camera tracking, exit masks) are computed in `visio
 - [x] add animation for scroll bar
 - [x] add icon view
 - [x] use the correct format
-- [ ] wrap everything up
 - [ ] use 2nd ODE for animation and fix the animation rate
 
 ## License
