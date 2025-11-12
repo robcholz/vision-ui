@@ -130,7 +130,7 @@ static void vision_ui_list_item_position_update() {
             parent->child_list_item[i]->y_list_item_trg = 0;
         }
 
-        const float icon_item_span = (float) (VISION_UI_ICON_VIEW_BITMAP_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);
+        const float icon_item_span = (float) (VISION_UI_ICON_VIEW_ICON_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);
         parent->icon_scroll_offset_trg = -icon_item_span * selector->selected_index;
         vision_ui_animation_do(&parent->icon_scroll_offset, parent->icon_scroll_offset_trg, VISION_UI_ICON_VIEW_SCROLL_SPEED);
 

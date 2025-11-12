@@ -407,29 +407,6 @@ static void vision_ui_text_draw(const char* text, uint32_t* text_scroll_anchor, 
         }
     }
 }
-
-static void vision_ui_text_draw_fixed(const char* text, const int16_t x0, const int16_t y0, const int16_t x1, const int16_t y1) {
-    if (text == NULL || x0 >= x1 || y0 >= y1) {
-        return;
-    }
-
-    const int16_t line_h = vision_ui_driver_str_height_get();
-    const int16_t text_x = x0;
-    const int16_t text_y = y0 + (y1 - y0) / 2 + line_h / 2;
-
-    const int16_t clip_x0 = x0 < 0 ? 0 : x0;
-    const int16_t clip_y0 = y0 < 0 ? 0 : y0;
-    const int16_t clip_x1 = x1 > VISION_UI_SCREEN_WIDTH ? VISION_UI_SCREEN_WIDTH : x1;
-    const int16_t clip_y1 = y1 > VISION_UI_SCREEN_HEIGHT ? VISION_UI_SCREEN_HEIGHT : y1;
-    if (clip_x0 >= clip_x1 || clip_y0 >= clip_y1) {
-        return;
-    }
-
-    vision_ui_driver_clip_window_set(clip_x0, clip_y0, clip_x1, clip_y1);
-    vision_ui_driver_str_utf8_draw(text_x, text_y, text);
-    vision_ui_driver_clip_window_reset();
-}
-
 static void vision_ui_text_list_item_draw(vision_ui_list_item_t* list, const int16_t x0, const int16_t y0, const int16_t x1,
                                           const int16_t y1) {
     vision_ui_text_draw(list->content, &list->text_scroll_anchor, x0, y0, x1, y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
@@ -572,14 +549,8 @@ static void vision_ui_icon_view_render() {
     }
 
     vision_ui_list_item_t* parent = selector->selected_item->parent;
-    const int16_t icon_area_height = VISION_UI_SCREEN_HEIGHT / 2;
-    const int16_t text_area_y0 = icon_area_height;
-    const int16_t text_area_y1 = VISION_UI_SCREEN_HEIGHT;
-    const int16_t icon_size = VISION_UI_ICON_VIEW_BITMAP_SIZE;
-    const int16_t icon_y = icon_area_height / 2 - icon_size / 2;
-    const int16_t text_padding = VISION_UI_ICON_VIEW_TEXT_PADDING;
     const float scroll_offset = parent->icon_scroll_offset;
-    const float item_span = (float) (VISION_UI_ICON_VIEW_BITMAP_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);
+    const float item_span = (float) (VISION_UI_ICON_VIEW_ICON_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);
     const int16_t center_x = VISION_UI_SCREEN_WIDTH / 2;
 
     for (uint8_t i = 0; i < parent->child_num; ++i) {
@@ -589,33 +560,59 @@ static void vision_ui_icon_view_render() {
         }
 
         const float icon_center = (float) center_x + scroll_offset + (float) i * item_span;
-        const int16_t icon_x = (int16_t) lrintf(icon_center) - icon_size / 2;
-        if (icon_x + icon_size < 0 || icon_x > VISION_UI_SCREEN_WIDTH) {
+        const int16_t icon_x = (int16_t) lrintf(icon_center) - VISION_UI_ICON_VIEW_ICON_SIZE / 2;
+        if (icon_x + VISION_UI_ICON_VIEW_ICON_SIZE < 0 || icon_x > VISION_UI_SCREEN_WIDTH) {
             continue;
         }
 
         const vision_ui_icon_item_t* icon_item = vision_ui_to_list_icon_item(child);
         vision_ui_driver_color_draw(1);
         if (icon_item->icon != NULL) {
-            vision_ui_driver_bmp_draw(icon_x, icon_y, icon_size, icon_size, icon_item->icon);
+            vision_ui_driver_bmp_draw(icon_x, VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING, VISION_UI_ICON_VIEW_ICON_SIZE,
+                                      VISION_UI_ICON_VIEW_ICON_SIZE, icon_item->icon);
         } else {
-            vision_ui_driver_frame_draw(icon_x, icon_y, icon_size, icon_size);
-            vision_ui_driver_line_h_dotted_draw(icon_x, icon_y + icon_size / 2, icon_size);
+            vision_ui_driver_frame_draw(icon_x, VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING, VISION_UI_ICON_VIEW_ICON_SIZE,
+                                        VISION_UI_ICON_VIEW_ICON_SIZE);
+            vision_ui_driver_line_h_dotted_draw(icon_x, VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING + VISION_UI_ICON_VIEW_ICON_SIZE / 2,
+                                                VISION_UI_ICON_VIEW_ICON_SIZE);
         }
     }
 
     if (selector->selected_item->type == ICON_ITEM) {
-        const int16_t text_x0 = text_padding;
-        const int16_t text_x1 = VISION_UI_SCREEN_WIDTH - text_padding;
-        const int16_t text_mid_y = text_area_y0 + (text_area_y1 - text_area_y0) / 2;
+        const int16_t title_area_y0 = VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING + VISION_UI_ICON_VIEW_ICON_SIZE +
+                                      VISION_UI_ICON_VIEW_ICON_TO_TITLE_AREA_PADDING;
+        const int16_t title_bar_x0 = VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING;
+        const int16_t title_x0 = title_bar_x0 + VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH + VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING;
+        const int16_t title_x1 = VISION_UI_SCREEN_WIDTH - VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING;
+        const int16_t title_y0 = title_area_y0;
+        const int16_t title_y1 = title_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
 
         vision_ui_driver_color_draw(1);
-        vision_ui_text_draw_fixed(selector->selected_item->content, text_x0, text_area_y0 + 2, text_x1, text_mid_y);
+        vision_ui_driver_box_draw(title_bar_x0, title_area_y0, VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH, VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT);
+
+        vision_ui_text_draw(selector->selected_item->content, &selector->selected_item->text_scroll_anchor, title_x0, title_y0, title_x1,
+                            title_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S, VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
 
         const vision_ui_icon_item_t* selected_icon = vision_ui_to_list_icon_item(selector->selected_item);
         if (selected_icon->description != NULL) {
+            const int16_t text_area_y1 = VISION_UI_SCREEN_HEIGHT;
+            uint16_t spacing;
+            if (vision_ui_driver_str_width_get(selected_icon->description) >
+                VISION_UI_SCREEN_WIDTH - 2 * VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING) {
+                spacing = VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING;
+            } else {
+                spacing = (VISION_UI_SCREEN_WIDTH - vision_ui_driver_str_width_get(selected_icon->description)) / 2;
+            }
+            const uint16_t description_x0 = spacing;
+            const uint16_t description_x1 = VISION_UI_SCREEN_WIDTH - spacing;
+            const uint16_t description_y0 =
+                    title_area_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT + VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING;
+            const uint16_t description_y1 = description_y0 + vision_ui_driver_str_height_get();
             vision_ui_driver_color_draw(1);
-            vision_ui_text_draw_fixed(selected_icon->description, text_x0, text_mid_y, text_x1, text_area_y1 - 2);
+            vision_ui_text_draw(selected_icon->description,
+                                &vision_ui_to_list_icon_item(selector->selected_item)->description_scroll_anchor, description_x0,
+                                description_y0, description_x1, description_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
+                                VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
         }
     }
 }
