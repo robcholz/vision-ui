@@ -175,6 +175,14 @@ extern bool vision_ui_exit_animation_is_finished();
 
 extern void vision_ui_exit_animation_set_is_finished();
 
+extern void vision_ui_exit_animation_start();
+
+extern bool vision_ui_enter_animation_is_finished();
+
+extern void vision_ui_enter_animation_set_is_finished();
+
+extern void vision_ui_enter_animation_start();
+
 extern const vision_ui_notification_t* vision_ui_notification_instance_get();
 
 extern vision_ui_notification_t* vision_ui_notification_mutable_instance_get();

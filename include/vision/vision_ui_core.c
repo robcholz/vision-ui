@@ -298,6 +298,12 @@ static void vision_ui_main_core_step() {
     // 上面都是正常应当绘制的内容 退场动画需要绘制时 只需要在上面的基础上绘制遮罩即可
     if (!vision_ui_exit_animation_is_finished()) {
         vision_ui_exit_animation_render();
+        return;
+    }
+
+    if (!vision_ui_enter_animation_is_finished()) {
+        vision_ui_enter_animation_render();
+        return;
     }
 }
 

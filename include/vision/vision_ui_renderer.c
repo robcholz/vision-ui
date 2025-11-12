@@ -165,8 +165,26 @@ void vision_ui_exit_animation_render() {
     if (state == 1) {
         vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fadeout_sequence);
         ++fadeout_sequence;
-        if (fadeout_sequence > 5) {
+        if (fadeout_sequence > 4) {
             vision_ui_exit_animation_set_is_finished();
+            vision_ui_enter_animation_start();
+            state = 0;
+        }
+    }
+}
+
+void vision_ui_enter_animation_render() {
+    static uint8_t fadein_sequence;
+    static uint8_t state = 0;
+    if (state == 0) {
+        fadein_sequence = 4;
+        state = 1;
+    }
+    if (state == 1) {
+        vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fadein_sequence);
+        --fadein_sequence;
+        if (fadein_sequence < 1) {
+            vision_ui_enter_animation_set_is_finished();
             state = 0;
         }
     }

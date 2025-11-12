@@ -349,6 +349,24 @@ void vision_ui_exit_animation_set_is_finished() {
     VISION_UI_EXIT_ANIMATION_FINISHED = true;
 }
 
+void vision_ui_exit_animation_start() {
+    VISION_UI_EXIT_ANIMATION_FINISHED = false;
+}
+
+static bool VISION_UI_ENTER_ANIMATION_FINISHED = true;
+
+extern bool vision_ui_enter_animation_is_finished() {
+    return VISION_UI_ENTER_ANIMATION_FINISHED;
+}
+
+extern void vision_ui_enter_animation_set_is_finished() {
+    VISION_UI_ENTER_ANIMATION_FINISHED = true;
+}
+
+extern void vision_ui_enter_animation_start() {
+    VISION_UI_ENTER_ANIMATION_FINISHED = false;
+}
+
 /** @brief 确认当前选择的item
  * @note 如果选择了list 就进入选择的list
  * @note 如果选择了特殊item 就翻转/调整对应的值
@@ -359,7 +377,7 @@ void vision_ui_selector_jump_to_selected_item() {
     }
 
     if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM) {
-        VISION_UI_EXIT_ANIMATION_FINISHED = false;
+        vision_ui_exit_animation_start();
         // vision_ui_selector.selected_item->in_user_item = true;
         vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
         selected_user_item->entering_user_item = true;
@@ -397,6 +415,8 @@ void vision_ui_selector_jump_to_selected_item() {
         return;
     }
 
+    vision_ui_exit_animation_start();
+
     // 给选择的item的子item坐标清零 做动画
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->child_num; i++) {
         VISION_UI_SELECTOR.selected_item->child_list_item[i]->y_list_item = 0;
@@ -420,7 +440,7 @@ void vision_ui_selector_exit_current_item() {
 
     if (VISION_UI_SELECTOR.selected_item->type == USER_ITEM &&
         vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item)->in_user_item) {
-        VISION_UI_EXIT_ANIMATION_FINISHED = false; // 需要重新绘制退场动画
+        vision_ui_exit_animation_start(); // 需要重新绘制退场动画
         // vision_ui_selector.selected_item->in_user_item = false;
         vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
         selected_user_item->entering_user_item = false;
@@ -436,6 +456,8 @@ void vision_ui_selector_exit_current_item() {
         }
         return;
     }
+
+    vision_ui_exit_animation_start();
 
     // 给选择的item的父item的父item的所有子item坐标清零 做动画
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->parent->child_num; i++) {

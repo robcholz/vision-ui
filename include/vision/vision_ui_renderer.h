@@ -7,6 +7,8 @@
 
 extern void vision_ui_exit_animation_render();
 
+extern void vision_ui_enter_animation_render();
+
 extern void vision_ui_widget_render();
 
 extern void vision_ui_list_render();
