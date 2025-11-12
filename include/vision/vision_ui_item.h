@@ -48,6 +48,7 @@ typedef struct vision_ui_alert_t {
 typedef enum {
     LIST_ITEM,
     TITLE_ITEM,
+    ICON_ITEM,
     SWITCH_ITEM,
     SLIDER_ITEM,
     USER_ITEM,
@@ -55,6 +56,7 @@ typedef enum {
 
 typedef struct vision_ui_list_item_t {
     vision_ui_list_item_type_t type;
+    bool icon_view_mode;
 
     const char* content;
     uint32_t text_scroll_anchor;
@@ -70,6 +72,9 @@ typedef struct vision_ui_list_item_t {
 
     float y_list_item;
     float y_list_item_trg;
+
+    float icon_scroll_offset;
+    float icon_scroll_offset_trg;
 
     uint8_t layer;
     uint8_t child_num;
@@ -103,6 +108,15 @@ typedef struct vision_ui_slider_item_t {
 typedef struct vision_ui_title_item_t {
     vision_ui_list_item_t base_item;
 } vision_ui_title_item_t;
+
+typedef struct vision_ui_icon_item_t {
+    vision_ui_list_item_t base_item;
+
+    const uint8_t* icon; // 30*30 bitmap, can be null
+    const char* description; // can be null
+
+    uint32_t description_scroll_anchor;
+} vision_ui_icon_item_t;
 
 typedef struct vision_ui_user_item_t {
     vision_ui_list_item_t base_item;
@@ -172,11 +186,16 @@ extern vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_ite
 
 extern vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* list_item);
 
+extern vision_ui_icon_item_t* vision_ui_to_list_icon_item(vision_ui_list_item_t* list_item);
+
 extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item);
 
-extern vision_ui_list_item_t* vision_ui_list_item_new(size_t capacity, const char* content);
+extern vision_ui_list_item_t* vision_ui_list_item_new(size_t capacity, bool icon_mode, const char* content);
 
 extern vision_ui_list_item_t* vision_ui_list_title_item_new(size_t capacity, const char* title);
+
+extern vision_ui_list_item_t* vision_ui_list_icon_item_new(size_t capacity, const uint8_t* icon, const char* title,
+                                                           const char* description);
 
 extern vision_ui_list_item_t* vision_ui_list_switch_item_new(size_t capacity, const char* content, bool default_value,
                                                              void (*on_changed)(bool value));
