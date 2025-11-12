@@ -19,7 +19,7 @@ void vision_ui_render_init() {
     IS_IN_VISION_UI = true;
 }
 
-void vision_ui_animation_do(float *pos, const float pos_trg, const float speed) {
+void vision_ui_animation_do(float* pos, const float pos_trg, const float speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) {
             *pos = pos_trg;
@@ -70,7 +70,7 @@ static void vision_ui_widget_core_position_update() {
 static void vision_ui_list_init() {
     // 做动画
     for (uint8_t i = 0; i < vision_ui_root_list_get()->child_num; i++) {
-        vision_ui_list_item_t *list = vision_ui_root_list_get()->child_list_item[i];
+        vision_ui_list_item_t* list = vision_ui_root_list_get()->child_list_item[i];
         list->y_list_item = 0;
         list->scroll_bar_top = 0;
         list->scroll_bar_top_trg = 0;
@@ -96,9 +96,9 @@ void vision_ui_core_init() {
 }
 
 static void vision_ui_list_item_position_update() {
-    vision_ui_selector_t *selector_mut = vision_ui_selector_mutable_instance_get();
-    const vision_ui_selector_t *selector = vision_ui_selector_instance_get();
-    vision_ui_list_item_t *parent = selector->selected_item->parent;
+    vision_ui_selector_t* selector_mut = vision_ui_selector_mutable_instance_get();
+    const vision_ui_selector_t* selector = vision_ui_selector_instance_get();
+    vision_ui_list_item_t* parent = selector->selected_item->parent;
 
     for (uint8_t i = 0; i < parent->child_num; i++) {
         vision_ui_animation_do(&parent->child_list_item[i]->y_list_item, parent->child_list_item[i]->y_list_item_trg, 84);
@@ -113,7 +113,7 @@ static void vision_ui_list_item_position_update() {
     parent->scroll_bar_height_trg = slider_h_trg;
     parent->scroll_bar_scale_part_trg = part;
 
-    vision_ui_list_item_t *const prev_parent = selector_mut->scroll_bar_scale_parent;
+    vision_ui_list_item_t* const prev_parent = selector_mut->scroll_bar_scale_parent;
     if (parent != prev_parent) {
         if (prev_parent != NULL) {
             parent->scroll_bar_top = prev_parent->scroll_bar_top;
@@ -200,9 +200,9 @@ static void vision_ui_main_core_step() {
     }
 
     // 切换in user item的逻辑
-    if (vision_ui_exit_animation_status_get() == EXIT_MASK_FALL_COMPLETE) {
+    if (vision_ui_exit_animation_is_finished()) {
         if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM) {
-            vision_ui_user_item_t *selected_user_item = vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
+            vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
             if (selected_user_item->entering_user_item) {
                 selected_user_item->in_user_item = 1;
             } else if (selected_user_item->exiting_user_item) {
@@ -217,7 +217,7 @@ static void vision_ui_main_core_step() {
     // 渲染的逻辑
     if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM &&
         vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item)->in_user_item) {
-        vision_ui_user_item_t *selected_user_item = vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
+        vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
         // 初始化
         if (!selected_user_item->user_item_inited) {
             if (selected_user_item->init_function != NULL) {
