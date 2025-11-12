@@ -19,7 +19,7 @@ static int16_t X_BOARD = -200;
 static int16_t Y_WIRE_1 = 200;
 static int16_t Y_WIRE_2 = 200;
 
-void animation(int16_t *pos, int16_t pos_trg, int16_t speed) {
+void animation(int16_t* pos, int16_t pos_trg, int16_t speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) {
 
@@ -130,9 +130,9 @@ int main() {
 
     vision_ui_core_init();
 
-    vision_ui_font_set((void *) u8g2_font_my_chinese);
+    vision_ui_font_set((void*) u8g2_font_my_chinese);
 
-    vision_ui_list_item_t *launcher_setting_list_item = vision_ui_list_item_new(10, "开发板设置");
+    vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new(10, "开发板设置");
 
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "切换屏幕", true, [](bool b) {}));
