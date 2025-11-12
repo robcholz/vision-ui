@@ -400,12 +400,20 @@ static void vision_ui_text_draw(const char* text, uint32_t* text_scroll_anchor, 
 
         const uint32_t elapsed = now - *text_scroll_anchor;
 
-        if (elapsed > scroll_pause_ms && forward_ms > 0) {
-            // 生成往返三角波（0..overflow..0）
-            const uint32_t t = (elapsed - scroll_pause_ms) % (forward_ms * 2u);
-            const float p = (float) t / (float) forward_ms; // 0..2
-            const float tri = (p <= 1.f) ? p : (2.f - p); // 0..1..0
-            scroll_offset = (int16_t) lrintf((float) overflow * tri);
+        const uint32_t cycle_ms = (scroll_pause_ms + forward_ms) * 2u;
+        if (forward_ms > 0 && cycle_ms > 0) {
+            const uint32_t phase = elapsed % cycle_ms;
+            if (phase < scroll_pause_ms) {
+                scroll_offset = 0;
+            } else if (phase < scroll_pause_ms + forward_ms) {
+                const float p = (float) (phase - scroll_pause_ms) / (float) forward_ms;
+                scroll_offset = (int16_t) lrintf((float) overflow * p);
+            } else if (phase < scroll_pause_ms + forward_ms + scroll_pause_ms) {
+                scroll_offset = overflow;
+            } else {
+                const float p = (float) (phase - scroll_pause_ms - forward_ms - scroll_pause_ms) / (float) forward_ms;
+                scroll_offset = (int16_t) lrintf((float) overflow * (1.f - p));
+            }
         } else {
             scroll_offset = 0;
         }
