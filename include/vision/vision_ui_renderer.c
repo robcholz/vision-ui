@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "../vision_ui_config.h"
+#include "u8g2.h"
 #include "vision_ui_core.h"
 #include "vision_ui_item.h"
 
@@ -595,7 +596,6 @@ static void vision_ui_icon_view_render() {
 
         const vision_ui_icon_item_t* selected_icon = vision_ui_to_list_icon_item(selector->selected_item);
         if (selected_icon->description != NULL) {
-            const int16_t text_area_y1 = VISION_UI_SCREEN_HEIGHT;
             uint16_t spacing;
             if (vision_ui_driver_str_width_get(selected_icon->description) >
                 VISION_UI_SCREEN_WIDTH - 2 * VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING) {

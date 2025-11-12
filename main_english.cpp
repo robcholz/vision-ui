@@ -136,7 +136,12 @@ int main() {
     vision_ui_list_item_t* launcher_setting_list_item_2 = vision_ui_list_item_new(10, true, "Board Settings 2");
 
     vision_ui_list_push_item(launcher_setting_list_item_2, vision_ui_list_icon_item_new(1, NULL, "Icon 1", "Example Icon 1"));
-    vision_ui_list_push_item(launcher_setting_list_item_2, vision_ui_list_icon_item_new(1, NULL, "Icon Super Looooooooong", "Example Icon 2"));
+    vision_ui_list_push_item(launcher_setting_list_item_2,
+                             vision_ui_list_icon_item_new(1, NULL, "Icon Super Looooooooong", "Example Icon 2"));
+    vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(1, NULL, "Icon Item 3", "balhabala");
+    vision_ui_list_item_t* list3 = vision_ui_list_item_new(10, false, "Board Settings3");
+    vision_ui_list_push_item(icon, list3);
+    vision_ui_list_push_item(launcher_setting_list_item_2, icon);
 
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_title_item_new(1, "VisionUI"));
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
