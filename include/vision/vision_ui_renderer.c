@@ -567,12 +567,10 @@ void vision_ui_icon_render(const vision_ui_page_t* page) {
 }
 
 void vision_ui_widget_render() {
-    vision_ui_notification_render();
-
-    // everything else should be blured except the alert object
     if (vision_ui_is_background_frozen()) {
         vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, 4);
     }
+    vision_ui_notification_render();
     vision_ui_alert_render();
 }
 
