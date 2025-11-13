@@ -257,12 +257,13 @@ uint8_t u8x8_d_sdl_240x240(u8x8_t* u8g2, uint8_t msg, uint8_t arg_int, void* arg
                 u8g_sdl_set_multiple_8pixel(x, y, c * 8, ptr);
                 arg_int--;
             } while (arg_int > 0);
-
+            // note: completely ignore the stupid draw tile, this drag down the fps to ~70 from ~400
+            break;
+        case U8X8_MSG_DISPLAY_REFRESH:
 #ifndef NO_SDL
             /* update all */
             SDL_UpdateWindowSurface(u8g_sdl_window);
 #endif
-
             break;
         default:
             return 0;
