@@ -297,7 +297,7 @@ static void vision_ui_notification_render() {
     vision_ui_driver_pixel_draw(x_notification + 1, y_notification_2 - 3);
     vision_ui_driver_pixel_draw(x_notification + 1, y_notification_2 - 3);
 
-    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_notification_instance_get()->content);
+    const int16_t text_w = vision_ui_driver_str_utf8_width_get(vision_ui_notification_instance_get()->content);
     const int16_t text_h = vision_ui_driver_str_height_get();
     const int16_t text_x = x_notification + (int16_t) ((vision_ui_notification_instance_get()->w_notification - text_w) / 2);
     const int16_t text_y = (int16_t) (vision_ui_notification_instance_get()->y_notification + vision_ui_driver_str_height_get() - 2);
@@ -349,7 +349,7 @@ static void vision_ui_alert_render() {
     vision_ui_driver_pixel_draw(x_alert - 1, y_alert - 3);
     vision_ui_driver_pixel_draw((int16_t) (VISION_UI_SCREEN_WIDTH / 2 + vision_ui_alert_instance_get()->w_alert / 2), y_alert - 3);
 
-    const int16_t text_w = vision_ui_driver_str_width_get(vision_ui_alert_instance_get()->content);
+    const int16_t text_w = vision_ui_driver_str_utf8_width_get(vision_ui_alert_instance_get()->content);
     const int16_t text_h = vision_ui_driver_str_height_get();
     const int16_t text_x = x_alert + (int16_t) ((vision_ui_alert_instance_get()->w_alert - text_w) / 2);
     const int16_t text_y = (int16_t) (vision_ui_alert_instance_get()->y_alert + vision_ui_driver_str_height_get() + 1);

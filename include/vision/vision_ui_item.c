@@ -105,7 +105,7 @@ void vision_ui_alert_push(const char* content, const uint16_t span) {
     // 弹出
     if (!VISION_UI_ALERT.is_running) {
         VISION_UI_ALERT.time_start = vision_ui_driver_ticks_ms_get();
-        VISION_UI_ALERT.y_alert_trg = 20;
+        VISION_UI_ALERT.y_alert_trg = (VISION_UI_SCREEN_HEIGHT - VISION_UI_ALERT_HEIGHT) / 2;
         VISION_UI_ALERT.is_running = true;
     }
 
