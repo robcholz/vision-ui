@@ -8,6 +8,7 @@
 #include <tgmath.h>
 
 #include "../vision_ui_config.h"
+#include "vision_ui_animation.h"
 #include "vision_ui_draw_driver.h"
 #include "vision_ui_item.h"
 #include "vision_ui_renderer.h"
@@ -18,22 +19,6 @@ static bool IS_BACKGROUND_FROZEN = false;
 void vision_ui_render_init() {
     IS_IN_VISION_UI = true;
     vision_ui_driver_font_set(vision_ui_font_get());
-}
-
-void vision_ui_animation_do(float* pos, const float pos_trg, const float speed, const float delta_ms) {
-    if (*pos == pos_trg) {
-        return;
-    }
-
-    if (fabsf(*pos - pos_trg) <= 1.0f) {
-        *pos = pos_trg;
-        return;
-    }
-
-    const float frame_ms = delta_ms > 0.0f ? delta_ms : 16.6667f;
-    const float frame_ratio = frame_ms / 16.6667f;
-    const float step = (pos_trg - *pos) / (100.0f - speed) * frame_ratio;
-    *pos += step;
 }
 
 static void vision_ui_notification_update(const float delta_ms) {
