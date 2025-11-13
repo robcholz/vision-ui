@@ -13,7 +13,7 @@
 
 static u8g2_t* S_U8G2 = NULL;
 
-uint8_t U8G2_BUFFER[128 * 8];
+uint8_t U8G2_BUFFER[VISION_UI_BUFFER_SIZE];
 
 static int get_key() {
     SDL_Event event;
