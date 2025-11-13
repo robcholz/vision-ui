@@ -19,49 +19,54 @@
 #define W(x, w) (((x) * (w)) / 100)
 
 #ifndef NO_SDL
-SDL_Window* u8g_sdl_window;
-SDL_Surface* u8g_sdl_screen;
+SDL_Window* U8G_SDL_WINDOW;
+SDL_Surface* U8G_SDL_SCREEN;
 #endif
 
-int u8g_sdl_multiple = 3;
-uint32_t u8g_sdl_color[256];
-int u8g_sdl_height, u8g_sdl_width;
+int U8G_SDL_MULTIPLE = 3;
+uint32_t U8G_SDL_COLOR[256];
+int U8G_SDL_HEIGHT, U8G_SDL_WIDTH;
 
 
-static void u8g_sdl_set_pixel(int x, int y, int idx) {
+static void u8g_sdl_set_pixel(const int x, const int y, const int idx) {
     uint32_t* ptr;
     uint32_t offset;
-    int i, j;
 
-    if (y >= u8g_sdl_height)
+    if (y >= U8G_SDL_HEIGHT) {
         return;
-    if (y < 0)
+    }
+    if (y < 0) {
         return;
-    if (x >= u8g_sdl_width)
+    }
+    if (x >= U8G_SDL_WIDTH) {
         return;
-    if (x < 0)
+    }
+    if (x < 0) {
         return;
+    }
 
-    for (i = 0; i < u8g_sdl_multiple; i++)
-        for (j = 0; j < u8g_sdl_multiple; j++) {
+    for (int i = 0; i < U8G_SDL_MULTIPLE; i++) {
+        for (int j = 0; j < U8G_SDL_MULTIPLE; j++) {
 #ifndef NO_SDL
-            offset = (((y * u8g_sdl_multiple) + i) * (u8g_sdl_width * u8g_sdl_multiple) + ((x * u8g_sdl_multiple) + j)) *
-                     u8g_sdl_screen->format->BytesPerPixel;
+            offset = (((y * U8G_SDL_MULTIPLE) + i) * (U8G_SDL_WIDTH * U8G_SDL_MULTIPLE) + ((x * U8G_SDL_MULTIPLE) + j)) *
+                     U8G_SDL_SCREEN->format->BytesPerPixel;
 
             assert(offset <
-                   (Uint32) (u8g_sdl_width * u8g_sdl_multiple * u8g_sdl_height * u8g_sdl_multiple * u8g_sdl_screen->format->BytesPerPixel));
+                   (Uint32) (U8G_SDL_WIDTH * U8G_SDL_MULTIPLE * U8G_SDL_HEIGHT * U8G_SDL_MULTIPLE * U8G_SDL_SCREEN->format->BytesPerPixel));
 
-            ptr = (uint32_t*) (((uint8_t*) (u8g_sdl_screen->pixels)) + offset);
-            *ptr = u8g_sdl_color[idx];
+            ptr = (uint32_t*) (((uint8_t*) (U8G_SDL_SCREEN->pixels)) + offset);
+            *ptr = U8G_SDL_COLOR[idx];
 #endif
         }
+    }
 }
 
-static void u8g_sdl_set_8pixel(int x, int y, uint8_t pixel) {
+static void u8g_sdl_set_8pixel(const int x, int y, uint8_t pixel) {
     int cnt = 8;
     int bg = 0;
-    if ((x / 8 + y / 8) & 1)
+    if ((x / 8 + y / 8) & 1) {
         bg = 4;
+    }
     while (cnt > 0) {
         if ((pixel & 1) == 0) {
             u8g_sdl_set_pixel(x, y, bg);
@@ -74,10 +79,9 @@ static void u8g_sdl_set_8pixel(int x, int y, uint8_t pixel) {
     }
 }
 
-static void u8g_sdl_set_multiple_8pixel(int x, int y, int cnt, uint8_t* pixel) {
-    uint8_t b;
+static void u8g_sdl_set_multiple_8pixel(int x, const int y, int cnt, const uint8_t* pixel) {
     while (cnt > 0) {
-        b = *pixel;
+        const uint8_t b = *pixel;
         u8g_sdl_set_8pixel(x, y, b);
         x++;
         pixel++;
@@ -86,8 +90,8 @@ static void u8g_sdl_set_multiple_8pixel(int x, int y, int cnt, uint8_t* pixel) {
 }
 
 static void u8g_sdl_init(int width, int height) {
-    u8g_sdl_height = height;
-    u8g_sdl_width = width;
+    U8G_SDL_HEIGHT = height;
+    U8G_SDL_WIDTH = width;
 
 #ifndef NO_SDL
 
@@ -96,29 +100,29 @@ static void u8g_sdl_init(int width, int height) {
         exit(1);
     }
 
-    u8g_sdl_window = SDL_CreateWindow("vision_ui-simulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                      u8g_sdl_width * u8g_sdl_multiple, u8g_sdl_height * u8g_sdl_multiple, 0);
+    U8G_SDL_WINDOW = SDL_CreateWindow("vision_ui-simulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                      U8G_SDL_WIDTH * U8G_SDL_MULTIPLE, U8G_SDL_HEIGHT * U8G_SDL_MULTIPLE, 0);
 
-    if (u8g_sdl_window == NULL) {
+    if (U8G_SDL_WINDOW == NULL) {
         printf("Couldn't create window: %s\n", SDL_GetError());
         exit(1);
     }
 
-    u8g_sdl_screen = SDL_GetWindowSurface(u8g_sdl_window);
+    U8G_SDL_SCREEN = SDL_GetWindowSurface(U8G_SDL_WINDOW);
 
-    if (u8g_sdl_screen == NULL) {
+    if (U8G_SDL_SCREEN == NULL) {
         printf("Couldn't create screen: %s\n", SDL_GetError());
         exit(1);
     }
 
-    printf("%d bits-per-pixel mode\n", u8g_sdl_screen->format->BitsPerPixel);
-    printf("%d bytes-per-pixel mode\n", u8g_sdl_screen->format->BytesPerPixel);
+    printf("%d bits-per-pixel mode\n", U8G_SDL_SCREEN->format->BitsPerPixel);
+    printf("%d bytes-per-pixel mode\n", U8G_SDL_SCREEN->format->BytesPerPixel);
 
-    u8g_sdl_color[0] = SDL_MapRGB(u8g_sdl_screen->format, 0, 0, 0);
-    u8g_sdl_color[1] = SDL_MapRGB(u8g_sdl_screen->format, W(100, 50), W(255, 50), 0);
-    u8g_sdl_color[2] = SDL_MapRGB(u8g_sdl_screen->format, W(100, 80), W(255, 80), 0);
-    u8g_sdl_color[3] = SDL_MapRGB(u8g_sdl_screen->format, 100, 255, 0);
-    u8g_sdl_color[4] = SDL_MapRGB(u8g_sdl_screen->format, 30, 30, 30);
+    U8G_SDL_COLOR[0] = SDL_MapRGB(U8G_SDL_SCREEN->format, 0, 0, 0);
+    U8G_SDL_COLOR[1] = SDL_MapRGB(U8G_SDL_SCREEN->format, W(100, 50), W(255, 50), 0);
+    U8G_SDL_COLOR[2] = SDL_MapRGB(U8G_SDL_SCREEN->format, W(100, 80), W(255, 80), 0);
+    U8G_SDL_COLOR[3] = SDL_MapRGB(U8G_SDL_SCREEN->format, 100, 255, 0);
+    U8G_SDL_COLOR[4] = SDL_MapRGB(U8G_SDL_SCREEN->format, 30, 30, 30);
 
     /*
     u8g_sdl_set_pixel(0,0);
@@ -127,7 +131,7 @@ static void u8g_sdl_init(int width, int height) {
     */
 
     /* update all */
-    SDL_UpdateWindowSurface(u8g_sdl_window);
+    SDL_UpdateWindowSurface(U8G_SDL_WINDOW);
 
     atexit(SDL_Quit);
 #endif
@@ -150,24 +154,24 @@ void main(void)
 */
 
 
-static uint8_t u8x8_d_sdl_gpio(u8x8_t* u8x8, uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void* arg_ptr) {
+static uint8_t u8x8_d_sdl_gpio(u8x8_t* u8x8, const uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void* arg_ptr) {
     static int debounce_cnt = 0;
     static int curr_msg = 0;
     static int db_cnt = 10;
-    int event;
 
     if (curr_msg > 0) {
         if (msg == curr_msg) {
             u8x8_SetGPIOResult(u8x8, 0);
-            if (debounce_cnt == 0)
+            if (debounce_cnt == 0) {
                 curr_msg = 0;
-            else
+            } else {
                 debounce_cnt--;
+            }
             return 1;
         }
 
     } else {
-        event = u8g_sdl_get_key();
+        const int event = u8g_sdl_get_key();
 
         switch (event) {
             case 273:
@@ -203,7 +207,7 @@ static uint8_t u8x8_d_sdl_gpio(u8x8_t* u8x8, uint8_t msg, U8X8_UNUSED uint8_t ar
 /*========================================*/
 /* 240x240 */
 
-static const u8x8_display_info_t u8x8_sdl_240x240_info = {
+static const u8x8_display_info_t U8X8_SDL_240X240_INFO = {
         /* chip_enable_level = */ 0,
         /* chip_disable_level = */ 1,
 
@@ -226,12 +230,11 @@ static const u8x8_display_info_t u8x8_sdl_240x240_info = {
         /* pixel_height = */ 240};
 
 
-uint8_t u8x8_d_sdl_240x240(u8x8_t* u8g2, uint8_t msg, uint8_t arg_int, void* arg_ptr) {
-    uint8_t x, y, c;
-    uint8_t* ptr;
+uint8_t u8x8_d_sdl_240x240(u8x8_t* u8g2, const uint8_t msg, uint8_t arg_int, void* arg_ptr) {
+    uint8_t x, y;
     switch (msg) {
         case U8X8_MSG_DISPLAY_SETUP_MEMORY:
-            u8x8_d_helper_display_setup_memory(u8g2, &u8x8_sdl_240x240_info);
+            u8x8_d_helper_display_setup_memory(u8g2, &U8X8_SDL_240X240_INFO);
             u8g_sdl_init(240, 240);
             break;
         case U8X8_MSG_DISPLAY_INIT:
@@ -252,17 +255,18 @@ uint8_t u8x8_d_sdl_240x240(u8x8_t* u8g2, uint8_t msg, uint8_t arg_int, void* arg
             y *= 8;
 
             do {
-                c = ((u8x8_tile_t*) arg_ptr)->cnt;
-                ptr = ((u8x8_tile_t*) arg_ptr)->tile_ptr;
+                const uint8_t c = ((u8x8_tile_t*) arg_ptr)->cnt;
+                const uint8_t* ptr = ((u8x8_tile_t*) arg_ptr)->tile_ptr;
                 u8g_sdl_set_multiple_8pixel(x, y, c * 8, ptr);
                 arg_int--;
             } while (arg_int > 0);
-
+            // note: completely ignore the stupid draw tile, this drag down the fps to ~70 from ~400
+            break;
+        case U8X8_MSG_DISPLAY_REFRESH:
 #ifndef NO_SDL
             /* update all */
-            SDL_UpdateWindowSurface(u8g_sdl_window);
+            SDL_UpdateWindowSurface(U8G_SDL_WINDOW);
 #endif
-
             break;
         default:
             return 0;

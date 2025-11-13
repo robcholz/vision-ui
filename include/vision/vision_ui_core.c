@@ -22,17 +22,17 @@ void vision_ui_render_init() {
 }
 
 static void vision_ui_notification_update(const float delta_ms) {
-    vision_ui_animation_do(&vision_ui_notification_mutable_instance_get()->y_notification,
-                           vision_ui_notification_mutable_instance_get()->y_notification_trg, 94, delta_ms);
-    vision_ui_animation_do(&vision_ui_notification_mutable_instance_get()->w_notification,
-                           vision_ui_notification_mutable_instance_get()->w_notification_trg, 95, delta_ms);
+    vision_ui_animation_s_curve(&vision_ui_notification_mutable_instance_get()->y_notification,
+                                vision_ui_notification_mutable_instance_get()->y_notification_trg, 94, delta_ms);
+    vision_ui_animation_s_curve(&vision_ui_notification_mutable_instance_get()->w_notification,
+                                vision_ui_notification_mutable_instance_get()->w_notification_trg, 95, delta_ms);
 }
 
 static void vision_ui_alert_update(const float delta_ms) {
-    vision_ui_animation_do(&vision_ui_alert_mutable_instance_get()->y_alert, vision_ui_alert_mutable_instance_get()->y_alert_trg, 94,
-                           delta_ms);
-    vision_ui_animation_do(&vision_ui_alert_mutable_instance_get()->w_alert, vision_ui_alert_mutable_instance_get()->w_alert_trg, 96,
-                           delta_ms);
+    vision_ui_animation_s_curve(&vision_ui_alert_mutable_instance_get()->y_alert, vision_ui_alert_mutable_instance_get()->y_alert_trg, 94,
+                                delta_ms);
+    vision_ui_animation_s_curve(&vision_ui_alert_mutable_instance_get()->w_alert, vision_ui_alert_mutable_instance_get()->w_alert_trg, 96,
+                                delta_ms);
 }
 
 static void vision_ui_camera_position_update(const float delta_ms) {
@@ -40,10 +40,12 @@ static void vision_ui_camera_position_update(const float delta_ms) {
     if (selector == NULL || selector->selected_item == NULL) {
         vision_ui_camera_instance_x_trg_set(0);
         vision_ui_camera_instance_y_trg_set(0);
-        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95,
-                               delta_ms);
-        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96,
-                               delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->x_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->x_camera_velocity,
+                                                     vision_ui_camera_instance_get()->x_camera_trg, 95, delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->y_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->y_camera_velocity,
+                                                     vision_ui_camera_instance_get()->y_camera_trg, 96, delta_ms);
         return;
     }
 
@@ -51,10 +53,12 @@ static void vision_ui_camera_position_update(const float delta_ms) {
     if (icon_view_active) {
         vision_ui_camera_instance_x_trg_set(0);
         vision_ui_camera_instance_y_trg_set(0);
-        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95,
-                               delta_ms);
-        vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96,
-                               delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->x_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->x_camera_velocity,
+                                                     vision_ui_camera_instance_get()->x_camera_trg, 95, delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->y_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->y_camera_velocity,
+                                                     vision_ui_camera_instance_get()->y_camera_trg, 96, delta_ms);
         return;
     }
 
@@ -71,8 +75,12 @@ static void vision_ui_camera_position_update(const float delta_ms) {
     }
 
     vision_ui_camera_instance_x_trg_set(0);
-    vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95, delta_ms);
-    vision_ui_animation_do(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96, delta_ms);
+    vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->x_camera,
+                                                 &vision_ui_camera_mutable_instance_get()->x_camera_velocity,
+                                                 vision_ui_camera_instance_get()->x_camera_trg, 95, delta_ms);
+    vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->y_camera,
+                                                 &vision_ui_camera_mutable_instance_get()->y_camera_velocity,
+                                                 vision_ui_camera_instance_get()->y_camera_trg, 96, delta_ms);
 }
 
 static void vision_ui_widget_core_position_update(const float delta_ms) {
@@ -88,7 +96,9 @@ static void vision_ui_list_init() {
         list->y_list_item = 0;
         list->scroll_bar_top = 0;
         list->scroll_bar_top_trg = 0;
+        list->scroll_bar_top_velocity = 0;
         list->scroll_bar_height = 0;
+        list->scroll_bar_height_velocity = 0;
         list->scroll_bar_height_trg = 0;
         list->scroll_bar_scale_part = 0;
         list->scroll_bar_scale_part_trg = 0;
@@ -99,8 +109,14 @@ static void vision_ui_list_init() {
     vision_ui_selector_mutable_instance_get()->scroll_bar_scale_part_shared = 0.f;
     vision_ui_selector_mutable_instance_get()->selected_index = 0;
     vision_ui_selector_mutable_instance_get()->selected_item = vision_ui_root_list_get()->child_list_item[0];
+
+    vision_ui_selector_mutable_instance_get()->w_selector_velocity = 0;
+
     vision_ui_selector_mutable_instance_get()->y_selector = VISION_UI_SCREEN_HEIGHT;
+    vision_ui_selector_mutable_instance_get()->y_selector_velocity = 0;
+
     vision_ui_selector_mutable_instance_get()->h_selector = VISION_UI_SCREEN_HEIGHT;
+    vision_ui_selector_mutable_instance_get()->h_selector_velocity = 0;
 }
 
 void vision_ui_core_init() {
@@ -132,16 +148,20 @@ static void vision_ui_list_item_position_update(const float delta_ms) {
 
             const bool is_selected = parent->child_list_item[i] == selector->selected_item;
             item->title_y_trg = is_selected ? 0.f : VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
-            vision_ui_animation_do(&item->title_y, item->title_y_trg, 90, delta_ms);
+            vision_ui_animation_2nd_ode_slight_overshoot(&item->title_y, &item->title_y_velocity, item->title_y_trg,
+                                                         VISION_UI_ICON_VIEW_SCROLL_SPEED, delta_ms);
         }
 
         const float icon_item_span = (float) (VISION_UI_ICON_VIEW_ICON_SIZE + VISION_UI_ICON_VIEW_ITEM_SPACING);
         parent->icon_scroll_offset_trg = -icon_item_span * selector->selected_index;
-        vision_ui_animation_do(&parent->icon_scroll_offset, parent->icon_scroll_offset_trg, VISION_UI_ICON_VIEW_SCROLL_SPEED, delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&parent->icon_scroll_offset, &parent->icon_scroll_offset_velocity,
+                                                     parent->icon_scroll_offset_trg, VISION_UI_ICON_VIEW_SCROLL_SPEED, delta_ms);
 
         parent->scroll_bar_top = 0;
+        parent->scroll_bar_top_velocity = 0;
         parent->scroll_bar_top_trg = 0;
         parent->scroll_bar_height = 0;
+        parent->scroll_bar_height_velocity = 0;
         parent->scroll_bar_height_trg = 0;
         parent->scroll_bar_scale_part = 0;
         parent->scroll_bar_scale_part_trg = 0;
@@ -154,7 +174,7 @@ static void vision_ui_list_item_position_update(const float delta_ms) {
 
     for (uint8_t i = 0; i < parent->child_num; i++) {
 #if VISION_UI_LIST_ENTRY_ANIMATION
-        vision_ui_animation_do(&parent->child_list_item[i]->y_list_item, parent->child_list_item[i]->y_list_item_trg, 84, delta_ms);
+        vision_ui_animation_s_curve(&parent->child_list_item[i]->y_list_item, parent->child_list_item[i]->y_list_item_trg, 84, delta_ms);
 #else
         parent->child_list_item[i]->y_list_item = parent->child_list_item[i]->y_list_item_trg;
 #endif
@@ -173,7 +193,9 @@ static void vision_ui_list_item_position_update(const float delta_ms) {
     if (parent != prev_parent) {
         if (prev_parent != NULL) {
             parent->scroll_bar_top = prev_parent->scroll_bar_top;
+            parent->scroll_bar_top_velocity = prev_parent->scroll_bar_top_velocity;
             parent->scroll_bar_height = prev_parent->scroll_bar_height;
+            parent->scroll_bar_height_velocity = prev_parent->scroll_bar_height_velocity;
         }
         parent->scroll_bar_scale_part = selector_mut->scroll_bar_scale_part_shared;
         selector_mut->scroll_bar_scale_parent = parent;
@@ -182,19 +204,19 @@ static void vision_ui_list_item_position_update(const float delta_ms) {
     const bool scroll_bar_uninitialized = parent->scroll_bar_height == 0.f && parent->scroll_bar_height_trg == 0.f;
     if (scroll_bar_uninitialized) {
         parent->scroll_bar_top = parent->scroll_bar_top_trg;
+        parent->scroll_bar_height_velocity = 0;
         parent->scroll_bar_height = parent->scroll_bar_height_trg;
     } else {
-        vision_ui_animation_do(&parent->scroll_bar_top, parent->scroll_bar_top_trg, VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED, delta_ms);
-        vision_ui_animation_do(&parent->scroll_bar_height, parent->scroll_bar_height_trg, VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED,
-                               delta_ms);
+        vision_ui_animation_2nd_ode_no_overshoot(&parent->scroll_bar_top, &parent->scroll_bar_top_velocity, parent->scroll_bar_top_trg,
+                                                 VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED, delta_ms);
+        vision_ui_animation_s_curve(&parent->scroll_bar_height, parent->scroll_bar_height_trg, 92, delta_ms);
     }
 
     const bool scroll_bar_scale_uninitialized = parent->scroll_bar_scale_part == 0.f && parent->scroll_bar_scale_part_trg == 0.f;
     if (scroll_bar_scale_uninitialized) {
         parent->scroll_bar_scale_part = parent->scroll_bar_scale_part_trg;
     } else {
-        vision_ui_animation_do(&parent->scroll_bar_scale_part, parent->scroll_bar_scale_part_trg, VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED,
-                               delta_ms);
+        vision_ui_animation_s_curve(&parent->scroll_bar_scale_part, parent->scroll_bar_scale_part_trg, 94, delta_ms);
     }
 
     selector_mut->scroll_bar_scale_part_shared = parent->scroll_bar_scale_part;
@@ -237,12 +259,15 @@ static void vision_ui_selector_position_update(const float delta_ms) {
                               VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING + VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
     vision_ui_selector_mutable_instance_get()->w_selector_trg =
             selector_current_width > selector_max_width ? selector_max_width : selector_current_width;
-    vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->y_selector, vision_ui_selector_instance_get()->y_selector_trg, 91,
-                           delta_ms);
-    vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->w_selector, vision_ui_selector_instance_get()->w_selector_trg, 92,
-                           delta_ms);
-    vision_ui_animation_do(&vision_ui_selector_mutable_instance_get()->h_selector, vision_ui_selector_instance_get()->h_selector_trg, 93,
-                           delta_ms);
+    vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_selector_mutable_instance_get()->y_selector,
+                                                 &vision_ui_selector_mutable_instance_get()->y_selector_velocity,
+                                                 vision_ui_selector_instance_get()->y_selector_trg, 91, delta_ms);
+    vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_selector_mutable_instance_get()->w_selector,
+                                                 &vision_ui_selector_mutable_instance_get()->w_selector_velocity,
+                                                 vision_ui_selector_instance_get()->w_selector_trg, 92, delta_ms);
+    vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_selector_mutable_instance_get()->h_selector,
+                                                 &vision_ui_selector_mutable_instance_get()->h_selector_velocity,
+                                                 vision_ui_selector_instance_get()->h_selector_trg, 95, delta_ms);
 }
 
 static void vision_ui_main_core_position_update(const float delta_ms) {

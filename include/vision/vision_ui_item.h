@@ -62,8 +62,10 @@ typedef struct vision_ui_list_item_t {
     uint32_t text_scroll_anchor;
 
     float scroll_bar_top;
+    float scroll_bar_top_velocity;
     float scroll_bar_top_trg;
     float scroll_bar_height;
+    float scroll_bar_height_velocity;
     float scroll_bar_height_trg;
     float scroll_bar_scale_part;
     float scroll_bar_scale_part_trg;
@@ -74,6 +76,7 @@ typedef struct vision_ui_list_item_t {
     float y_list_item_trg;
 
     float icon_scroll_offset;
+    float icon_scroll_offset_velocity;
     float icon_scroll_offset_trg;
 
     uint8_t layer;
@@ -113,6 +116,7 @@ typedef struct vision_ui_icon_item_t {
     vision_ui_list_item_t base_item;
 
     float title_y;
+    float title_y_velocity;
     float title_y_trg;
 
     const uint8_t* icon; // 30*30 bitmap, can be null
@@ -139,12 +143,15 @@ typedef struct vision_ui_user_item_t {
 
 typedef struct vision_ui_selector_t {
     float y_selector;
+    float y_selector_velocity;
     float y_selector_trg;
 
     float w_selector;
+    float w_selector_velocity;
     float w_selector_trg;
 
     float h_selector;
+    float h_selector_velocity;
     float h_selector_trg;
 
     uint8_t selected_index;
@@ -156,9 +163,11 @@ typedef struct vision_ui_selector_t {
 
 typedef struct vision_ui_camera_t {
     float x_camera;
+    float x_camera_velocity;
     float x_camera_trg;
 
     float y_camera;
+    float y_camera_velocity;
     float y_camera_trg;
     vision_ui_selector_t* selector;
 } vision_ui_camera_t;
