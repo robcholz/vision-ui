@@ -4,6 +4,7 @@
 #include <vision/vision_ui.hpp>
 
 #include "driver/u8g2.h"
+#include "driver/u8g2_240x240_display.h"
 
 #include "font/chinese.h"
 
@@ -137,8 +138,8 @@ const uint8_t BITMAP_30X30[30 * 4] = {
 };
 
 int main() {
-    u8x8_Setup_SDL_128x64(u8g2_GetU8x8(&U8G2));
-    u8g2_SetupBuffer(&U8G2, U8G2_BUFFER, 8, u8g2_ll_hvline_vertical_top_lsb, U8G2_R0);
+    u8x8_setup_sdl_240x240(u8g2_GetU8x8(&U8G2));
+    u8g2_SetupBuffer(&U8G2, U8G2_BUFFER, VISION_UI_TILE_BUF_HEIGHT, u8g2_ll_hvline_vertical_top_lsb, U8G2_R0);
     u8g2_InitDisplay(&U8G2);
     u8g2_SetPowerSave(&U8G2, 0);
 

@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "../vision_ui_config.h"
+#include "vision_ui_animation.h"
 #include "vision_ui_core.h"
 #include "vision_ui_item.h"
 
@@ -172,10 +173,11 @@ void vision_ui_exit_animation_render(const float delta_ms) {
 
     exit_elapsed_ms += delta_ms;
     const float progress = fminf(exit_elapsed_ms / VISION_UI_EXIT_ANIMATION_DURATION_MS, 1.0f);
-    const float scaled_progress =
-            fminf(progress * (float) (VISION_UI_EXIT_ANIMATION_LEVELS - 1), (float) (VISION_UI_EXIT_ANIMATION_LEVELS - 1));
-    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled_progress);
 
+    // 先做 ease-in-out，再映射到离散等级
+    const float eased = vision_ui_smoothstep(progress); // 0~1
+    const float scaled = eased * (float) (VISION_UI_EXIT_ANIMATION_LEVELS - 1);
+    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled + 0.5f); // +0.5f 更接近四舍五入
     vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fade_level);
 
     if (progress >= 1.0f) {
@@ -200,10 +202,11 @@ void vision_ui_enter_animation_render(const float delta_ms) {
     enter_elapsed_ms += delta_ms;
     const float progress = fminf(enter_elapsed_ms / VISION_UI_ENTER_ANIMATION_DURATION_MS, 1.0f);
     const float inverted = 1.0f - progress;
-    const float scaled_progress =
-            fminf(inverted * (float) (VISION_UI_ENTER_ANIMATION_LEVELS - 1), (float) (VISION_UI_ENTER_ANIMATION_LEVELS - 1));
-    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled_progress);
 
+    // 先对 inverted 做 smoothstep
+    const float eased = vision_ui_smoothstep(inverted);
+    const float scaled = eased * (float) (VISION_UI_ENTER_ANIMATION_LEVELS - 1);
+    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled + 0.5f);
     vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fade_level);
 
     if (progress >= 1.0f) {
