@@ -176,33 +176,33 @@ int main() {
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
                                  vision_ui_alert_push("Alert Test", 5000);
                              }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 1", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2 Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 2", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_alert_push("Alert Test", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 1", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 2", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_alert_push("Alert Test", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 1", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2 Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 2", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2 Notification Test 2", false, [](bool b) {
-                                 vision_ui_alert_push("Alert Test", 5000);
-                             }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Notification 2 Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_alert_push("Alert Test", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Notification 2Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_alert_push("Alert Test", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Notification 2 Notification Test 2 Notification Test 2", false,
+                                                            [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }));
+    vision_ui_list_push_item(vision_ui_root_list_get(),
+                             vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2 Notification Test 2",
+                                                            false, [](bool b) { vision_ui_alert_push("Alert Test", 5000); }));
 
     vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_title_item_new(1, launcher_setting_list_item->content));
     vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {}));
