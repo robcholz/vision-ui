@@ -163,9 +163,11 @@ typedef struct vision_ui_selector_t {
 
 typedef struct vision_ui_camera_t {
     float x_camera;
+    float x_camera_velocity;
     float x_camera_trg;
 
     float y_camera;
+    float y_camera_velocity;
     float y_camera_trg;
     vision_ui_selector_t* selector;
 } vision_ui_camera_t;

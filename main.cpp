@@ -217,7 +217,7 @@ int main() {
     float fps_timer = prev_ms;
     int frame_count = 0;
 
-    constexpr float target_ms = 1000.0f / 60.f;
+    constexpr float target_ms = 1000.0f / 80.f;
 
     while (!vision_ui_is_exited()) {
         const float frame_begin = vision_ui_driver_ticks_ms_get();

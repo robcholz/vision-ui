@@ -40,10 +40,12 @@ static void vision_ui_camera_position_update(const float delta_ms) {
     if (selector == NULL || selector->selected_item == NULL) {
         vision_ui_camera_instance_x_trg_set(0);
         vision_ui_camera_instance_y_trg_set(0);
-        vision_ui_animation_s_curve(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95,
-                                    delta_ms);
-        vision_ui_animation_s_curve(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96,
-                                    delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->x_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->x_camera_velocity,
+                                                     vision_ui_camera_instance_get()->x_camera_trg, 95, delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->y_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->y_camera_velocity,
+                                                     vision_ui_camera_instance_get()->y_camera_trg, 96, delta_ms);
         return;
     }
 
@@ -51,10 +53,12 @@ static void vision_ui_camera_position_update(const float delta_ms) {
     if (icon_view_active) {
         vision_ui_camera_instance_x_trg_set(0);
         vision_ui_camera_instance_y_trg_set(0);
-        vision_ui_animation_s_curve(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95,
-                                    delta_ms);
-        vision_ui_animation_s_curve(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96,
-                                    delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->x_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->x_camera_velocity,
+                                                     vision_ui_camera_instance_get()->x_camera_trg, 95, delta_ms);
+        vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->y_camera,
+                                                     &vision_ui_camera_mutable_instance_get()->y_camera_velocity,
+                                                     vision_ui_camera_instance_get()->y_camera_trg, 96, delta_ms);
         return;
     }
 
@@ -71,10 +75,12 @@ static void vision_ui_camera_position_update(const float delta_ms) {
     }
 
     vision_ui_camera_instance_x_trg_set(0);
-    vision_ui_animation_s_curve(&vision_ui_camera_mutable_instance_get()->x_camera, vision_ui_camera_instance_get()->x_camera_trg, 95,
-                                delta_ms);
-    vision_ui_animation_s_curve(&vision_ui_camera_mutable_instance_get()->y_camera, vision_ui_camera_instance_get()->y_camera_trg, 96,
-                                delta_ms);
+    vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->x_camera,
+                                                 &vision_ui_camera_mutable_instance_get()->x_camera_velocity,
+                                                 vision_ui_camera_instance_get()->x_camera_trg, 95, delta_ms);
+    vision_ui_animation_2nd_ode_slight_overshoot(&vision_ui_camera_mutable_instance_get()->y_camera,
+                                                 &vision_ui_camera_mutable_instance_get()->y_camera_velocity,
+                                                 vision_ui_camera_instance_get()->y_camera_trg, 96, delta_ms);
 }
 
 static void vision_ui_widget_core_position_update(const float delta_ms) {
