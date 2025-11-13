@@ -155,38 +155,60 @@ static bool vision_ui_icon_view_is_active() {
     return selector->selected_item != NULL && selector->selected_item->parent != NULL && selector->selected_item->parent->icon_view_mode;
 }
 
-void vision_ui_exit_animation_render() {
-    static uint8_t fadeout_sequence;
-    static uint8_t state = 0;
-    if (state == 0) {
-        fadeout_sequence = 1;
-        state = 1;
+static const uint8_t VISION_UI_EXIT_ANIMATION_LEVELS = 5;
+static const uint8_t VISION_UI_ENTER_ANIMATION_LEVELS = 4;
+
+void vision_ui_exit_animation_render(const float delta_ms) {
+    if (vision_ui_exit_animation_is_finished()) {
+        return;
     }
-    if (state == 1) {
-        vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fadeout_sequence);
-        ++fadeout_sequence;
-        if (fadeout_sequence > 4) {
-            vision_ui_exit_animation_set_is_finished();
-            vision_ui_enter_animation_start();
-            state = 0;
-        }
+
+    static float exit_elapsed_ms = 0.0f;
+    static bool running_exit = false;
+    if (!running_exit) {
+        exit_elapsed_ms = 0.0f;
+        running_exit = true;
+    }
+
+    exit_elapsed_ms += delta_ms;
+    const float progress = fminf(exit_elapsed_ms / VISION_UI_EXIT_ANIMATION_DURATION_MS, 1.0f);
+    const float scaled_progress =
+            fminf(progress * (float) (VISION_UI_EXIT_ANIMATION_LEVELS - 1), (float) (VISION_UI_EXIT_ANIMATION_LEVELS - 1));
+    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled_progress);
+
+    vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fade_level);
+
+    if (progress >= 1.0f) {
+        running_exit = false;
+        vision_ui_exit_animation_set_is_finished();
+        vision_ui_enter_animation_start();
     }
 }
 
-void vision_ui_enter_animation_render() {
-    static uint8_t fadein_sequence;
-    static uint8_t state = 0;
-    if (state == 0) {
-        fadein_sequence = 4;
-        state = 1;
+void vision_ui_enter_animation_render(const float delta_ms) {
+    if (vision_ui_enter_animation_is_finished()) {
+        return;
     }
-    if (state == 1) {
-        vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fadein_sequence);
-        --fadein_sequence;
-        if (fadein_sequence < 1) {
-            vision_ui_enter_animation_set_is_finished();
-            state = 0;
-        }
+
+    static float enter_elapsed_ms = 0.0f;
+    static bool running_enter = false;
+    if (!running_enter) {
+        enter_elapsed_ms = 0.0f;
+        running_enter = true;
+    }
+
+    enter_elapsed_ms += delta_ms;
+    const float progress = fminf(enter_elapsed_ms / VISION_UI_ENTER_ANIMATION_DURATION_MS, 1.0f);
+    const float inverted = 1.0f - progress;
+    const float scaled_progress =
+            fminf(inverted * (float) (VISION_UI_ENTER_ANIMATION_LEVELS - 1), (float) (VISION_UI_ENTER_ANIMATION_LEVELS - 1));
+    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled_progress);
+
+    vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fade_level);
+
+    if (progress >= 1.0f) {
+        running_enter = false;
+        vision_ui_enter_animation_set_is_finished();
     }
 }
 
