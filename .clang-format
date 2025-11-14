@@ -65,6 +65,6 @@ AllowShortBlocksOnASingleLine: Never
 BinPackArguments: false
 BinPackParameters: false
 
-BreakAfterReturnType: Automatic
+AlwaysBreakAfterReturnType: None
 PenaltyReturnTypeOnItsOwnLine: 10000000
 ...

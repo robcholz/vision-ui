@@ -16,20 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget gnupg lsb-release
-
-          # Add official LLVM APT repo
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 20
-
-          # Install SDL2 and other dependencies
-          sudo apt-get install -y xmake libsdl2-dev
-          
-          sudo update-alternatives --install /usr/bin/clang clang /usr/lib/llvm-20/bin/clang 100
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/lib/llvm-20/bin/clang-format 100
-          sudo update-alternatives --install /usr/bin/clang-åtidy clang-tidy /usr/lib/llvm-20/bin/clang-tidy 100
-          
+          sudo apt-get install -y clang clang-tidy clang-format xmake libsdl2-dev
 
       - name: Configure project
         run: xmake f -y
