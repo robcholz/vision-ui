@@ -314,7 +314,7 @@ static void vision_ui_selector_position_update(const float delta_ms) {
             VISION_UI_LIST_HEADER_MAX_WIDTH + VISION_UI_LIST_HEADER_TO_TEXT_PADDING + VISION_UI_LIST_TEXT_MAX_WIDTH +
             VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING + VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
     const uint16_t selector_current_width =
-            vision_ui_selector_instance_get()->selected_item->type == TITLE_ITEM
+            vision_ui_selector_instance_get()->selected_item->type == TitleItem
                     ? +vision_ui_driver_str_utf8_width_get(vision_ui_selector_instance_get()->selected_item->content) +
                               VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING +
                               VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING
@@ -365,7 +365,7 @@ static void vision_ui_main_core_step(const float delta_ms) {
 
     // 切换in user item的逻辑
     if (vision_ui_exit_animation_is_finished()) {
-        if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM) {
+        if (vision_ui_selector_instance_get()->selected_item->type == UserItem) {
             vision_ui_user_item_t* selected_user_item =
                     vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
             if (selected_user_item->entering_user_item) {
@@ -380,7 +380,7 @@ static void vision_ui_main_core_step(const float delta_ms) {
     }
 
     // 渲染的逻辑
-    if (vision_ui_selector_instance_get()->selected_item->type == USER_ITEM &&
+    if (vision_ui_selector_instance_get()->selected_item->type == UserItem &&
         vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item)->in_user_item) {
         vision_ui_user_item_t* selected_user_item =
                 vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);

@@ -23,7 +23,6 @@ static int16_t Y_WIRE_2 = 200;
 void animation(int16_t* pos, int16_t pos_trg, int16_t speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) {
-
             *pos = pos_trg;
         } else {
             *pos += (pos_trg - *pos) / ((100 - speed) / 1.0f);
@@ -36,7 +35,7 @@ void test_user_item_init_function() {
 }
 
 void test_user_item_loop_function() {
-    uint32_t time = vision_ui_driver_ticks_ms_get();
+    const uint32_t time = vision_ui_driver_ticks_ms_get();
 
     vision_ui_driver_color_draw(1);
     vision_ui_driver_box_r_draw(

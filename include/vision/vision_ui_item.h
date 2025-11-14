@@ -46,12 +46,12 @@ typedef struct vision_ui_alert_t {
 } vision_ui_alert_t;
 
 typedef enum {
-    LIST_ITEM,
-    TITLE_ITEM,
-    ICON_ITEM,
-    SWITCH_ITEM,
-    SLIDER_ITEM,
-    USER_ITEM,
+    ListItem,
+    TitleItem,
+    IconItem,
+    SwitchItem,
+    SliderItem,
+    UserItem,
 } vision_ui_list_item_type_t;
 
 typedef struct vision_ui_list_item_t {

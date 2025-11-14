@@ -581,7 +581,7 @@ static void vision_ui_draw_list_header() {
         // draw header
         vision_ui_driver_color_draw(1);
         const uint16_t header_base_x = x_list_item;
-        if (current_list_item->type == LIST_ITEM) {
+        if (current_list_item->type == ListItem) {
             vision_ui_driver_bmp_draw(
                     header_base_x,
                     y_list_item,
@@ -589,7 +589,7 @@ static void vision_ui_draw_list_header() {
                     VISION_UI_LIST_HEADER_MAX_HEIGHT,
                     header_list_item
             );
-        } else if (current_list_item->type == SWITCH_ITEM) {
+        } else if (current_list_item->type == SwitchItem) {
             vision_ui_driver_bmp_draw(
                     header_base_x,
                     y_list_item,
@@ -597,7 +597,7 @@ static void vision_ui_draw_list_header() {
                     VISION_UI_LIST_HEADER_MAX_HEIGHT,
                     header_switch_item
             );
-        } else if (current_list_item->type == SLIDER_ITEM) {
+        } else if (current_list_item->type == SliderItem) {
             vision_ui_driver_bmp_draw(
                     header_base_x,
                     y_list_item,
@@ -605,7 +605,7 @@ static void vision_ui_draw_list_header() {
                     VISION_UI_LIST_HEADER_MAX_HEIGHT,
                     header_slider_item
             );
-        } else if (current_list_item->type == TITLE_ITEM) {
+        } else if (current_list_item->type == TitleItem) {
             // do nothing
         } else {
             vision_ui_driver_bmp_draw(
@@ -672,8 +672,8 @@ static void vision_ui_draw_list_footer() {
                                 VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING - VISION_UI_LIST_FOOTER_MAX_WIDTH;
         const int16_t frame_y =
                 y_list_item + (VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_FOOTER_MAX_HEIGHT) / 2;
-        if (current_list_item->type == LIST_ITEM) {
-        } else if (current_list_item->type == SWITCH_ITEM) {
+        if (current_list_item->type == ListItem) {
+        } else if (current_list_item->type == SwitchItem) {
             if (vision_ui_to_list_switch_item(current_list_item)->value == true) {
                 vision_ui_driver_color_draw(1);
                 vision_ui_driver_bmp_draw(
@@ -693,7 +693,7 @@ static void vision_ui_draw_list_footer() {
                         (uint8_t*) footer_switch_off
                 );
             }
-        } else if (current_list_item->type == SLIDER_ITEM) {
+        } else if (current_list_item->type == SliderItem) {
             const uint16_t shrink_width = VISION_UI_LIST_FOOTER_MAX_WIDTH - 4;
             const int16_t footer_x0 = frame_x + (VISION_UI_LIST_FOOTER_MAX_WIDTH - shrink_width) / 2;
             const int16_t footer_y0 = frame_y;
@@ -739,9 +739,9 @@ static void vision_ui_list_item_render() {
                 vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera;
 
-        const int16_t frame_x = current_list_item->type == TITLE_ITEM ? x_list_item
-                                                                      : x_list_item + VISION_UI_LIST_HEADER_MAX_WIDTH +
-                                                                                VISION_UI_LIST_HEADER_TO_TEXT_PADDING;
+        const int16_t frame_x = current_list_item->type == TitleItem ? x_list_item
+                                                                     : x_list_item + VISION_UI_LIST_HEADER_MAX_WIDTH +
+                                                                               VISION_UI_LIST_HEADER_TO_TEXT_PADDING;
 
         const int16_t frame_y = y_list_item;
 
@@ -770,7 +770,7 @@ static void vision_ui_icon_view_render() {
 
     for (uint8_t i = 0; i < parent->child_num; ++i) {
         vision_ui_list_item_t* child = parent->child_list_item[i];
-        if (child->type != ICON_ITEM) {
+        if (child->type != IconItem) {
             continue;
         }
 
@@ -805,7 +805,7 @@ static void vision_ui_icon_view_render() {
         }
     }
 
-    if (selector->selected_item->type == ICON_ITEM) {
+    if (selector->selected_item->type == IconItem) {
         const int16_t title_area_y0 = VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING + VISION_UI_ICON_VIEW_ICON_SIZE +
                                       VISION_UI_ICON_VIEW_ICON_TO_TITLE_AREA_PADDING;
         const int16_t title_bar_x0 = VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING;
