@@ -27,7 +27,7 @@ jobs:
       - name: Clang-Format check
         run: |
           set -e
-          files=$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hh' '*.hxx' | grep -v '^font/')
+          files=$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hh' '*.hxx' | grep -v '^include/font/')
           if [ -n "$files" ]; then
             clang-format --style=file --dry-run --Werror $files
           fi
