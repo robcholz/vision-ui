@@ -635,7 +635,9 @@ static void vision_ui_icon_view_render() {
         const int16_t title_bar_x0 = VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING;
         const int16_t title_x0 = title_bar_x0 + VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH + VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING;
         const int16_t title_x1 = VISION_UI_SCREEN_WIDTH - VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING;
-        const int16_t title_y0 = title_area_y0;
+
+        vision_ui_driver_font_set(vision_ui_font_get_title());
+        const int16_t title_y0 = title_area_y0 - (VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT - vision_ui_driver_str_height_get()) / 2;
         const int16_t title_y1 = title_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
 
         vision_ui_driver_color_draw(1);
@@ -645,7 +647,6 @@ static void vision_ui_icon_view_render() {
         const float title_offset = selected_icon->title_y;
         const int16_t title_offset_px = (int16_t) lrintf(title_offset);
 
-        vision_ui_driver_font_set(vision_ui_font_get_title());
         vision_ui_text_draw(selector->selected_item->content, &selector->selected_item->text_scroll_anchor, title_x0,
                             title_y0 + title_offset_px, title_x1, title_y1, VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
                             VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS);
