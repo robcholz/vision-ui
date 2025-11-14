@@ -115,49 +115,57 @@
 #ifdef CONFIG_VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING
 #define VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING CONFIG_VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING
 #else
-#define VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING 10 // the horizontal padding between the scroll bar and the center of the footer
+#define VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING                                                             \
+    10 // the horizontal padding between the scroll bar and the center of the footer
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_FOOTER_TO_LEFT_PADDING
 #define VISION_UI_LIST_FOOTER_TO_LEFT_PADDING CONFIG_VISION_UI_LIST_FOOTER_TO_LEFT_PADDING
 #else
-#define VISION_UI_LIST_FOOTER_TO_LEFT_PADDING 10 // the min horizontal padding between the footer center and the right of the text area
+#define VISION_UI_LIST_FOOTER_TO_LEFT_PADDING                                                                          \
+    10 // the min horizontal padding between the footer center and the right of the text area
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_HEADER_TO_TEXT_PADDING
 #define VISION_UI_LIST_HEADER_TO_TEXT_PADDING CONFIG_VISION_UI_LIST_HEADER_TO_TEXT_PADDING
 #else
-#define VISION_UI_LIST_HEADER_TO_TEXT_PADDING 2 // the horizontal padding between the right of the header to the left of the text
+#define VISION_UI_LIST_HEADER_TO_TEXT_PADDING                                                                          \
+    2 // the horizontal padding between the right of the header to the left of the text
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING
 #define VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING CONFIG_VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING
 #else
-#define VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING 4 // the horizontal padding between the left display edge to the header
+#define VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING                                                                  \
+    4 // the horizontal padding between the left display edge to the header
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING
 #define VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING CONFIG_VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING
 #else
-#define VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING 3 // the padding between the edge of the selector to the inner widget
+#define VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING                                                                \
+    3 // the padding between the edge of the selector to the inner widget
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S
 #define VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S CONFIG_VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S
 #else
-#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S 5 // the speed of scrolling of the slider value (if it slides!), in pixel/second
+#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S                                                                  \
+    5 // the speed of scrolling of the slider value (if it slides!), in pixel/second
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS
 #define VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS CONFIG_VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS
 #else
-#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS 1500 // the time to pause when the scrolling text reaches both end of the scrolling area
+#define VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS                                                                    \
+    1500 // the time to pause when the scrolling text reaches both end of the scrolling area
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS
 #define VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS CONFIG_VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS
 #else
-#define VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS 1000 // the time to pause when the scrolling text reaches both end of the scrolling area
+#define VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS                                                                            \
+    1000 // the time to pause when the scrolling text reaches both end of the scrolling area
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S
@@ -169,7 +177,8 @@
 #ifdef CONFIG_VISION_UI_LIST_FOOTER_MAX_HEIGHT
 #define VISION_UI_LIST_FOOTER_MAX_HEIGHT CONFIG_VISION_UI_LIST_FOOTER_MAX_HEIGHT
 #else
-#define VISION_UI_LIST_FOOTER_MAX_HEIGHT 11 // the max height of the footer, this should be smaller than the frame height
+#define VISION_UI_LIST_FOOTER_MAX_HEIGHT                                                                               \
+    11 // the max height of the footer, this should be smaller than the frame height
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_FOOTER_MAX_WIDTH
@@ -199,7 +208,8 @@
 #ifdef CONFIG_VISION_UI_LIST_SELECTOR_FIXED_HEIGHT
 #define VISION_UI_LIST_SELECTOR_FIXED_HEIGHT CONFIG_VISION_UI_LIST_SELECTOR_FIXED_HEIGHT
 #else
-#define VISION_UI_LIST_SELECTOR_FIXED_HEIGHT 15 // the fixed height of the selector, this should typically equal to the frame height
+#define VISION_UI_LIST_SELECTOR_FIXED_HEIGHT                                                                           \
+    15 // the fixed height of the selector, this should typically equal to the frame height
 #endif
 
 // icon view
@@ -210,21 +220,25 @@
 #endif
 
 #ifdef CONFIG_VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING
-#define VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING CONFIG_VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING
+#define VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING                                                          \
+    CONFIG_VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING
 #else
-#define VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING 0 // the horizontal padding from the title bar to the left edge of the display
+#define VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING                                                          \
+    0 // the horizontal padding from the title bar to the left edge of the display
 #endif
 
 #ifdef CONFIG_VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING
 #define VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING CONFIG_VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING
 #else
-#define VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING 10 // the horizontal padding from the right of the title bar to the right title text
+#define VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING                                                                 \
+    10 // the horizontal padding from the right of the title bar to the right title text
 #endif
 
 #ifdef CONFIG_VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING
-#define VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING CONFIG_VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING
+#define VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING                                                         \
+    CONFIG_VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING
 #else
-#define VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING                                                                             \
+#define VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING                                                         \
     15 // the min horizontal padding from the title text to the display right edge
 #endif
 
@@ -241,15 +255,19 @@
 #endif
 
 #ifdef CONFIG_VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING
-#define VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING CONFIG_VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING
+#define VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING                                                          \
+    CONFIG_VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING
 #else
-#define VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING 20 // the vertical padding between the title area and the description area
+#define VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING                                                          \
+    20 // the vertical padding between the title area and the description area
 #endif
 
 #ifdef CONFIG_VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING
-#define VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING CONFIG_VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING
+#define VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING                                                         \
+    CONFIG_VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING
 #else
-#define VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING 3 // the min horizontal padding from each side of the display to description
+#define VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING                                                         \
+    3 // the min horizontal padding from each side of the display to description
 #endif
 
 #ifdef CONFIG_VISION_UI_ICON_VIEW_SCROLL_SPEED
@@ -283,11 +301,11 @@
 #define VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED 92
 
 // derived properties
-#define VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING                                                                                        \
+#define VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING                                                                    \
     (VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING - VISION_UI_LIST_FOOTER_MAX_WIDTH / 2)
-#define VISION_UI_LIST_TEXT_MAX_WIDTH                                                                                                      \
-    (VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING - VISION_UI_LIST_FOOTER_MAX_WIDTH -                              \
-     VISION_UI_LIST_FOOTER_TO_LEFT_PADDING - VISION_UI_LIST_HEADER_TO_TEXT_PADDING - VISION_UI_LIST_HEADER_MAX_WIDTH -                     \
+#define VISION_UI_LIST_TEXT_MAX_WIDTH                                                                                  \
+    (VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING - VISION_UI_LIST_FOOTER_MAX_WIDTH -          \
+     VISION_UI_LIST_FOOTER_TO_LEFT_PADDING - VISION_UI_LIST_HEADER_TO_TEXT_PADDING - VISION_UI_LIST_HEADER_MAX_WIDTH - \
      VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING)
 
 #endif // VISION_UI_VISION_UI_CONFIG_H

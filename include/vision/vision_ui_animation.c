@@ -57,8 +57,16 @@ void vision_ui_animation_s_curve(float* pos, const float pos_trg, const float sp
     }
 }
 
-static void vision_ui_animation_2nd_ode(const float damping_ratio, const float base_nat_freq, const float nat_freq_per_speed, float* pos,
-                                        float* velocity, const float pos_trg, const float speed, const float delta_ms) {
+static void vision_ui_animation_2nd_ode(
+        const float damping_ratio,
+        const float base_nat_freq,
+        const float nat_freq_per_speed,
+        float* pos,
+        float* velocity,
+        const float pos_trg,
+        const float speed,
+        const float delta_ms
+) {
     float x = *pos;
     float v = *velocity;
 
@@ -87,11 +95,22 @@ static void vision_ui_animation_2nd_ode(const float damping_ratio, const float b
     *pos = x;
 }
 
-void vision_ui_animation_2nd_ode_no_overshoot(float* pos, float* velocity, const float pos_trg, const float speed, const float delta_ms) {
+void vision_ui_animation_2nd_ode_no_overshoot(
+        float* pos,
+        float* velocity,
+        const float pos_trg,
+        const float speed,
+        const float delta_ms
+) {
     vision_ui_animation_2nd_ode(0.8f, 9.5f, 0.2f, pos, velocity, pos_trg, speed, delta_ms);
 }
 
-void vision_ui_animation_2nd_ode_slight_overshoot(float* pos, float* velocity, const float pos_trg, const float speed,
-                                                  const float delta_ms) {
+void vision_ui_animation_2nd_ode_slight_overshoot(
+        float* pos,
+        float* velocity,
+        const float pos_trg,
+        const float speed,
+        const float delta_ms
+) {
     vision_ui_animation_2nd_ode(0.7f, 8.0f, 0.2f, pos, velocity, pos_trg, speed, delta_ms);
 }

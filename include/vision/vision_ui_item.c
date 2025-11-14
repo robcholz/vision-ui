@@ -33,20 +33,22 @@ void* vision_ui_font_get_title() {
     return VISION_UI_TITLE_FONT;
 }
 
-static vision_ui_notification_t VISION_UI_NOTIFICATION = {0,
-                                                          1,
-                                                          0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
-                                                          0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
-                                                          VISION_UI_NOTIFICATION_WIDTH,
-                                                          VISION_UI_NOTIFICATION_WIDTH,
-                                                          false,
-                                                          0,
-                                                          1,
-                                                          false,
-                                                          0,
-                                                          NULL,
-                                                          0,
-                                                          false};
+static vision_ui_notification_t VISION_UI_NOTIFICATION = {
+        0,
+        1,
+        0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
+        0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
+        VISION_UI_NOTIFICATION_WIDTH,
+        VISION_UI_NOTIFICATION_WIDTH,
+        false,
+        0,
+        1,
+        false,
+        0,
+        NULL,
+        0,
+        false
+};
 
 extern const vision_ui_notification_t* vision_ui_notification_instance_get() {
     return &VISION_UI_NOTIFICATION;
@@ -86,7 +88,16 @@ void vision_ui_notification_push(const char* content, const uint16_t span) {
 }
 
 static vision_ui_alert_t VISION_UI_ALERT = {
-        0, 1, 0 - 2 * VISION_UI_ALERT_HEIGHT, 0 - 2 * VISION_UI_ALERT_HEIGHT, VISION_UI_ALERT_WIDTH, VISION_UI_ALERT_WIDTH, false, 0, 1};
+        0,
+        1,
+        0 - 2 * VISION_UI_ALERT_HEIGHT,
+        0 - 2 * VISION_UI_ALERT_HEIGHT,
+        VISION_UI_ALERT_WIDTH,
+        VISION_UI_ALERT_WIDTH,
+        false,
+        0,
+        1
+};
 
 const vision_ui_alert_t* vision_ui_alert_instance_get() {
     return &VISION_UI_ALERT;
@@ -183,8 +194,12 @@ vision_ui_list_item_t* vision_ui_list_title_item_new(const size_t capacity, cons
     return list_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_icon_item_new(const size_t capacity, const uint8_t* icon, const char* title,
-                                                    const char* description) {
+vision_ui_list_item_t* vision_ui_list_icon_item_new(
+        const size_t capacity,
+        const uint8_t* icon,
+        const char* title,
+        const char* description
+) {
     vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_icon_item_t));
     memset(list_item, 0, sizeof(vision_ui_icon_item_t));
     list_item->type = ICON_ITEM;
@@ -201,8 +216,12 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(const size_t capacity, const
     return list_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_switch_item_new(const size_t capacity, const char* content, const bool default_value,
-                                                      void (*on_changed)(bool value)) {
+vision_ui_list_item_t* vision_ui_list_switch_item_new(
+        const size_t capacity,
+        const char* content,
+        const bool default_value,
+        void (*on_changed)(bool value)
+) {
     vision_ui_switch_item_t* switch_item = malloc(sizeof(vision_ui_switch_item_t));
     memset(switch_item, 0, sizeof(vision_ui_switch_item_t));
     switch_item->base_item.type = SWITCH_ITEM;
@@ -215,9 +234,15 @@ vision_ui_list_item_t* vision_ui_list_switch_item_new(const size_t capacity, con
     return (vision_ui_list_item_t*) switch_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_slider_item_new(const size_t capacity, const char* content, const int16_t default_value,
-                                                      const uint8_t step, const int16_t min, const int16_t max,
-                                                      void (*on_changed)(int16_t value)) {
+vision_ui_list_item_t* vision_ui_list_slider_item_new(
+        const size_t capacity,
+        const char* content,
+        const int16_t default_value,
+        const uint8_t step,
+        const int16_t min,
+        const int16_t max,
+        void (*on_changed)(int16_t value)
+) {
     vision_ui_slider_item_t* slider_item = malloc(sizeof(vision_ui_slider_item_t));
     memset(slider_item, 0, sizeof(vision_ui_slider_item_t));
     slider_item->base_item.type = SLIDER_ITEM;
@@ -233,8 +258,13 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(const size_t capacity, con
     return (vision_ui_list_item_t*) slider_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_user_item_new(const size_t capacity, const char* content, void (*init_function)(),
-                                                    void (*loop_function)(), void (*exit_function)()) {
+vision_ui_list_item_t* vision_ui_list_user_item_new(
+        const size_t capacity,
+        const char* content,
+        void (*init_function)(),
+        void (*loop_function)(),
+        void (*exit_function)()
+) {
     vision_ui_user_item_t* user_item = malloc(sizeof(vision_ui_user_item_t));
     memset(user_item, 0, sizeof(vision_ui_user_item_t));
     user_item->base_item.type = USER_ITEM;
@@ -309,7 +339,8 @@ void vision_ui_selector_go_next_item() {
         return;
     }
 
-    VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[++VISION_UI_SELECTOR.selected_index];
+    VISION_UI_SELECTOR.selected_item =
+            VISION_UI_SELECTOR.selected_item->parent->child_list_item[++VISION_UI_SELECTOR.selected_index];
 }
 
 void vision_ui_selector_go_prev_item() {
@@ -332,12 +363,14 @@ void vision_ui_selector_go_prev_item() {
     // 到达最前端
     if (VISION_UI_SELECTOR.selected_index == 0) {
         VISION_UI_SELECTOR.selected_item =
-                VISION_UI_SELECTOR.selected_item->parent->child_list_item[VISION_UI_SELECTOR.selected_item->parent->child_num - 1];
+                VISION_UI_SELECTOR.selected_item->parent
+                        ->child_list_item[VISION_UI_SELECTOR.selected_item->parent->child_num - 1];
         VISION_UI_SELECTOR.selected_index = VISION_UI_SELECTOR.selected_item->parent->child_num - 1;
         return;
     }
 
-    VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[--VISION_UI_SELECTOR.selected_index];
+    VISION_UI_SELECTOR.selected_item =
+            VISION_UI_SELECTOR.selected_item->parent->child_list_item[--VISION_UI_SELECTOR.selected_index];
 }
 
 static bool VISION_UI_EXIT_ANIMATION_FINISHED = true;
@@ -468,7 +501,8 @@ void vision_ui_selector_exit_current_item() {
     // 找到当前选择的item的父item在它的父item中的位置
     uint8_t temp_index = 0;
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->parent->child_num; i++) {
-        if (VISION_UI_SELECTOR.selected_item->parent->parent->child_list_item[i] == VISION_UI_SELECTOR.selected_item->parent) {
+        if (VISION_UI_SELECTOR.selected_item->parent->parent->child_list_item[i] ==
+            VISION_UI_SELECTOR.selected_item->parent) {
             temp_index = i;
             break;
         }
@@ -497,8 +531,8 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
     float next_y = VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING;
     if (parent->child_num > 0) {
         const vision_ui_list_item_t* last_child = parent->child_list_item[parent->child_num - 1];
-        const uint8_t gap_after_last =
-                (last_child->type == TITLE_ITEM) ? VISION_UI_LIST_TITLE_TO_FRAME_PADDING : VISION_UI_LIST_FRAME_BETWEEN_PADDING;
+        const uint8_t gap_after_last = (last_child->type == TITLE_ITEM) ? VISION_UI_LIST_TITLE_TO_FRAME_PADDING
+                                                                        : VISION_UI_LIST_FRAME_BETWEEN_PADDING;
         next_y = last_child->y_list_item_trg + VISION_UI_LIST_FRAME_FIXED_HEIGHT + gap_after_last;
     } else if (child->type != TITLE_ITEM) {
         // 没有标题时仍旧保留顶端 padding

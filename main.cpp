@@ -39,8 +39,13 @@ void test_user_item_loop_function() {
     uint32_t time = vision_ui_driver_ticks_ms_get();
 
     vision_ui_driver_color_draw(1);
-    vision_ui_driver_box_r_draw(2, Y_BOX - 1, vision_ui_driver_str_utf8_width_get("「astraLauncher」") + 4,
-                                vision_ui_driver_str_height_get() + 2, 1);
+    vision_ui_driver_box_r_draw(
+            2,
+            Y_BOX - 1,
+            vision_ui_driver_str_utf8_width_get("「astraLauncher」") + 4,
+            vision_ui_driver_str_height_get() + 2,
+            1
+    );
     vision_ui_driver_color_draw(2);
     vision_ui_driver_str_utf8_draw(4, Y_LOGO - 2, "「astraLauncher」");
 
@@ -124,17 +129,20 @@ void test_user_item_exit_function() {
 #include <stdint.h>
 
 const uint8_t BITMAP_30X30[30 * 4] = {
-        0b10000000, 0b00000000, 0b00000000, 0b00000001, 0b01000000, 0b00000000, 0b00000000, 0b00000010, 0b00100000, 0b00000000, 0b00000000,
-        0b00000100, 0b00010000, 0b00000000, 0b00000000, 0b00001000, 0b00001000, 0b00000000, 0b00000000, 0b00010000, 0b00000100, 0b00000000,
-        0b00000000, 0b00100000, 0b00000010, 0b00000000, 0b00000000, 0b01000000, 0b00000001, 0b00000000, 0b00000000, 0b10000000, 0b00000001,
-        0b00000000, 0b00000000, 0b10000000, 0b00000010, 0b00000000, 0b00000000, 0b01000000, 0b00000100, 0b00000000, 0b00000000, 0b00100000,
-        0b00001000, 0b00000000, 0b00000000, 0b00010000, 0b00010000, 0b00000000, 0b00000000, 0b00001000, 0b00100000, 0b00000000, 0b00000000,
-        0b00000100, 0b01000000, 0b00000000, 0b00000000, 0b00000010, 0b10000000, 0b00000000, 0b00000000, 0b00000001, 0b01000000, 0b00000000,
-        0b00000000, 0b00000010, 0b00100000, 0b00000000, 0b00000000, 0b00000100, 0b00010000, 0b00000000, 0b00000000, 0b00001000, 0b00001000,
-        0b00000000, 0b00000000, 0b00010000, 0b00000100, 0b00000000, 0b00000000, 0b00100000, 0b00000010, 0b00000000, 0b00000000, 0b01000000,
-        0b00000001, 0b00000000, 0b00000000, 0b10000000, 0b00000001, 0b00000000, 0b00000000, 0b10000000, 0b00000010, 0b00000000, 0b00000000,
-        0b01000000, 0b00000100, 0b00000000, 0b00000000, 0b00100000, 0b00001000, 0b00000000, 0b00000000, 0b00010000, 0b00010000, 0b00000000,
-        0b00000000, 0b00001000, 0b00100000, 0b00000000, 0b00000000, 0b00000100, 0b01000000, 0b00000000, 0b00000000, 0b00000010,
+        0b10000000, 0b00000000, 0b00000000, 0b00000001, 0b01000000, 0b00000000, 0b00000000, 0b00000010, 0b00100000,
+        0b00000000, 0b00000000, 0b00000100, 0b00010000, 0b00000000, 0b00000000, 0b00001000, 0b00001000, 0b00000000,
+        0b00000000, 0b00010000, 0b00000100, 0b00000000, 0b00000000, 0b00100000, 0b00000010, 0b00000000, 0b00000000,
+        0b01000000, 0b00000001, 0b00000000, 0b00000000, 0b10000000, 0b00000001, 0b00000000, 0b00000000, 0b10000000,
+        0b00000010, 0b00000000, 0b00000000, 0b01000000, 0b00000100, 0b00000000, 0b00000000, 0b00100000, 0b00001000,
+        0b00000000, 0b00000000, 0b00010000, 0b00010000, 0b00000000, 0b00000000, 0b00001000, 0b00100000, 0b00000000,
+        0b00000000, 0b00000100, 0b01000000, 0b00000000, 0b00000000, 0b00000010, 0b10000000, 0b00000000, 0b00000000,
+        0b00000001, 0b01000000, 0b00000000, 0b00000000, 0b00000010, 0b00100000, 0b00000000, 0b00000000, 0b00000100,
+        0b00010000, 0b00000000, 0b00000000, 0b00001000, 0b00001000, 0b00000000, 0b00000000, 0b00010000, 0b00000100,
+        0b00000000, 0b00000000, 0b00100000, 0b00000010, 0b00000000, 0b00000000, 0b01000000, 0b00000001, 0b00000000,
+        0b00000000, 0b10000000, 0b00000001, 0b00000000, 0b00000000, 0b10000000, 0b00000010, 0b00000000, 0b00000000,
+        0b01000000, 0b00000100, 0b00000000, 0b00000000, 0b00100000, 0b00001000, 0b00000000, 0b00000000, 0b00010000,
+        0b00010000, 0b00000000, 0b00000000, 0b00001000, 0b00100000, 0b00000000, 0b00000000, 0b00000100, 0b01000000,
+        0b00000000, 0b00000000, 0b00000010,
 };
 
 int main() {
@@ -153,10 +161,14 @@ int main() {
     vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new(10, false, "Board Settings");
     vision_ui_list_item_t* launcher_setting_list_item_2 = vision_ui_list_item_new(10, true, "Board Settings 2");
 
-    vision_ui_list_push_item(launcher_setting_list_item_2, vision_ui_list_icon_item_new(1, NULL, "Icon 1", "Example Icon 1"));
-    vision_ui_list_push_item(launcher_setting_list_item_2,
-                             vision_ui_list_icon_item_new(1, BITMAP_30X30, "Icon Super Looooooooong", "Example Icon 2"));
-    vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(1, NULL, "Icon Item 3", NULL);
+    vision_ui_list_push_item(
+            launcher_setting_list_item_2, vision_ui_list_icon_item_new(1, nullptr, "Icon 1", "Example Icon 1")
+    );
+    vision_ui_list_push_item(
+            launcher_setting_list_item_2,
+            vision_ui_list_icon_item_new(1, BITMAP_30X30, "Icon Super Looooooooong", "Example Icon 2")
+    );
+    vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(1, nullptr, "Icon Item 3", nullptr);
     vision_ui_list_item_t* list3 = vision_ui_list_item_new(10, false, "Board Settings3");
     vision_ui_list_push_item(icon, list3);
     vision_ui_list_push_item(launcher_setting_list_item_2, icon);
@@ -164,56 +176,142 @@ int main() {
     vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_title_item_new(1, "VisionUI"));
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item);
     vision_ui_list_push_item(vision_ui_root_list_get(), launcher_setting_list_item_2);
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_user_item_new(1, "About the Board...", test_user_item_init_function,
-                                                          test_user_item_loop_function, test_user_item_exit_function));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 1", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 1", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Notification 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 2", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(), vision_ui_list_switch_item_new(1, "Test Alert", false, [](bool b) {
-                                 vision_ui_alert_push("Alert Test", 5000);
-                             }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Notification 2 Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_alert_push("Alert Test", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Notification 2Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_alert_push("Alert Test", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Notification 1 Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Notification 2 Notification Test 2 Notification Test 2", false,
-                                                            [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }));
-    vision_ui_list_push_item(vision_ui_root_list_get(),
-                             vision_ui_list_switch_item_new(1, "Test Alert Notification Test 2 Notification Test 2 Notification Test 2",
-                                                            false, [](bool b) { vision_ui_alert_push("Alert Test", 5000); }));
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_user_item_new(
+                    1,
+                    "About the Board...",
+                    test_user_item_init_function,
+                    test_user_item_loop_function,
+                    test_user_item_exit_function
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 1",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 2",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1, "Test Alert", false, [](bool b) { vision_ui_alert_push("Alert Test", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 1 Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 2 Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Alert Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_alert_push("Alert Test", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 1 Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 2Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Alert Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_alert_push("Alert Test", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 1 Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 1", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Notification 2 Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_notification_push("Notification Test 2", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            vision_ui_root_list_get(),
+            vision_ui_list_switch_item_new(
+                    1,
+                    "Test Alert Notification Test 2 Notification Test 2 Notification Test 2",
+                    false,
+                    [](bool b) { vision_ui_alert_push("Alert Test", 5000); }
+            )
+    );
 
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_title_item_new(1, launcher_setting_list_item->content));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {}));
-    vision_ui_list_push_item(launcher_setting_list_item,
-                             vision_ui_list_slider_item_new(1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {}));
-    vision_ui_list_push_item(launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {}));
+    vision_ui_list_push_item(
+            launcher_setting_list_item, vision_ui_list_title_item_new(1, launcher_setting_list_item->content)
+    );
+    vision_ui_list_push_item(
+            launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Heartbeat LED", true, [](bool b) {})
+    );
+    vision_ui_list_push_item(
+            launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Reverse Keys", false, [](bool b) {})
+    );
+    vision_ui_list_push_item(
+            launcher_setting_list_item,
+            vision_ui_list_slider_item_new(1, "Display Style", 1600, 5, 1, 9999, [](int16_t value) {})
+    );
+    vision_ui_list_push_item(
+            launcher_setting_list_item, vision_ui_list_switch_item_new(1, "Invert Display", false, [](bool b) {})
+    );
 
     vision_ui_render_init();
 
-    float prev_ms = vision_ui_driver_ticks_ms_get();
+    const float prev_ms = vision_ui_driver_ticks_ms_get();
     float fps_timer = prev_ms;
     int frame_count = 0;
 
@@ -229,23 +327,20 @@ int main() {
 
         // pace to 120 fps (include render time)
         float now_ms = vision_ui_driver_ticks_ms_get();
-        float elapsed_ms = now_ms - frame_begin; // full frame so far
-        if (elapsed_ms < target_ms) {
+        if (const float elapsed_ms = now_ms - frame_begin; elapsed_ms < target_ms) {
             // sleep the remainder (rounded; replace delay() with a microsecond sleep if you have one)
-            vision_ui_driver_delay((uint32_t) lrintf(target_ms - elapsed_ms));
+            vision_ui_driver_delay(static_cast<uint32_t>(lrintf(target_ms - elapsed_ms)));
             now_ms = vision_ui_driver_ticks_ms_get(); // re-sample after sleep
         }
 
         // fps
         frame_count++;
         if (now_ms - fps_timer >= 1000.0f) {
-            const float fps = (float) frame_count * 1000.0f / (now_ms - fps_timer);
+            const float fps = static_cast<float>(frame_count) * 1000.0f / (now_ms - fps_timer);
             printf("FPS: %.1f\n", fps);
             fps_timer = now_ms;
             frame_count = 0;
         }
-
-        prev_ms = frame_begin; // (optional) if you need per-frame dt later
     }
 
     return 0;

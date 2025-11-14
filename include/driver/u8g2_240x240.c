@@ -48,11 +48,12 @@ static void u8g_sdl_set_pixel(const int x, const int y, const int idx) {
     for (int i = 0; i < U8G_SDL_MULTIPLE; i++) {
         for (int j = 0; j < U8G_SDL_MULTIPLE; j++) {
 #ifndef NO_SDL
-            offset = (((y * U8G_SDL_MULTIPLE) + i) * (U8G_SDL_WIDTH * U8G_SDL_MULTIPLE) + ((x * U8G_SDL_MULTIPLE) + j)) *
-                     U8G_SDL_SCREEN->format->BytesPerPixel;
+            offset =
+                    (((y * U8G_SDL_MULTIPLE) + i) * (U8G_SDL_WIDTH * U8G_SDL_MULTIPLE) + ((x * U8G_SDL_MULTIPLE) + j)) *
+                    U8G_SDL_SCREEN->format->BytesPerPixel;
 
-            assert(offset <
-                   (Uint32) (U8G_SDL_WIDTH * U8G_SDL_MULTIPLE * U8G_SDL_HEIGHT * U8G_SDL_MULTIPLE * U8G_SDL_SCREEN->format->BytesPerPixel));
+            assert(offset < (Uint32) (U8G_SDL_WIDTH * U8G_SDL_MULTIPLE * U8G_SDL_HEIGHT * U8G_SDL_MULTIPLE *
+                                      U8G_SDL_SCREEN->format->BytesPerPixel));
 
             ptr = (uint32_t*) (((uint8_t*) (U8G_SDL_SCREEN->pixels)) + offset);
             *ptr = U8G_SDL_COLOR[idx];
@@ -100,8 +101,14 @@ static void u8g_sdl_init(int width, int height) {
         exit(1);
     }
 
-    U8G_SDL_WINDOW = SDL_CreateWindow("vision_ui-simulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                      U8G_SDL_WIDTH * U8G_SDL_MULTIPLE, U8G_SDL_HEIGHT * U8G_SDL_MULTIPLE, 0);
+    U8G_SDL_WINDOW = SDL_CreateWindow(
+            "vision_ui-simulator",
+            SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_UNDEFINED,
+            U8G_SDL_WIDTH * U8G_SDL_MULTIPLE,
+            U8G_SDL_HEIGHT * U8G_SDL_MULTIPLE,
+            0
+    );
 
     if (U8G_SDL_WINDOW == NULL) {
         printf("Couldn't create window: %s\n", SDL_GetError());
@@ -154,7 +161,12 @@ void main(void)
 */
 
 
-static uint8_t u8x8_d_sdl_gpio(u8x8_t* u8x8, const uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void* arg_ptr) {
+static uint8_t u8x8_d_sdl_gpio(
+        u8x8_t* u8x8,
+        const uint8_t msg,
+        U8X8_UNUSED uint8_t arg_int,
+        U8X8_UNUSED void* arg_ptr
+) {
     static int debounce_cnt = 0;
     static int curr_msg = 0;
     static int db_cnt = 10;
@@ -217,7 +229,8 @@ static const u8x8_display_info_t U8X8_SDL_240X240_INFO = {
         /* post_reset_wait_ms = */ 0,
         /* sda_setup_time_ns = */ 0,
         /* sck_pulse_width_ns = */ 0,
-        /* sck_clock_hz = */ 4000000UL, /* since Arduino 1.6.0, the SPI bus speed in Hz. Should be  1000000000/sck_pulse_width_ns */
+        /* sck_clock_hz = */ 4000000UL, /* since Arduino 1.6.0, the SPI bus speed in Hz. Should be
+                                           1000000000/sck_pulse_width_ns */
         /* spi_mode = */ 1,
         /* i2c_bus_clock_100kHz = */ 0,
         /* data_setup_time_ns = */ 0,
@@ -227,7 +240,8 @@ static const u8x8_display_info_t U8X8_SDL_240X240_INFO = {
         /* default_x_offset = */ 0,
         /* flipmode_x_offset = */ 0,
         /* pixel_width = */ 240,
-        /* pixel_height = */ 240};
+        /* pixel_height = */ 240
+};
 
 
 uint8_t u8x8_d_sdl_240x240(u8x8_t* u8g2, const uint8_t msg, uint8_t arg_int, void* arg_ptr) {

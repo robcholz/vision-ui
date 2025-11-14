@@ -218,17 +218,37 @@ extern vision_ui_list_item_t* vision_ui_list_item_new(size_t capacity, bool icon
 
 extern vision_ui_list_item_t* vision_ui_list_title_item_new(size_t capacity, const char* title);
 
-extern vision_ui_list_item_t* vision_ui_list_icon_item_new(size_t capacity, const uint8_t* icon, const char* title,
-                                                           const char* description);
+extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
+        size_t capacity,
+        const uint8_t* icon,
+        const char* title,
+        const char* description
+);
 
-extern vision_ui_list_item_t* vision_ui_list_switch_item_new(size_t capacity, const char* content, bool default_value,
-                                                             void (*on_changed)(bool value));
+extern vision_ui_list_item_t* vision_ui_list_switch_item_new(
+        size_t capacity,
+        const char* content,
+        bool default_value,
+        void (*on_changed)(bool value)
+);
 
-extern vision_ui_list_item_t* vision_ui_list_slider_item_new(size_t capacity, const char* content, int16_t default_value, uint8_t step,
-                                                             int16_t min, int16_t max, void (*on_changed)(int16_t value));
+extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
+        size_t capacity,
+        const char* content,
+        int16_t default_value,
+        uint8_t step,
+        int16_t min,
+        int16_t max,
+        void (*on_changed)(int16_t value)
+);
 
-extern vision_ui_list_item_t* vision_ui_list_user_item_new(size_t capacity, const char* content, void (*init_function)(),
-                                                           void (*loop_function)(), void (*exit_function)());
+extern vision_ui_list_item_t* vision_ui_list_user_item_new(
+        size_t capacity,
+        const char* content,
+        void (*init_function)(),
+        void (*loop_function)(),
+        void (*exit_function)()
+);
 
 extern bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
 
