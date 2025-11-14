@@ -23,9 +23,9 @@ void vision_ui_render_init() {
 
 static void vision_ui_notification_update(const float delta_ms) {
     vision_ui_animation_s_curve(&vision_ui_notification_mutable_instance_get()->y_notification,
-                                vision_ui_notification_mutable_instance_get()->y_notification_trg, 94, delta_ms);
+                                vision_ui_notification_mutable_instance_get()->y_notification_trg, 50, delta_ms);
     vision_ui_animation_s_curve(&vision_ui_notification_mutable_instance_get()->w_notification,
-                                vision_ui_notification_mutable_instance_get()->w_notification_trg, 95, delta_ms);
+                                vision_ui_notification_mutable_instance_get()->w_notification_trg, 52, delta_ms);
 }
 
 static void vision_ui_alert_update(const float delta_ms) {
