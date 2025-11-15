@@ -25,22 +25,10 @@
 #define VISION_UI_ALLOW_EXIT_BY_USER 0 // allow user to exit vision ui at the top level
 #endif
 
-#ifdef CONFIG_VISION_UI_LIST_ROOT_ICON_VIEW
-#define VISION_UI_LIST_ROOT_ICON_VIEW CONFIG_VISION_UI_LIST_ROOT_ICON_VIEW
-#else
-#define VISION_UI_LIST_ROOT_ICON_VIEW 0 // if the root should be list view or icon view
-#endif
-
 #ifdef CONFIG_VISION_UI_MAX_LIST_LAYER
 #define VISION_UI_MAX_LIST_LAYER CONFIG_VISION_UI_MAX_LIST_LAYER
 #else
 #define VISION_UI_MAX_LIST_LAYER 10 // the max layer of the ui
-#endif
-
-#ifdef CONFIG_VISION_UI_LIST_ROOT_CAPACITY
-#define VISION_UI_LIST_ROOT_CAPACITY CONFIG_VISION_UI_LIST_ROOT_CAPACITY
-#else
-#define VISION_UI_LIST_ROOT_CAPACITY 20 // the capacity of the root item
 #endif
 
 #ifdef CONFIG_VISION_UI_EXIT_ANIMATION_DURATION_MS

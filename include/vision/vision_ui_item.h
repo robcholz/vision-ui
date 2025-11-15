@@ -172,6 +172,10 @@ typedef struct vision_ui_camera_t {
     vision_ui_selector_t* selector;
 } vision_ui_camera_t;
 
+typedef enum { VisionAllocMalloc, VisionAllocCalloc, VisionAllocFree } vision_alloc_op_t;
+
+extern void vision_ui_allocator_set(void* (*allocator)(vision_alloc_op_t op, size_t size, size_t count, void* ptr));
+
 extern void vision_ui_font_set(void* font);
 
 extern void vision_ui_font_set_title(void* font);
@@ -204,8 +208,6 @@ extern vision_ui_alert_t* vision_ui_alert_mutable_instance_get();
 
 extern void vision_ui_alert_push(const char* content, uint16_t span);
 
-extern vision_ui_list_item_t* vision_ui_root_list_get();
-
 extern vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item);
 
 extern vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* list_item);
@@ -216,7 +218,7 @@ extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t*
 
 extern vision_ui_list_item_t* vision_ui_list_item_new(size_t capacity, bool icon_mode, const char* content);
 
-extern vision_ui_list_item_t* vision_ui_list_title_item_new(size_t capacity, const char* title);
+extern vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title);
 
 extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
         size_t capacity,
@@ -226,14 +228,12 @@ extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
 );
 
 extern vision_ui_list_item_t* vision_ui_list_switch_item_new(
-        size_t capacity,
         const char* content,
         bool default_value,
         void (*on_changed)(bool value)
 );
 
 extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
-        size_t capacity,
         const char* content,
         int16_t default_value,
         uint8_t step,
@@ -243,12 +243,15 @@ extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
 );
 
 extern vision_ui_list_item_t* vision_ui_list_user_item_new(
-        size_t capacity,
         const char* content,
         void (*init_function)(),
         void (*loop_function)(),
         void (*exit_function)()
 );
+
+extern bool vision_ui_root_item_set(vision_ui_list_item_t* item);
+
+extern vision_ui_list_item_t* vision_ui_root_list_get();
 
 extern bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
 

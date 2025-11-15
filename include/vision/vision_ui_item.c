@@ -3,6 +3,7 @@
 //
 #include "vision_ui_item.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -12,6 +13,36 @@
 
 static void* VISION_UI_FONT;
 static void* VISION_UI_TITLE_FONT;
+
+typedef void* (*vision_ui_allocator_t)(vision_alloc_op_t op, size_t size, size_t count, void* ptr);
+
+static vision_ui_allocator_t ALLOCATOR = NULL;
+
+void vision_ui_allocator_set(const vision_ui_allocator_t allocator) {
+    ALLOCATOR = allocator;
+}
+
+static void* vision_ui_malloc(const size_t size) {
+    if (ALLOCATOR == NULL) {
+        return malloc(size);
+    }
+    return ALLOCATOR(VisionAllocMalloc, size, 0, NULL);
+}
+
+static void* vision_ui_calloc(const size_t count, const size_t size) {
+    if (ALLOCATOR == NULL) {
+        return calloc(count, size);
+    }
+    return ALLOCATOR(VisionAllocCalloc, size, count, NULL);
+}
+
+static void vision_ui_free(void* ptr) {
+    if (ALLOCATOR == NULL) {
+        free(ptr);
+        return;
+    }
+    ALLOCATOR(VisionAllocFree, 0, 0, ptr);
+}
 
 void vision_ui_font_set(void* font) {
     if (font != VISION_UI_FONT) {
@@ -127,70 +158,43 @@ void vision_ui_alert_push(const char* content, const uint16_t span) {
 // vision_ui_list_item_t vision_ui_list_item_root = {};
 
 vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item) {
-    if (list_item != NULL && list_item->type == SwitchItem) {
-        return (vision_ui_switch_item_t*) list_item;
-    }
-
-    return (vision_ui_switch_item_t*) vision_ui_root_list_get();
+    assert(list_item != NULL && list_item->type == SwitchItem);
+    return (vision_ui_switch_item_t*) list_item;
 }
 
 vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* list_item) {
-    if (list_item != NULL && list_item->type == SliderItem) {
-        return (vision_ui_slider_item_t*) list_item;
-    }
-
-    return (vision_ui_slider_item_t*) vision_ui_root_list_get();
+    assert(list_item != NULL && list_item->type == SliderItem);
+    return (vision_ui_slider_item_t*) list_item;
 }
 
 vision_ui_icon_item_t* vision_ui_to_list_icon_item(vision_ui_list_item_t* list_item) {
-    if (list_item != NULL && list_item->type == IconItem) {
-        return (vision_ui_icon_item_t*) list_item;
-    }
-
-    return (vision_ui_icon_item_t*) vision_ui_root_list_get();
+    assert(list_item != NULL && list_item->type == IconItem);
+    return (vision_ui_icon_item_t*) list_item;
 }
 
 vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item) {
-    if (list_item != NULL && list_item->type == UserItem) {
-        return (vision_ui_user_item_t*) list_item;
-    }
-
-    return (vision_ui_user_item_t*) vision_ui_root_list_get();
-}
-
-// tips: 不会重复创建root节点
-vision_ui_list_item_t* vision_ui_root_list_get() {
-    static vision_ui_list_item_t* vision_ui_root_item = NULL;
-    if (vision_ui_root_item == NULL) {
-        vision_ui_root_item = malloc(sizeof(vision_ui_list_item_t));
-        memset(vision_ui_root_item, 0, sizeof(vision_ui_list_item_t));
-        vision_ui_root_item->type = ListItem;
-        vision_ui_root_item->icon_view_mode = VISION_UI_LIST_ROOT_ICON_VIEW;
-        vision_ui_root_item->content = "VisionUI";
-        vision_ui_root_item->capacity = VISION_UI_LIST_ROOT_CAPACITY;
-        vision_ui_root_item->child_list_item = malloc(vision_ui_root_item->capacity * sizeof(vision_ui_list_item_t*));
-    }
-    return vision_ui_root_item;
+    assert(list_item != NULL && list_item->type == UserItem);
+    return (vision_ui_user_item_t*) list_item;
 }
 
 vision_ui_list_item_t* vision_ui_list_item_new(const size_t capacity, const bool icon_mode, const char* content) {
-    vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_list_item_t));
+    vision_ui_list_item_t* list_item = vision_ui_malloc(sizeof(vision_ui_list_item_t));
     memset(list_item, 0, sizeof(vision_ui_list_item_t));
     list_item->type = ListItem;
     list_item->icon_view_mode = icon_mode;
     list_item->content = content;
     list_item->capacity = capacity;
-    list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
+    list_item->child_list_item = vision_ui_malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
     return list_item;
 }
 
-vision_ui_list_item_t* vision_ui_list_title_item_new(const size_t capacity, const char* title) {
-    vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_title_item_t));
+vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title) {
+    vision_ui_list_item_t* list_item = vision_ui_malloc(sizeof(vision_ui_title_item_t));
     memset(list_item, 0, sizeof(vision_ui_title_item_t));
     list_item->type = TitleItem;
     list_item->content = title;
-    list_item->capacity = capacity;
-    list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
+    list_item->capacity = 0;
+    list_item->child_list_item = NULL;
     return list_item;
 }
 
@@ -200,12 +204,12 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(
         const char* title,
         const char* description
 ) {
-    vision_ui_list_item_t* list_item = malloc(sizeof(vision_ui_icon_item_t));
+    vision_ui_list_item_t* list_item = vision_ui_malloc(sizeof(vision_ui_icon_item_t));
     memset(list_item, 0, sizeof(vision_ui_icon_item_t));
     list_item->type = IconItem;
     list_item->content = title;
     list_item->capacity = capacity;
-    list_item->child_list_item = malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
+    list_item->child_list_item = vision_ui_malloc(list_item->capacity * sizeof(vision_ui_list_item_t*));
 
     ((vision_ui_icon_item_t*) list_item)->icon = icon;
     ((vision_ui_icon_item_t*) list_item)->description = description;
@@ -217,25 +221,22 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(
 }
 
 vision_ui_list_item_t* vision_ui_list_switch_item_new(
-        const size_t capacity,
         const char* content,
         const bool default_value,
         void (*on_changed)(bool value)
 ) {
-    vision_ui_switch_item_t* switch_item = malloc(sizeof(vision_ui_switch_item_t));
+    vision_ui_switch_item_t* switch_item = vision_ui_malloc(sizeof(vision_ui_switch_item_t));
     memset(switch_item, 0, sizeof(vision_ui_switch_item_t));
     switch_item->base_item.type = SwitchItem;
     switch_item->base_item.content = content;
     switch_item->value = default_value;
     switch_item->on_changed = on_changed;
-    ((vision_ui_list_item_t*) switch_item)->capacity = capacity;
-    ((vision_ui_list_item_t*) switch_item)->child_list_item =
-            malloc(((vision_ui_list_item_t*) switch_item)->capacity * sizeof(vision_ui_list_item_t*));
+    ((vision_ui_list_item_t*) switch_item)->capacity = 0;
+    ((vision_ui_list_item_t*) switch_item)->child_list_item = NULL;
     return (vision_ui_list_item_t*) switch_item;
 }
 
 vision_ui_list_item_t* vision_ui_list_slider_item_new(
-        const size_t capacity,
         const char* content,
         const int16_t default_value,
         const uint8_t step,
@@ -243,7 +244,7 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(
         const int16_t max,
         void (*on_changed)(int16_t value)
 ) {
-    vision_ui_slider_item_t* slider_item = malloc(sizeof(vision_ui_slider_item_t));
+    vision_ui_slider_item_t* slider_item = vision_ui_malloc(sizeof(vision_ui_slider_item_t));
     memset(slider_item, 0, sizeof(vision_ui_slider_item_t));
     slider_item->base_item.type = SliderItem;
     slider_item->base_item.content = content;
@@ -252,29 +253,26 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(
     slider_item->value_min = min;
     slider_item->value_max = max;
     slider_item->on_changed = on_changed;
-    ((vision_ui_list_item_t*) slider_item)->capacity = capacity;
-    ((vision_ui_list_item_t*) slider_item)->child_list_item =
-            malloc(((vision_ui_list_item_t*) slider_item)->capacity * sizeof(vision_ui_list_item_t*));
+    ((vision_ui_list_item_t*) slider_item)->capacity = 0;
+    ((vision_ui_list_item_t*) slider_item)->child_list_item = NULL;
     return (vision_ui_list_item_t*) slider_item;
 }
 
 vision_ui_list_item_t* vision_ui_list_user_item_new(
-        const size_t capacity,
         const char* content,
         void (*init_function)(),
         void (*loop_function)(),
         void (*exit_function)()
 ) {
-    vision_ui_user_item_t* user_item = malloc(sizeof(vision_ui_user_item_t));
+    vision_ui_user_item_t* user_item = vision_ui_malloc(sizeof(vision_ui_user_item_t));
     memset(user_item, 0, sizeof(vision_ui_user_item_t));
     user_item->base_item.type = UserItem;
     user_item->base_item.content = content;
     user_item->init_function = init_function;
     user_item->loop_function = loop_function;
     user_item->exit_function = exit_function;
-    ((vision_ui_list_item_t*) user_item)->capacity = capacity;
-    ((vision_ui_list_item_t*) user_item)->child_list_item =
-            malloc(((vision_ui_list_item_t*) user_item)->capacity * sizeof(vision_ui_list_item_t*));
+    ((vision_ui_list_item_t*) user_item)->capacity = 0;
+    ((vision_ui_list_item_t*) user_item)->child_list_item = NULL;
     return (vision_ui_list_item_t*) user_item;
 }
 
@@ -509,6 +507,24 @@ void vision_ui_selector_exit_current_item() {
     }
     VISION_UI_SELECTOR.selected_index = temp_index;
     VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->parent;
+}
+
+static vision_ui_list_item_t* ROOT_ITEM = NULL;
+
+bool vision_ui_root_item_set(vision_ui_list_item_t* item) {
+    ROOT_ITEM = item;
+    return true;
+}
+
+vision_ui_list_item_t* vision_ui_root_list_get() {
+    assert(ROOT_ITEM != NULL);
+    return ROOT_ITEM;
+    static vision_ui_list_item_t* vision_ui_root_item = NULL;
+    if (vision_ui_root_item == NULL) {
+        vision_ui_root_item =
+                vision_ui_list_item_new(VISION_UI_LIST_ROOT_CAPACITY, VISION_UI_LIST_ROOT_ICON_VIEW, "VisionUI");
+    }
+    return vision_ui_root_item;
 }
 
 bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child) {
