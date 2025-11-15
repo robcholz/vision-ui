@@ -512,6 +512,9 @@ void vision_ui_selector_exit_current_item() {
 static vision_ui_list_item_t* ROOT_ITEM = NULL;
 
 bool vision_ui_root_item_set(vision_ui_list_item_t* item) {
+    if (item == NULL) {
+        return false;
+    }
     ROOT_ITEM = item;
     return true;
 }
@@ -519,12 +522,6 @@ bool vision_ui_root_item_set(vision_ui_list_item_t* item) {
 vision_ui_list_item_t* vision_ui_root_list_get() {
     assert(ROOT_ITEM != NULL);
     return ROOT_ITEM;
-    static vision_ui_list_item_t* vision_ui_root_item = NULL;
-    if (vision_ui_root_item == NULL) {
-        vision_ui_root_item =
-                vision_ui_list_item_new(VISION_UI_LIST_ROOT_CAPACITY, VISION_UI_LIST_ROOT_ICON_VIEW, "VisionUI");
-    }
-    return vision_ui_root_item;
 }
 
 bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child) {
@@ -540,10 +537,12 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
     if (parent->layer >= VISION_UI_MAX_LIST_LAYER) {
         return false;
     }
+    if (parent->icon_view_mode && child->type != IconItem) {
+        return false;
+    }
 
     child->layer = parent->layer + 1;
 
-    vision_ui_font_set(vision_ui_font_get());
     float next_y = VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING;
     if (parent->child_num > 0) {
         const vision_ui_list_item_t* last_child = parent->child_list_item[parent->child_num - 1];

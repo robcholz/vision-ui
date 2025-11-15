@@ -157,7 +157,6 @@ Animations (selector easing, camera tracking, exit masks) are computed in `visio
 - [x] use the correct format
 - [x] fix the animation rate
 - [x] use 2nd ODE for animation and
-- [ ] current mem footprint is 3340B,
 
 ## License
 
