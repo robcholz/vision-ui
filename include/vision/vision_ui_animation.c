@@ -84,13 +84,6 @@ static void vision_ui_animation_2nd_ode(
     v += a * dt;
     x += v * dt;
 
-    const float new_err = x - pos_trg;
-
-    if (prev_err * new_err <= 0.0f || fabsf(new_err) < 0.5f) {
-        x = pos_trg;
-        v = 0.0f;
-    }
-
     *velocity = v;
     *pos = x;
 }
@@ -102,7 +95,16 @@ void vision_ui_animation_2nd_ode_no_overshoot(
         const float speed,
         const float delta_ms
 ) {
+    const float prev_err = *pos - pos_trg;
+
     vision_ui_animation_2nd_ode(0.8f, 9.5f, 0.2f, pos, velocity, pos_trg, speed, delta_ms);
+
+    const float new_err = *pos - pos_trg;
+
+    if (prev_err * new_err <= 0.0f || fabsf(new_err) < 0.5f) {
+        *pos = pos_trg;
+        *velocity = 0.0f;
+    }
 }
 
 void vision_ui_animation_2nd_ode_slight_overshoot(
@@ -112,5 +114,14 @@ void vision_ui_animation_2nd_ode_slight_overshoot(
         const float speed,
         const float delta_ms
 ) {
+    const float prev_err = *pos - pos_trg;
+
     vision_ui_animation_2nd_ode(0.7f, 8.0f, 0.2f, pos, velocity, pos_trg, speed, delta_ms);
+
+    const float new_err = *pos - pos_trg;
+
+    if (prev_err * new_err <= 0.0f || fabsf(new_err) < 0.5f) {
+        *pos = pos_trg;
+        *velocity = 0.0f;
+    }
 }

@@ -43,7 +43,7 @@ def animation_exp_smoother(pos, pos_trg, speed, delta_ms):
     return pos + (pos_trg - pos) * s
 
 
-DAMPING_RATIO = 0.7 # ζ: overshoot 越小越平，越大越粘
+DAMPING_RATIO = 0.5 # ζ: overshoot 越小越平，越大越粘
 BASE_NAT_FREQ = 8.0  # ω_n base，自然频率
 NAT_FREQ_PER_SPEED = 0.2  # speed 对 ω_n 的影响
 
@@ -68,7 +68,7 @@ def animation_2nd_ode(pos, pos_trg, speed, delta_ms):
 
 
 def animation_do(pos, pos_trg, speed, delta_ms):
-    return animation_exp_smoother(pos, pos_trg, speed, delta_ms)
+    return animation_2nd_ode(pos, pos_trg, speed, delta_ms)
 
 
 step_input = 0.0  # step function (SPACE = 1, release = 0)
@@ -92,7 +92,7 @@ ax.set_ylim(-50, 150)
 ax.set_xlim(0, 2000)
 ax.set_xlabel("time (ms)")
 ax.set_ylabel("value")
-ax.set_title("SPACE = 1  /  RELEASE = 0")
+ax.set_title("Step Input vs Response")
 ax.grid(True)
 ax.legend()
 
