@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../vision_ui_config.h"
 #include "vision_ui_animation.h"
+#include "vision_ui_config.h"
 #include "vision_ui_core.h"
 #include "vision_ui_item.h"
 

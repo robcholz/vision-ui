@@ -45,16 +45,10 @@ to your board.
 
 ### Clone & configure
 
-```bash
-git clone <repo-url>
-cd vision_ui
-xmake f -m debug            # optional: switch between debug/release
-xmake f --language=mandarin # optional: run the Mandarin demo entry
-```
-
 ### Build & run the simulator
 
 ```bash
+git clone --depth=1 https://github.com/olikraus/u8g2.git components/u8g2
 xmake                      # builds u8g2, vision_ui, and the simulator
 xmake run vision_ui_simulator
 ```

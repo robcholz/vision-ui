@@ -4,13 +4,6 @@ add_rules("mode.debug")
 
 add_requires("libsdl >=2.0", { configs = { shared = true } })
 
-option("language")
-   set_showmenu(true)
-   set_description("Select simulator language")
-   set_default("default")
-   set_values("default", "english")
-option_end()
-
 target("u8g2")
     set_kind("static")
     add_files("components/u8g2/csrc/*.c")
@@ -18,9 +11,9 @@ target("u8g2")
 
 target("vision_ui")
     set_kind("static")
-    add_files("include/vision/*.c")
+    add_files("src/*.c")
     add_files("include/driver/*.c")
-    add_includedirs("include", { public = true })
+    add_includedirs("include","include/vision", { public = true })
     add_deps("u8g2")
     add_packages("libsdl")
 

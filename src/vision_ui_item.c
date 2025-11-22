@@ -8,7 +8,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "../vision_ui_config.h"
+#include "vision_ui_config.h"
 #include "vision_ui_core.h"
 
 static void* VISION_UI_FONT;

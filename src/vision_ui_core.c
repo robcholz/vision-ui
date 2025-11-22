@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <tgmath.h>
 
-#include "../vision_ui_config.h"
 #include "vision_ui_animation.h"
+#include "vision_ui_config.h"
 #include "vision_ui_draw_driver.h"
 #include "vision_ui_item.h"
 #include "vision_ui_renderer.h"
