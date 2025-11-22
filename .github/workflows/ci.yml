@@ -26,7 +26,7 @@ jobs:
           fi
 
       - name: Configure project
-        run: xmake f -y
+        run: xmake f --simulator=y
 
       - name: Generate compilation database
         run: xmake project -k compile_commands
