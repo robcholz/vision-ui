@@ -1,8 +1,8 @@
 #include <tgmath.h>
 #include <u8g2.h>
 
-#include <vision/vision_ui.hpp>
 #include <vision/font/chinese.h>
+#include <vision/vision_ui.hpp>
 
 #include "driver/u8g2.h"
 #include "driver/u8g2_240x240_display.h"
