@@ -2,11 +2,10 @@
 #include <u8g2.h>
 
 #include <vision/vision_ui.hpp>
+#include <vision/font/chinese.h>
 
 #include "driver/u8g2.h"
 #include "driver/u8g2_240x240_display.h"
-
-#include "font/chinese.h"
 
 u8g2_t U8G2;
 
