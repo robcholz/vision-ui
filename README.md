@@ -222,7 +222,4 @@ every function in the lists above.
 
 ## License
 
-Vision UI, including the bundled copy of u8g2, is released under the terms of
-the [GNU General Public License v2.0](LICENSE).
-
 [u8g2]: https://github.com/olikraus/u8g2
