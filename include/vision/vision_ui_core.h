@@ -6,6 +6,7 @@
 #define VISION_UI_VISION_UI_CORE_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef enum vision_ui_action_t {
     UI_ACTION_NONE,
@@ -20,6 +21,8 @@ extern bool IS_IN_VISION_UI;
 extern void vision_ui_render_init();
 
 extern void vision_ui_core_init();
+
+extern void vision_ui_start_logo_set(const uint8_t* bmp, uint32_t span);
 
 extern void vision_ui_step_render();
 

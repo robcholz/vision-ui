@@ -308,6 +308,8 @@ int main() {
             launcher_setting_list_item, vision_ui_list_switch_item_new("Invert Display", false, [](bool b) {})
     );
 
+    vision_ui_start_logo_set(BITMAP_30X30, 5000);
+
     vision_ui_render_init();
 
     const float prev_ms = vision_ui_driver_ticks_ms_get();

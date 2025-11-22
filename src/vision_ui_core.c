@@ -169,6 +169,14 @@ void vision_ui_core_init() {
     vision_ui_camera_bind_selector(vision_ui_selector_mutable_instance_get());
 }
 
+static const uint8_t* LOGO = NULL;
+static uint32_t LOGO_SPAN = 0;
+
+void vision_ui_start_logo_set(const uint8_t* bmp, const uint32_t span) {
+    LOGO = bmp;
+    LOGO_SPAN = span;
+}
+
 static void vision_ui_list_item_position_update(const float delta_ms) {
     vision_ui_selector_t* selector_mut = vision_ui_selector_mutable_instance_get();
     const vision_ui_selector_t* selector = vision_ui_selector_instance_get();
@@ -421,6 +429,28 @@ static void vision_ui_main_core_step(const float delta_ms) {
 void vision_ui_step_render() {
     static uint32_t last_tick = 0;
     const uint32_t now = vision_ui_driver_ticks_ms_get();
+
+    static bool logo_finished = false;
+    static bool logo_started = false;
+    static uint32_t logo_start_time = 0;
+
+    if (!logo_finished) {
+        if (logo_started == false) {
+            logo_started = true;
+            logo_start_time = now;
+        }
+
+        if (LOGO != NULL && now - logo_start_time < LOGO_SPAN) {
+            vision_ui_driver_bmp_draw(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, LOGO);
+            return;
+        }
+
+        if (LOGO == NULL || now - logo_start_time > LOGO_SPAN) {
+            logo_finished = true;
+            vision_ui_driver_buffer_clear();
+        }
+    }
+
     float delta_ms = 16.6667f;
     if (last_tick != 0 && now >= last_tick) {
         delta_ms = (float) (now - last_tick);
