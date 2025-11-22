@@ -4,6 +4,11 @@ add_rules("mode.debug")
 
 add_requires("libsdl >=2.0", { configs = { shared = true } })
 
+option("simulator")
+set_default(true)
+set_showmenu(true)
+set_description("Build SDL simulator for vision-ui")
+option_end()
 
 if has_config("simulator") then
     target("u8g2")

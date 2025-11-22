@@ -49,7 +49,7 @@ to your board.
 
 ```bash
 git clone --depth=1 https://github.com/olikraus/u8g2.git components/u8g2
-xmake                      # builds u8g2, vision_ui, and the simulator
+xmake -f --simulator=y                      # builds u8g2, vision_ui, and the simulator
 xmake run vision_ui_simulator
 ```
 
