@@ -18,6 +18,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang clang-tidy clang-format xmake libsdl2-dev
 
+      - name: Fetch u8g2
+        run: |
+          mkdir -p components
+          if [ ! -d components/u8g2 ]; then
+            git clone --depth=1 https://github.com/olikraus/u8g2.git components/u8g2
+          fi
+
       - name: Configure project
         run: xmake f -y
 
