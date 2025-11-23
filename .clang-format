@@ -67,4 +67,3 @@ BinPackParameters: false
 
 AlwaysBreakAfterReturnType: None
 PenaltyReturnTypeOnItsOwnLine: 10000000
-...
