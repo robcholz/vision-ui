@@ -790,6 +790,14 @@ static void vision_ui_icon_view_render() {
                     VISION_UI_ICON_VIEW_ICON_SIZE,
                     icon_item->icon
             );
+
+            vision_ui_driver_color_draw(2);
+            vision_ui_driver_box_draw(
+                    icon_x,
+                    VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING,
+                    VISION_UI_ICON_VIEW_ICON_SIZE,
+                    VISION_UI_ICON_VIEW_ICON_SIZE
+            );
         } else {
             vision_ui_driver_frame_draw(
                     icon_x,
