@@ -180,9 +180,13 @@ extern void vision_ui_font_set(void* font);
 
 extern void vision_ui_font_set_title(void* font);
 
+extern void vision_ui_font_set_subtitle(void* font);
+
 extern void* vision_ui_font_get();
 
 extern void* vision_ui_font_get_title();
+
+extern void* vision_ui_font_get_subtitle();
 
 extern bool vision_ui_exit_animation_is_finished();
 

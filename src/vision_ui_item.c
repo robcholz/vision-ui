@@ -13,6 +13,7 @@
 
 static void* VISION_UI_FONT;
 static void* VISION_UI_TITLE_FONT;
+static void* VISION_UI_SUBTITLE_FONT;
 
 typedef void* (*vision_ui_allocator_t)(vision_alloc_op_t op, size_t size, size_t count, void* ptr);
 
@@ -56,12 +57,22 @@ void vision_ui_font_set_title(void* font) {
     }
 }
 
+void vision_ui_font_set_subtitle(void* font) {
+    if (font != VISION_UI_SUBTITLE_FONT) {
+        VISION_UI_SUBTITLE_FONT = font;
+    }
+}
+
 void* vision_ui_font_get() {
     return VISION_UI_FONT;
 }
 
 void* vision_ui_font_get_title() {
     return VISION_UI_TITLE_FONT;
+}
+
+void* vision_ui_font_get_subtitle() {
+    return VISION_UI_SUBTITLE_FONT;
 }
 
 static vision_ui_notification_t VISION_UI_NOTIFICATION = {

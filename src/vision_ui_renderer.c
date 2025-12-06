@@ -837,7 +837,7 @@ static void vision_ui_icon_view_render() {
                 VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
                 VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS
         );
-        vision_ui_driver_font_set(vision_ui_font_get());
+        vision_ui_driver_font_set(vision_ui_font_get_subtitle());
 
         if (selected_icon->description != NULL) {
             uint16_t spacing;

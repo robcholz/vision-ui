@@ -175,6 +175,7 @@ int main() {
     vision_ui_allocator_set(allocator);
 
     vision_ui_font_set_title((void*) u8g2_font_fub42_tf);
+    vision_ui_font_set_subtitle((void*) u8g2_font_my_chinese);
     vision_ui_font_set((void*) u8g2_font_my_chinese);
 
     vision_ui_list_item_t* root = vision_ui_list_item_new(15, false, "VisionUI");
