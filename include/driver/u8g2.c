@@ -76,10 +76,11 @@ uint16_t vision_ui_driver_str_utf8_width_get(const char* str) {
 }
 
 uint16_t vision_ui_driver_str_height_get() {
-    /* 更稳妥：使用 Ascent/Descent 计算文字高度 */
-    int8_t ascent = u8g2_GetAscent(S_U8G2);
-    int8_t descent = u8g2_GetDescent(S_U8G2); /* 注意：通常为负值 */
-    return (uint16_t) (ascent - descent);
+    int16_t h = u8g2_GetMaxCharHeight(S_U8G2);
+    if (h < 0) {
+        h = 0;
+    }
+    return (uint16_t) h;
 }
 
 /* 图元 */
