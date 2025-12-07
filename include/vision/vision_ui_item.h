@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "vision_ui_draw_driver.h"
+#include "vision_ui_core.h"
 
 typedef struct vision_ui_notification_t {
     const char* content;
@@ -176,17 +176,17 @@ typedef enum { VisionAllocMalloc, VisionAllocCalloc, VisionAllocFree } vision_al
 
 extern void vision_ui_allocator_set(void* (*allocator)(vision_alloc_op_t op, size_t size, size_t count, void* ptr));
 
-extern void vision_ui_font_set(void* font);
+extern void vision_ui_font_set(vision_ui_font_t font);
 
-extern void vision_ui_font_set_title(void* font);
+extern void vision_ui_font_set_title(vision_ui_font_t font);
 
-extern void vision_ui_font_set_subtitle(void* font);
+extern void vision_ui_font_set_subtitle(vision_ui_font_t font);
 
-extern void* vision_ui_font_get();
+extern vision_ui_font_t vision_ui_font_get();
 
-extern void* vision_ui_font_get_title();
+extern vision_ui_font_t vision_ui_font_get_title();
 
-extern void* vision_ui_font_get_subtitle();
+extern vision_ui_font_t vision_ui_font_get_subtitle();
 
 extern bool vision_ui_exit_animation_is_finished();
 

@@ -11,6 +11,7 @@
 #include "vision_ui_animation.h"
 #include "vision_ui_config.h"
 #include "vision_ui_core.h"
+#include "vision_ui_draw_driver.h"
 #include "vision_ui_item.h"
 
 typedef struct {
@@ -449,10 +450,11 @@ static void vision_ui_text_draw(
         const uint16_t scroll_speed_s,
         const uint16_t scroll_pause_ms
 ) {
-    // 当前字体行高
+    static const uint8_t clip_edge_width = 1;
+
     const int16_t line_h = vision_ui_driver_str_height_get();
     const int16_t text_x = x0;
-    const int16_t text_y = y0 + (y1 - y0) / 2 + line_h / 2; // 垂直居中到rect内
+    const int16_t text_y = y0 + (y1 - y0) / 2 + line_h / 2 + clip_edge_width; // 垂直居中到rect内
     const int16_t visible_width = x1 - x0;
 
     // 文本总宽度
@@ -497,6 +499,15 @@ static void vision_ui_text_draw(
         }
 
         if (has_visible_area) {
+#ifdef DEBUG
+            vision_ui_driver_frame_draw(clip_x0, clip_y0, clip_x1 - clip_x0, clip_y1 - clip_y0);
+            vision_ui_driver_frame_draw(
+                    text_x,
+                    text_y - vision_ui_driver_str_height_get(),
+                    vision_ui_driver_str_width_get(text),
+                    vision_ui_driver_str_height_get()
+            );
+#endif
             vision_ui_driver_clip_window_set(clip_x0, clip_y0, clip_x1, clip_y1);
             vision_ui_driver_str_utf8_draw(text_x - scroll_offset, text_y, text);
             vision_ui_driver_clip_window_reset();
@@ -505,6 +516,15 @@ static void vision_ui_text_draw(
         // 不滚动，直接居中画
         *text_scroll_anchor = 0;
         if (has_visible_area) {
+#ifdef DEBUG
+            vision_ui_driver_frame_draw(clip_x0, clip_y0, clip_x1 - clip_x0, clip_y1 - clip_y0);
+            vision_ui_driver_frame_draw(
+                    text_x,
+                    text_y - vision_ui_driver_str_height_get(),
+                    vision_ui_driver_str_width_get(text),
+                    vision_ui_driver_str_height_get()
+            );
+#endif
             vision_ui_driver_clip_window_set(clip_x0, clip_y0, clip_x1, clip_y1);
             vision_ui_driver_str_utf8_draw(text_x, text_y, text);
             vision_ui_driver_clip_window_reset();
@@ -822,9 +842,7 @@ static void vision_ui_icon_view_render() {
         const int16_t title_x1 = VISION_UI_SCREEN_WIDTH - VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING;
 
         vision_ui_driver_font_set(vision_ui_font_get_title());
-        const int16_t title_y0 =
-                title_area_y0 - (VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT - vision_ui_driver_str_height_get()) / 2;
-        const int16_t title_y1 = title_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+        const int16_t title_y1 = title_area_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
 
         vision_ui_driver_color_draw(1);
         vision_ui_driver_box_draw(
@@ -839,7 +857,7 @@ static void vision_ui_icon_view_render() {
                 selector->selected_item->content,
                 &selector->selected_item->text_scroll_anchor,
                 title_x0,
-                title_y0 + title_offset_px,
+                title_area_y0 + title_offset_px,
                 title_x1,
                 title_y1,
                 VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S,
@@ -859,7 +877,7 @@ static void vision_ui_icon_view_render() {
             const uint16_t description_x1 = VISION_UI_SCREEN_WIDTH - spacing;
             const uint16_t description_y0 = title_area_y0 + VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT +
                                             VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING;
-            const uint16_t description_y1 = description_y0 + vision_ui_driver_str_height_get();
+            const uint16_t description_y1 = description_y0 + VISION_UI_ICON_VIEW_DESCRIPTION_AREA_HEIGHT;
             vision_ui_driver_color_draw(1);
             vision_ui_text_draw(
                     selected_icon->description,

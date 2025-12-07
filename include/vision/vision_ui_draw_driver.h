@@ -5,9 +5,9 @@
 #ifndef VISION_UI_VISION_UI_DRAW_DRIVER_H
 #define VISION_UI_VISION_UI_DRAW_DRIVER_H
 
-#include "vision_ui_core.h"
-
 #include <stdint.h>
+
+#include "vision_ui_core.h"
 
 extern vision_ui_action_t vision_ui_driver_action_get();
 
@@ -17,7 +17,7 @@ extern void vision_ui_driver_delay(uint32_t ms);
 
 extern void vision_ui_driver_bind(void* driver);
 
-extern void vision_ui_driver_font_set(const uint8_t* font);
+extern void vision_ui_driver_font_set(vision_ui_font_t font);
 
 extern void vision_ui_driver_str_draw(uint16_t x, uint16_t y, const char* str);
 

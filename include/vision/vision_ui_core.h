@@ -8,12 +8,18 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef struct vision_ui_font_t {
+    void* font;
+    int8_t top_compensation;
+    int8_t bottom_compensation;
+} vision_ui_font_t;
+
 typedef enum vision_ui_action_t {
-    UI_ACTION_NONE,
-    UI_ACTION_GO_PREV,
-    UI_ACTION_GO_NEXT,
-    UI_ACTION_ENTER,
-    UI_ACTION_EXIT,
+    UiActionNone,
+    UiActionGoPrev,
+    UiActionGoNext,
+    UiActionEnter,
+    UiActionExit,
 } vision_ui_action_t;
 
 extern bool IS_IN_VISION_UI;

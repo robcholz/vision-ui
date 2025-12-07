@@ -31,15 +31,15 @@ static int get_key() {
 vision_ui_action_t vision_ui_driver_action_get() {
     switch (get_key()) {
         case SDLK_UP:
-            return UI_ACTION_GO_PREV;
+            return UiActionGoPrev;
         case SDLK_DOWN:
-            return UI_ACTION_GO_NEXT;
+            return UiActionGoNext;
         case SDLK_ESCAPE:
-            return UI_ACTION_EXIT;
+            return UiActionExit;
         case SDLK_SPACE:
-            return UI_ACTION_ENTER;
+            return UiActionEnter;
         default:
-            return UI_ACTION_NONE;
+            return UiActionNone;
     }
 }
 
@@ -55,16 +55,21 @@ void vision_ui_driver_bind(void* driver) {
     S_U8G2 = (u8g2_t*) driver;
 }
 
-void vision_ui_driver_font_set(const uint8_t* font) {
-    u8g2_SetFont(S_U8G2, font);
+static int8_t STR_TOP = 0;
+static int8_t STR_BOTTOM = 0;
+
+void vision_ui_driver_font_set(const vision_ui_font_t font) {
+    u8g2_SetFont(S_U8G2, font.font);
+    STR_TOP = font.top_compensation;
+    STR_BOTTOM = font.bottom_compensation;
 }
 
 void vision_ui_driver_str_draw(uint16_t x, const uint16_t y, const char* str) {
-    u8g2_DrawStr(S_U8G2, x, y, str);
+    u8g2_DrawStr(S_U8G2, x, y - STR_BOTTOM, str);
 }
 
 void vision_ui_driver_str_utf8_draw(uint16_t x, uint16_t y, const char* str) {
-    u8g2_DrawUTF8(S_U8G2, x, y, str);
+    u8g2_DrawUTF8(S_U8G2, x, y - STR_BOTTOM, str);
 }
 
 uint16_t vision_ui_driver_str_width_get(const char* str) {
@@ -80,7 +85,7 @@ uint16_t vision_ui_driver_str_height_get() {
     if (h < 0) {
         h = 0;
     }
-    return (uint16_t) h;
+    return (uint16_t) h + STR_TOP;
 }
 
 /* 图元 */

@@ -128,7 +128,7 @@ static void u8g_sdl_init(int width, int height) {
     U8G_SDL_COLOR[0] = SDL_MapRGB(U8G_SDL_SCREEN->format, 0, 0, 0);
     U8G_SDL_COLOR[1] = SDL_MapRGB(U8G_SDL_SCREEN->format, W(100, 50), W(255, 50), 0);
     U8G_SDL_COLOR[2] = SDL_MapRGB(U8G_SDL_SCREEN->format, W(100, 80), W(255, 80), 0);
-    U8G_SDL_COLOR[3] = SDL_MapRGB(U8G_SDL_SCREEN->format, 100, 255, 0);
+    U8G_SDL_COLOR[3] = SDL_MapRGB(U8G_SDL_SCREEN->format, 255, 255, 255);
     U8G_SDL_COLOR[4] = SDL_MapRGB(U8G_SDL_SCREEN->format, 30, 30, 30);
 
     /*

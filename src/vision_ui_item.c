@@ -10,10 +10,11 @@
 
 #include "vision_ui_config.h"
 #include "vision_ui_core.h"
+#include "vision_ui_draw_driver.h"
 
-static void* VISION_UI_FONT;
-static void* VISION_UI_TITLE_FONT;
-static void* VISION_UI_SUBTITLE_FONT;
+static vision_ui_font_t VISION_UI_FONT;
+static vision_ui_font_t VISION_UI_TITLE_FONT;
+static vision_ui_font_t VISION_UI_SUBTITLE_FONT;
 
 typedef void* (*vision_ui_allocator_t)(vision_alloc_op_t op, size_t size, size_t count, void* ptr);
 
@@ -45,33 +46,33 @@ static void vision_ui_free(void* ptr) {
     ALLOCATOR(VisionAllocFree, 0, 0, ptr);
 }
 
-void vision_ui_font_set(void* font) {
-    if (font != VISION_UI_FONT) {
+void vision_ui_font_set(const vision_ui_font_t font) {
+    if (memcmp(&font, &VISION_UI_FONT, sizeof(vision_ui_font_t)) != 0) {
         VISION_UI_FONT = font;
     }
 }
 
-void vision_ui_font_set_title(void* font) {
-    if (font != VISION_UI_TITLE_FONT) {
+void vision_ui_font_set_title(const vision_ui_font_t font) {
+    if (memcmp(&font, &VISION_UI_TITLE_FONT, sizeof(vision_ui_font_t)) != 0) {
         VISION_UI_TITLE_FONT = font;
     }
 }
 
-void vision_ui_font_set_subtitle(void* font) {
-    if (font != VISION_UI_SUBTITLE_FONT) {
+void vision_ui_font_set_subtitle(const vision_ui_font_t font) {
+    if (memcmp(&font, &VISION_UI_SUBTITLE_FONT, sizeof(vision_ui_font_t)) != 0) {
         VISION_UI_SUBTITLE_FONT = font;
     }
 }
 
-void* vision_ui_font_get() {
+vision_ui_font_t vision_ui_font_get() {
     return VISION_UI_FONT;
 }
 
-void* vision_ui_font_get_title() {
+vision_ui_font_t vision_ui_font_get_title() {
     return VISION_UI_TITLE_FONT;
 }
 
-void* vision_ui_font_get_subtitle() {
+vision_ui_font_t vision_ui_font_get_subtitle() {
     return VISION_UI_SUBTITLE_FONT;
 }
 

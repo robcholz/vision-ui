@@ -174,9 +174,19 @@ int main() {
 
     vision_ui_allocator_set(allocator);
 
-    vision_ui_font_set_title((void*) u8g2_font_fub42_tf);
-    vision_ui_font_set_subtitle((void*) u8g2_font_my_chinese);
-    vision_ui_font_set((void*) u8g2_font_my_chinese);
+    vision_ui_font_set_title(
+            vision_ui_font_t{
+                    .font = (void*) u8g2_font_fub42_tf,
+                    .top_compensation = -2,
+                    .bottom_compensation = 18,
+            }
+    );
+    vision_ui_font_set_subtitle(
+            vision_ui_font_t{.font = (void*) u8g2_font_my_chinese, .top_compensation = 0, .bottom_compensation = 3}
+    );
+    vision_ui_font_set(
+            vision_ui_font_t{.font = (void*) u8g2_font_my_chinese, .top_compensation = 0, .bottom_compensation = 0}
+    );
 
     vision_ui_list_item_t* root = vision_ui_list_item_new(15, false, "VisionUI");
 
@@ -309,7 +319,7 @@ int main() {
             launcher_setting_list_item, vision_ui_list_switch_item_new("Invert Display", false, [](bool b) {})
     );
 
-    vision_ui_start_logo_set(BITMAP_30X30, 5000);
+    vision_ui_start_logo_set(BITMAP_30X30, 500);
 
     vision_ui_render_init();
 

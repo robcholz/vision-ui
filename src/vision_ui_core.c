@@ -461,20 +461,20 @@ void vision_ui_step_render() {
     last_tick = now;
 
     switch (vision_ui_driver_action_get()) {
-        case UI_ACTION_GO_PREV:
+        case UiActionGoPrev:
             if (!vision_ui_is_background_frozen()) {
                 vision_ui_selector_go_prev_item();
             }
             break;
-        case UI_ACTION_GO_NEXT:
+        case UiActionGoNext:
             if (!vision_ui_is_background_frozen()) {
                 vision_ui_selector_go_next_item();
             }
             break;
-        case UI_ACTION_EXIT:
+        case UiActionExit:
             vision_ui_selector_exit_current_item();
             break;
-        case UI_ACTION_ENTER:
+        case UiActionEnter:
             if (!vision_ui_is_background_frozen()) {
                 vision_ui_selector_jump_to_selected_item();
             }
