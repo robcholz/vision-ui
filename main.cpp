@@ -174,13 +174,11 @@ int main() {
 
     vision_ui_allocator_set(allocator);
 
-    vision_ui_font_set_title(
-            vision_ui_font_t{
-                    .font = (void*) u8g2_font_fub42_tf,
-                    .top_compensation = -2,
-                    .bottom_compensation = 18,
-            }
-    );
+    vision_ui_font_set_title(vision_ui_font_t{
+            .font = (void*) u8g2_font_fub42_tf,
+            .top_compensation = -2,
+            .bottom_compensation = 18,
+    });
     vision_ui_font_set_subtitle(
             vision_ui_font_t{.font = (void*) u8g2_font_my_chinese, .top_compensation = 0, .bottom_compensation = 3}
     );
