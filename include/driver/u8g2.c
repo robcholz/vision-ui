@@ -57,11 +57,17 @@ void vision_ui_driver_bind(void* driver) {
 
 static int8_t STR_TOP = 0;
 static int8_t STR_BOTTOM = 0;
+static vision_ui_font_t CURRENT;
 
 void vision_ui_driver_font_set(const vision_ui_font_t font) {
     u8g2_SetFont(S_U8G2, font.font);
+    CURRENT = font;
     STR_TOP = font.top_compensation;
     STR_BOTTOM = font.bottom_compensation;
+}
+
+vision_ui_font_t vision_ui_driver_font_get() {
+    return CURRENT;
 }
 
 void vision_ui_driver_str_draw(uint16_t x, const uint16_t y, const char* str) {

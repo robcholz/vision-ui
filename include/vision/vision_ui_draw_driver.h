@@ -19,6 +19,8 @@ extern void vision_ui_driver_bind(void* driver);
 
 extern void vision_ui_driver_font_set(vision_ui_font_t font);
 
+extern vision_ui_font_t vision_ui_driver_font_get();
+
 extern void vision_ui_driver_str_draw(uint16_t x, uint16_t y, const char* str);
 
 extern void vision_ui_driver_str_utf8_draw(uint16_t x, uint16_t y, const char* str);
