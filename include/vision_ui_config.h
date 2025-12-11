@@ -162,31 +162,6 @@
 #define VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S 15 // the scrolling speed of text, in pixel per second
 #endif
 
-#ifdef CONFIG_VISION_UI_LIST_FOOTER_MAX_HEIGHT
-#define VISION_UI_LIST_FOOTER_MAX_HEIGHT CONFIG_VISION_UI_LIST_FOOTER_MAX_HEIGHT
-#else
-#define VISION_UI_LIST_FOOTER_MAX_HEIGHT                                                                               \
-    11 // the max height of the footer, this should be smaller than the frame height
-#endif
-
-#ifdef CONFIG_VISION_UI_LIST_FOOTER_MAX_WIDTH
-#define VISION_UI_LIST_FOOTER_MAX_WIDTH CONFIG_VISION_UI_LIST_FOOTER_MAX_WIDTH
-#else
-#define VISION_UI_LIST_FOOTER_MAX_WIDTH 19 // the max width of the footer
-#endif
-
-#ifdef CONFIG_VISION_UI_LIST_HEADER_MAX_HEIGHT
-#define VISION_UI_LIST_HEADER_MAX_HEIGHT CONFIG_VISION_UI_LIST_HEADER_MAX_HEIGHT
-#else
-#define VISION_UI_LIST_HEADER_MAX_HEIGHT 7 // the max height of the header, this should be smaller than the frame height
-#endif
-
-#ifdef CONFIG_VISION_UI_LIST_HEADER_MAX_WIDTH
-#define VISION_UI_LIST_HEADER_MAX_WIDTH CONFIG_VISION_UI_LIST_HEADER_MAX_WIDTH
-#else
-#define VISION_UI_LIST_HEADER_MAX_WIDTH 7 // the max width of the footer
-#endif
-
 #ifdef CONFIG_VISION_UI_LIST_FRAME_FIXED_HEIGHT
 #define VISION_UI_LIST_FRAME_FIXED_HEIGHT CONFIG_VISION_UI_LIST_FRAME_FIXED_HEIGHT
 #else
@@ -293,6 +268,17 @@
 // fixed properties
 #define VISION_UI_LIST_SCROLL_BAR_WIDTH 3
 #define VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED 92
+
+#define VISION_UI_LIST_FOOTER_MAX_HEIGHT                                                                               \
+    vision_ui_list_icon_get_current()                                                                                  \
+            .footer_max_height // the max height of the footer, this should be smaller than the frame height
+#define VISION_UI_LIST_FOOTER_MAX_WIDTH                                                                                \
+    vision_ui_list_icon_get_current().footer_max_width // the max width of the footer
+#define VISION_UI_LIST_HEADER_MAX_HEIGHT                                                                               \
+    vision_ui_list_icon_get_current()                                                                                  \
+            .header_max_height // the max height of the header, this should be smaller than the frame height
+#define VISION_UI_LIST_HEADER_MAX_WIDTH                                                                                \
+    vision_ui_list_icon_get_current().header_max_width // the max width of the footer
 
 // derived properties
 #define VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING                                                                    \

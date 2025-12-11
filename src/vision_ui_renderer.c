@@ -14,6 +14,114 @@
 #include "vision_ui_draw_driver.h"
 #include "vision_ui_item.h"
 
+static const uint8_t HEADER_LIST_ITEM[7] = {
+        0b0000000,
+        0b0011110,
+        0b0000000,
+        0b0111110,
+        0b0000000,
+        0b0001110,
+        0b0000000,
+};
+
+static const uint8_t HEADER_SWITCH_ITEM[7] = {
+        0b0011100,
+        0b0100010,
+        0b1001001,
+        0b1001001,
+        0b1001001,
+        0b0100010,
+        0b0011100,
+};
+
+static const uint8_t HEADER_SLIDER_ITEM[7] = {
+        0b0001110,
+        0b0101110,
+        0b0101110,
+        0b0100100,
+        0b1110100,
+        0b1110100,
+        0b1110000,
+};
+
+static const uint8_t HEADER_OTHER_ITEM[7] = {
+        0b0000000,
+        0b0000000,
+        0b0000000,
+        0b0011100,
+        0b0000000,
+        0b0000000,
+        0b0000000,
+};
+
+static const uint8_t FOOTER_SWITCH_OFF[19][3] = {
+        {0b00000000, 0b00000000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00000000, 0b00000000, 0b00000000},
+};
+
+static const uint8_t FOOTER_SWITCH_ON[19][3] = {
+        {0b00000000, 0b00000000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b10100000, 0b00101111, 0b00000000},
+        {0b00100000, 0b00100000, 0b00000000},
+        {0b11100000, 0b00111111, 0b00000000},
+        {0b00000000, 0b00000000, 0b00000000},
+};
+
+static const uint8_t FOOTER_SLIDER[19][3] = {
+        {0b00000000, 0b00000000, 0b00000000},
+        {0b11111110, 0b11111111, 0b00000011},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111111, 0b11111111, 0b00000111},
+        {0b11111110, 0b11111111, 0b00000011},
+};
+
+vision_ui_icon_t DEFAULT_LIST_ICON = {
+        .list_header = (uint8_t*) HEADER_LIST_ITEM,
+        .switch_header = (uint8_t*) HEADER_OTHER_ITEM,
+        .slider_header = (uint8_t*) HEADER_SLIDER_ITEM,
+        .default_header = (uint8_t*) HEADER_OTHER_ITEM,
+        .switch_on_footer = (uint8_t*) FOOTER_SWITCH_ON,
+        .switch_off_footer = (uint8_t*) FOOTER_SWITCH_OFF,
+        .slider_footer = (uint8_t*) FOOTER_SLIDER,
+
+        .header_max_width = 7,
+        .header_max_height = 7,
+
+        .footer_max_width = 20,
+        .footer_max_height = 19,
+};
+
+static struct vision_ui_list_icon_t LIST_ICON;
+
+extern void vision_ui_list_icon_set(const vision_ui_icon_t icon) {
+    LIST_ICON = icon;
+}
+
+vision_ui_icon_t vision_ui_list_icon_get_current() {
+    return LIST_ICON;
+}
+
 typedef struct {
     uint8_t total;
     uint8_t col[3];
@@ -551,137 +659,79 @@ static void vision_ui_text_list_item_draw(
 }
 
 static void vision_ui_draw_list_header() {
-    static const uint8_t header_list_item[VISION_UI_LIST_HEADER_MAX_HEIGHT] = {
-            0b0000000,
-            0b0011110,
-            0b0000000,
-            0b0111110,
-            0b0000000,
-            0b0001110,
-            0b0000000,
-    };
-
-    static const uint8_t header_switch_item[VISION_UI_LIST_HEADER_MAX_HEIGHT] = {
-            0b0011100,
-            0b0100010,
-            0b1001001,
-            0b1001001,
-            0b1001001,
-            0b0100010,
-            0b0011100,
-    };
-
-    static const uint8_t header_slider_item[VISION_UI_LIST_HEADER_MAX_HEIGHT] = {
-            0b0001110,
-            0b0101110,
-            0b0101110,
-            0b0100100,
-            0b1110100,
-            0b1110100,
-            0b1110000,
-    };
-
-    static const uint8_t header_other_item[VISION_UI_LIST_HEADER_MAX_HEIGHT] = {
-            0b0000000,
-            0b0000000,
-            0b0000000,
-            0b0011100,
-            0b0000000,
-            0b0000000,
-            0b0000000,
-    };
-
     for (uint8_t i = 0; i < vision_ui_selector_mutable_instance_get()->selected_item->parent->child_num; i++) {
         const vision_ui_list_item_t* current_list_item =
                 vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
         const int16_t x_list_item =
                 vision_ui_camera_instance_get()->x_camera + VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING;
         const int16_t y_list_item = current_list_item->y_list_item + vision_ui_camera_instance_get()->y_camera +
-                                    (VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_HEADER_MAX_HEIGHT) / 2;
+                                    (VISION_UI_LIST_FRAME_FIXED_HEIGHT - LIST_ICON.header_max_height) / 2;
         // draw header
         vision_ui_driver_color_draw(1);
         const uint16_t header_base_x = x_list_item;
         if (current_list_item->type == ListItem) {
-            vision_ui_driver_bmp_draw(
-                    header_base_x,
-                    y_list_item,
-                    VISION_UI_LIST_HEADER_MAX_WIDTH,
-                    VISION_UI_LIST_HEADER_MAX_HEIGHT,
-                    header_list_item
-            );
+            if (vision_ui_list_icon_get_current().list_header == NULL) {
+                vision_ui_driver_frame_draw(
+                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                );
+            } else {
+                vision_ui_driver_bmp_draw(
+                        header_base_x,
+                        y_list_item,
+                        VISION_UI_LIST_HEADER_MAX_WIDTH,
+                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.list_header
+                );
+            }
         } else if (current_list_item->type == SwitchItem) {
-            vision_ui_driver_bmp_draw(
-                    header_base_x,
-                    y_list_item,
-                    VISION_UI_LIST_HEADER_MAX_WIDTH,
-                    VISION_UI_LIST_HEADER_MAX_HEIGHT,
-                    header_switch_item
-            );
+            if (vision_ui_list_icon_get_current().switch_header == NULL) {
+                vision_ui_driver_frame_draw(
+                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                );
+            } else {
+                vision_ui_driver_bmp_draw(
+                        header_base_x,
+                        y_list_item,
+                        VISION_UI_LIST_HEADER_MAX_WIDTH,
+                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.switch_header
+                );
+            }
         } else if (current_list_item->type == SliderItem) {
-            vision_ui_driver_bmp_draw(
-                    header_base_x,
-                    y_list_item,
-                    VISION_UI_LIST_HEADER_MAX_WIDTH,
-                    VISION_UI_LIST_HEADER_MAX_HEIGHT,
-                    header_slider_item
-            );
+            if (vision_ui_list_icon_get_current().slider_header == NULL) {
+                vision_ui_driver_frame_draw(
+                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                );
+            } else {
+                vision_ui_driver_bmp_draw(
+                        header_base_x,
+                        y_list_item,
+                        VISION_UI_LIST_HEADER_MAX_WIDTH,
+                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.slider_header
+                );
+            }
         } else if (current_list_item->type == TitleItem) {
             // do nothing
         } else {
-            vision_ui_driver_bmp_draw(
-                    header_base_x,
-                    y_list_item,
-                    VISION_UI_LIST_HEADER_MAX_WIDTH,
-                    VISION_UI_LIST_HEADER_MAX_HEIGHT,
-                    header_other_item
-            );
+            if (vision_ui_list_icon_get_current().default_header == NULL) {
+                vision_ui_driver_frame_draw(
+                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                );
+            } else {
+                vision_ui_driver_bmp_draw(
+                        header_base_x,
+                        y_list_item,
+                        VISION_UI_LIST_HEADER_MAX_WIDTH,
+                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.default_header
+                );
+            }
         }
     }
 }
 
 static void vision_ui_draw_list_footer() {
-    static const uint8_t footer_switch_off[VISION_UI_LIST_FOOTER_MAX_HEIGHT][3] = {
-            {0b00000000, 0b00000000, 0b00000000},
-            {0b11100000, 0b00111111, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b11100000, 0b00111111, 0b00000000},
-            {0b00000000, 0b00000000, 0b00000000},
-    };
-
-    static const uint8_t footer_switch_on[VISION_UI_LIST_FOOTER_MAX_HEIGHT][3] = {
-            {0b00000000, 0b00000000, 0b00000000},
-            {0b11100000, 0b00111111, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b10100000, 0b00101111, 0b00000000},
-            {0b10100000, 0b00101111, 0b00000000},
-            {0b10100000, 0b00101111, 0b00000000},
-            {0b10100000, 0b00101111, 0b00000000},
-            {0b10100000, 0b00101111, 0b00000000},
-            {0b00100000, 0b00100000, 0b00000000},
-            {0b11100000, 0b00111111, 0b00000000},
-            {0b00000000, 0b00000000, 0b00000000},
-    };
-
-    static const uint8_t footer_slider[VISION_UI_LIST_FOOTER_MAX_HEIGHT][3] = {
-            {0b00000000, 0b00000000, 0b00000000},
-            {0b11111110, 0b11111111, 0b00000011},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111111, 0b11111111, 0b00000111},
-            {0b11111110, 0b11111111, 0b00000011},
-    };
-
     for (uint8_t i = 0; i < vision_ui_selector_instance_get()->selected_item->parent->child_num; i++) {
         vision_ui_list_item_t* current_list_item =
                 vision_ui_selector_instance_get()->selected_item->parent->child_list_item[i];
@@ -696,22 +746,34 @@ static void vision_ui_draw_list_footer() {
         } else if (current_list_item->type == SwitchItem) {
             if (vision_ui_to_list_switch_item(current_list_item)->value == true) {
                 vision_ui_driver_color_draw(1);
-                vision_ui_driver_bmp_draw(
-                        frame_x,
-                        frame_y,
-                        VISION_UI_LIST_FOOTER_MAX_WIDTH,
-                        VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                        (uint8_t*) footer_switch_on
-                );
+                if (vision_ui_list_icon_get_current().switch_on_footer == NULL) {
+                    vision_ui_driver_frame_draw(
+                            frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT
+                    );
+                } else {
+                    vision_ui_driver_bmp_draw(
+                            frame_x,
+                            frame_y,
+                            VISION_UI_LIST_FOOTER_MAX_WIDTH,
+                            VISION_UI_LIST_FOOTER_MAX_HEIGHT,
+                            vision_ui_list_icon_get_current().switch_on_footer
+                    );
+                }
             } else {
                 vision_ui_driver_color_draw(1);
-                vision_ui_driver_bmp_draw(
-                        frame_x,
-                        frame_y,
-                        VISION_UI_LIST_FOOTER_MAX_WIDTH,
-                        VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                        (uint8_t*) footer_switch_off
-                );
+                if (vision_ui_list_icon_get_current().switch_off_footer == NULL) {
+                    vision_ui_driver_frame_draw(
+                            frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT
+                    );
+                } else {
+                    vision_ui_driver_bmp_draw(
+                            frame_x,
+                            frame_y,
+                            VISION_UI_LIST_FOOTER_MAX_WIDTH,
+                            VISION_UI_LIST_FOOTER_MAX_HEIGHT,
+                            vision_ui_list_icon_get_current().switch_off_footer
+                    );
+                }
             }
         } else if (current_list_item->type == SliderItem) {
             const uint16_t shrink_width = VISION_UI_LIST_FOOTER_MAX_WIDTH - 4;
@@ -741,7 +803,7 @@ static void vision_ui_draw_list_footer() {
                         frame_y,
                         VISION_UI_LIST_FOOTER_MAX_WIDTH,
                         VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                        (uint8_t*) footer_slider
+                        vision_ui_list_icon_get_current().slider_footer
                 );
             }
         }
