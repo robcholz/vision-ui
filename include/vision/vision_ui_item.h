@@ -181,11 +181,15 @@ typedef enum { VisionAllocMalloc, VisionAllocCalloc, VisionAllocFree } vision_al
 
 extern void vision_ui_allocator_set(void* (*allocator)(vision_alloc_op_t op, size_t size, size_t count, void* ptr));
 
+extern void vision_ui_minifont_set(vision_ui_font_t font);
+
 extern void vision_ui_font_set(vision_ui_font_t font);
 
 extern void vision_ui_font_set_title(vision_ui_font_t font);
 
 extern void vision_ui_font_set_subtitle(vision_ui_font_t font);
+
+extern vision_ui_font_t vision_ui_minifont_get();
 
 extern vision_ui_font_t vision_ui_font_get();
 

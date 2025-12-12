@@ -12,6 +12,7 @@
 #include "vision_ui_core.h"
 #include "vision_ui_draw_driver.h"
 
+static vision_ui_font_t VISION_UI_MINIFONT;
 static vision_ui_font_t VISION_UI_FONT;
 static vision_ui_font_t VISION_UI_TITLE_FONT;
 static vision_ui_font_t VISION_UI_SUBTITLE_FONT;
@@ -46,6 +47,12 @@ static void vision_ui_free(void* ptr) {
     ALLOCATOR(VisionAllocFree, 0, 0, ptr);
 }
 
+void vision_ui_minifont_set(vision_ui_font_t font) {
+    if (memcmp(&font, &VISION_UI_FONT, sizeof(vision_ui_font_t)) != 0) {
+        VISION_UI_MINIFONT = font;
+    }
+}
+
 void vision_ui_font_set(const vision_ui_font_t font) {
     if (memcmp(&font, &VISION_UI_FONT, sizeof(vision_ui_font_t)) != 0) {
         VISION_UI_FONT = font;
@@ -62,6 +69,10 @@ void vision_ui_font_set_subtitle(const vision_ui_font_t font) {
     if (memcmp(&font, &VISION_UI_SUBTITLE_FONT, sizeof(vision_ui_font_t)) != 0) {
         VISION_UI_SUBTITLE_FONT = font;
     }
+}
+
+vision_ui_font_t vision_ui_minifont_get() {
+    return VISION_UI_MINIFONT;
 }
 
 vision_ui_font_t vision_ui_font_get() {
