@@ -35,6 +35,8 @@ extern void vision_ui_driver_pixel_draw(uint16_t x, uint16_t y);
 
 extern void vision_ui_driver_circle_draw(uint16_t x, uint16_t y, uint16_t r);
 
+extern void vision_ui_driver_disc_draw(uint16_t x, uint16_t y, uint16_t r);
+
 extern void vision_ui_driver_box_r_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r);
 
 extern void vision_ui_driver_box_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h);

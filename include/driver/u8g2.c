@@ -104,6 +104,10 @@ void vision_ui_driver_circle_draw(uint16_t x, uint16_t y, uint16_t r) {
     u8g2_DrawCircle(S_U8G2, x, y, r, U8G2_DRAW_ALL);
 }
 
+void vision_ui_driver_disc_draw(uint16_t x, uint16_t y, uint16_t r) {
+    u8g2_DrawDisc(S_U8G2, x, y, r, U8G2_DRAW_ALL);
+}
+
 void vision_ui_driver_box_r_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t r) {
     u8g2_DrawRBox(S_U8G2, x, y, w, h, r);
 }
