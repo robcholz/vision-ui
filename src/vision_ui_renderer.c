@@ -780,9 +780,7 @@ static void vision_ui_draw_list_footer() {
             if (vision_ui_to_list_switch_item(current_list_item)->value == true) {
                 vision_ui_driver_color_draw(1);
                 if (vision_ui_list_icon_get_current().switch_on_footer == NULL) {
-                    vision_ui_driver_frame_draw(
-                            frame_x, frame_y, LIST_ICON.footer_width, LIST_ICON.footer_height
-                    );
+                    vision_ui_driver_frame_draw(frame_x, frame_y, LIST_ICON.footer_width, LIST_ICON.footer_height);
                 } else {
                     vision_ui_driver_bmp_draw(
                             frame_x,
@@ -795,9 +793,7 @@ static void vision_ui_draw_list_footer() {
             } else {
                 vision_ui_driver_color_draw(1);
                 if (vision_ui_list_icon_get_current().switch_off_footer == NULL) {
-                    vision_ui_driver_frame_draw(
-                            frame_x, frame_y, LIST_ICON.footer_width, LIST_ICON.footer_height
-                    );
+                    vision_ui_driver_frame_draw(frame_x, frame_y, LIST_ICON.footer_width, LIST_ICON.footer_height);
                 } else {
                     vision_ui_driver_bmp_draw(
                             frame_x,
