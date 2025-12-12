@@ -73,8 +73,16 @@ static void vision_ui_camera_position_update(const float delta_ms) {
         return;
     }
 
-    const bool icon_view_active =
-            selector->selected_item->parent != NULL && selector->selected_item->parent->icon_view_mode;
+    const vision_ui_list_item_t* selected_item = selector->selected_item;
+    bool icon_view_active = false;
+    if (selected_item->parent != NULL && selected_item->parent->icon_view_mode) {
+        icon_view_active = true;
+    } else if (selected_item->parent != NULL && selected_item->parent->type == IconItem &&
+               selected_item->parent->child_num == 1 && selected_item->parent->parent != NULL &&
+               selected_item->parent->parent->icon_view_mode &&
+               selected_item->parent->child_list_item[0]->type == UserItem) {
+        icon_view_active = true;
+    }
     if (icon_view_active) {
         vision_ui_camera_instance_x_trg_set(0);
         vision_ui_camera_instance_y_trg_set(0);
@@ -186,6 +194,12 @@ static void vision_ui_list_item_position_update(const float delta_ms) {
     }
 
     vision_ui_list_item_t* parent = selector->selected_item->parent;
+    const vision_ui_list_item_t* selected_icon_item = selector->selected_item;
+    if (parent != NULL && parent->type == IconItem && parent->child_num == 1 && parent->parent != NULL &&
+        parent->parent->icon_view_mode && parent->child_list_item[0]->type == UserItem) {
+        selected_icon_item = parent;
+        parent = parent->parent;
+    }
     if (parent == NULL) {
         return;
     }
@@ -198,7 +212,7 @@ static void vision_ui_list_item_position_update(const float delta_ms) {
 
             item->title_y_trg = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
 
-            const bool is_selected = parent->child_list_item[i] == selector->selected_item;
+            const bool is_selected = parent->child_list_item[i] == selected_icon_item;
             item->title_y_trg = is_selected ? 0.f : VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
             vision_ui_animation_2nd_ode_slight_overshoot(
                     &item->title_y,
@@ -373,16 +387,38 @@ static void vision_ui_main_core_step(const float delta_ms) {
 
     // 切换in user item的逻辑
     if (vision_ui_exit_animation_is_finished()) {
-        if (vision_ui_selector_instance_get()->selected_item->type == UserItem) {
-            vision_ui_user_item_t* selected_user_item =
-                    vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
+        vision_ui_selector_t* selector_mut = vision_ui_selector_mutable_instance_get();
+        if (selector_mut->selected_item->type == UserItem) {
+            vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(selector_mut->selected_item);
             if (selected_user_item->entering_user_item) {
                 selected_user_item->in_user_item = 1;
+                selected_user_item->entering_user_item = false;
             } else if (selected_user_item->exiting_user_item) {
                 if (selected_user_item->user_item_inited && selected_user_item->user_item_looping) {
                     selected_user_item->exit_function();
                 }
                 selected_user_item->in_user_item = 0;
+
+                // when the user item was entered directly from an icon item with a single child,
+                // exit back to that icon instead of showing the intermediate list
+                vision_ui_list_item_t* icon_item = selector_mut->selected_item->parent;
+                const bool is_single_user_child = icon_item != NULL && icon_item->type == IconItem &&
+                                                  icon_item->child_num == 1 &&
+                                                  icon_item->child_list_item[0]->type == UserItem;
+                if (is_single_user_child && icon_item != NULL && icon_item->parent != NULL &&
+                    icon_item->parent->icon_view_mode) {
+                    const vision_ui_list_item_t* icon_list = icon_item->parent;
+                    uint8_t icon_index = 0;
+                    for (uint8_t i = 0; i < icon_list->child_num; ++i) {
+                        if (icon_list->child_list_item[i] == icon_item) {
+                            icon_index = i;
+                            break;
+                        }
+                    }
+                    selector_mut->selected_item = icon_item;
+                    selector_mut->selected_index = icon_index;
+                }
+                selected_user_item->exiting_user_item = false;
             }
         }
     }

@@ -455,6 +455,35 @@ void vision_ui_selector_jump_to_selected_item() {
         }
     }
 
+    if (VISION_UI_SELECTOR.selected_item->type == IconItem && VISION_UI_SELECTOR.selected_item->child_num == 1) {
+        vision_ui_list_item_t* only_child = VISION_UI_SELECTOR.selected_item->child_list_item[0];
+        if (only_child->type == UserItem) {
+            vision_ui_exit_animation_start();
+
+            // jump directly into the user item instead of showing its list wrapper
+            only_child->y_list_item = 0;
+            uint8_t icon_index = 0;
+            if (VISION_UI_SELECTOR.selected_item->parent != NULL) {
+                for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->child_num; ++i) {
+                    if (VISION_UI_SELECTOR.selected_item->parent->child_list_item[i] ==
+                        VISION_UI_SELECTOR.selected_item) {
+                        icon_index = i;
+                        break;
+                    }
+                }
+            }
+            VISION_UI_SELECTOR.selected_index = icon_index;
+            VISION_UI_SELECTOR.selected_item = only_child;
+
+            vision_ui_user_item_t* user_item = vision_ui_to_list_user_item(only_child);
+            user_item->entering_user_item = true;
+            user_item->exiting_user_item = false;
+            user_item->user_item_inited = false;
+            user_item->user_item_looping = false;
+            return;
+        }
+    }
+
     if (VISION_UI_SELECTOR.selected_item->child_num == 0) {
         return;
     }
