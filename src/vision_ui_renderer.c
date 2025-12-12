@@ -703,42 +703,42 @@ static void vision_ui_draw_list_header() {
         if (current_list_item->type == ListItem) {
             if (vision_ui_list_icon_get_current().list_header == NULL) {
                 vision_ui_driver_frame_draw(
-                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                        header_base_x, y_list_item, LIST_ICON.header_max_width, LIST_ICON.header_max_height
                 );
             } else {
                 vision_ui_driver_bmp_draw(
                         header_base_x,
                         y_list_item,
-                        VISION_UI_LIST_HEADER_MAX_WIDTH,
-                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.header_max_width,
+                        LIST_ICON.header_max_height,
                         LIST_ICON.list_header
                 );
             }
         } else if (current_list_item->type == SwitchItem) {
             if (vision_ui_list_icon_get_current().switch_header == NULL) {
                 vision_ui_driver_frame_draw(
-                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                        header_base_x, y_list_item, LIST_ICON.header_max_width, LIST_ICON.header_max_height
                 );
             } else {
                 vision_ui_driver_bmp_draw(
                         header_base_x,
                         y_list_item,
-                        VISION_UI_LIST_HEADER_MAX_WIDTH,
-                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.header_max_width,
+                        LIST_ICON.header_max_height,
                         LIST_ICON.switch_header
                 );
             }
         } else if (current_list_item->type == SliderItem) {
             if (vision_ui_list_icon_get_current().slider_header == NULL) {
                 vision_ui_driver_frame_draw(
-                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                        header_base_x, y_list_item, LIST_ICON.header_max_width, LIST_ICON.header_max_height
                 );
             } else {
                 vision_ui_driver_bmp_draw(
                         header_base_x,
                         y_list_item,
-                        VISION_UI_LIST_HEADER_MAX_WIDTH,
-                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.header_max_width,
+                        LIST_ICON.header_max_height,
                         LIST_ICON.slider_header
                 );
             }
@@ -747,14 +747,14 @@ static void vision_ui_draw_list_header() {
         } else {
             if (vision_ui_list_icon_get_current().default_header == NULL) {
                 vision_ui_driver_frame_draw(
-                        header_base_x, y_list_item, VISION_UI_LIST_HEADER_MAX_WIDTH, VISION_UI_LIST_HEADER_MAX_HEIGHT
+                        header_base_x, y_list_item, LIST_ICON.header_max_width, LIST_ICON.header_max_height
                 );
             } else {
                 vision_ui_driver_bmp_draw(
                         header_base_x,
                         y_list_item,
-                        VISION_UI_LIST_HEADER_MAX_WIDTH,
-                        VISION_UI_LIST_HEADER_MAX_HEIGHT,
+                        LIST_ICON.header_max_width,
+                        LIST_ICON.header_max_height,
                         LIST_ICON.default_header
                 );
             }
@@ -770,7 +770,9 @@ static void vision_ui_draw_list_footer() {
 
         // draw header
         const int16_t frame_x = VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_SCROLL_BAR_WIDTH -
-                                VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING - VISION_UI_LIST_FOOTER_MAX_WIDTH;
+                                VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING -
+                                (current_list_item->type != SliderItem ? VISION_UI_LIST_FOOTER_MAX_WIDTH
+                                                                       : VISION_UI_LIST_SLIDER_FOOTER_WIDTH);
         const int16_t frame_y =
                 y_list_item + (VISION_UI_LIST_FRAME_FIXED_HEIGHT - VISION_UI_LIST_FOOTER_MAX_HEIGHT) / 2;
         if (current_list_item->type == ListItem) {
@@ -779,14 +781,14 @@ static void vision_ui_draw_list_footer() {
                 vision_ui_driver_color_draw(1);
                 if (vision_ui_list_icon_get_current().switch_on_footer == NULL) {
                     vision_ui_driver_frame_draw(
-                            frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT
+                            frame_x, frame_y, LIST_ICON.footer_max_width, LIST_ICON.footer_max_height
                     );
                 } else {
                     vision_ui_driver_bmp_draw(
                             frame_x,
                             frame_y,
-                            VISION_UI_LIST_FOOTER_MAX_WIDTH,
-                            VISION_UI_LIST_FOOTER_MAX_HEIGHT,
+                            LIST_ICON.footer_max_width,
+                            LIST_ICON.footer_max_height,
                             vision_ui_list_icon_get_current().switch_on_footer
                     );
                 }
@@ -794,21 +796,21 @@ static void vision_ui_draw_list_footer() {
                 vision_ui_driver_color_draw(1);
                 if (vision_ui_list_icon_get_current().switch_off_footer == NULL) {
                     vision_ui_driver_frame_draw(
-                            frame_x, frame_y, VISION_UI_LIST_FOOTER_MAX_WIDTH, VISION_UI_LIST_FOOTER_MAX_HEIGHT
+                            frame_x, frame_y, LIST_ICON.footer_max_width, LIST_ICON.footer_max_height
                     );
                 } else {
                     vision_ui_driver_bmp_draw(
                             frame_x,
                             frame_y,
-                            VISION_UI_LIST_FOOTER_MAX_WIDTH,
-                            VISION_UI_LIST_FOOTER_MAX_HEIGHT,
+                            LIST_ICON.footer_max_width,
+                            LIST_ICON.footer_max_height,
                             vision_ui_list_icon_get_current().switch_off_footer
                     );
                 }
             }
         } else if (current_list_item->type == SliderItem) {
-            const uint16_t shrink_width = VISION_UI_LIST_FOOTER_MAX_WIDTH - 4;
-            const int16_t footer_x0 = frame_x + (VISION_UI_LIST_FOOTER_MAX_WIDTH - shrink_width) / 2;
+            const uint16_t shrink_width = VISION_UI_LIST_SLIDER_FOOTER_WIDTH - 4;
+            const int16_t footer_x0 = frame_x + (VISION_UI_LIST_SLIDER_FOOTER_WIDTH - shrink_width) / 2;
             const int16_t footer_y0 = frame_y;
             const int16_t footer_x1 = footer_x0 + shrink_width;
             const int16_t footer_y1 = footer_y0 + VISION_UI_LIST_FOOTER_MAX_HEIGHT;
@@ -829,13 +831,19 @@ static void vision_ui_draw_list_footer() {
             );
             if (vision_ui_to_list_slider_item(current_list_item)->is_confirmed) {
                 vision_ui_driver_color_draw(2);
-                vision_ui_driver_bmp_draw(
-                        frame_x,
-                        frame_y,
-                        VISION_UI_LIST_FOOTER_MAX_WIDTH,
-                        VISION_UI_LIST_FOOTER_MAX_HEIGHT,
-                        vision_ui_list_icon_get_current().slider_footer
-                );
+                if (vision_ui_list_icon_get_current().slider_footer == NULL) {
+                    vision_ui_driver_frame_draw(
+                            frame_x, frame_y, VISION_UI_LIST_SLIDER_FOOTER_WIDTH, LIST_ICON.footer_max_height
+                    );
+                } else {
+                    vision_ui_driver_bmp_draw(
+                            frame_x,
+                            frame_y,
+                            VISION_UI_LIST_SLIDER_FOOTER_WIDTH,
+                            LIST_ICON.footer_max_height,
+                            vision_ui_list_icon_get_current().slider_footer
+                    );
+                }
             }
         }
     }
@@ -864,7 +872,7 @@ static void vision_ui_list_item_render() {
                 current_list_item,
                 frame_x,
                 frame_y,
-                frame_x + VISION_UI_LIST_TEXT_MAX_WIDTH,
+                frame_x + VISION_UI_LIST_TEXT_MAX_WIDTH(current_list_item),
                 y_list_item + VISION_UI_LIST_FRAME_FIXED_HEIGHT
         );
     }

@@ -333,7 +333,8 @@ static void vision_ui_selector_position_update(const float delta_ms) {
     vision_ui_selector_mutable_instance_get()->y_selector_trg =
             vision_ui_selector_instance_get()->selected_item->y_list_item_trg;
     const uint16_t selector_max_width =
-            VISION_UI_LIST_HEADER_MAX_WIDTH + VISION_UI_LIST_HEADER_TO_TEXT_PADDING + VISION_UI_LIST_TEXT_MAX_WIDTH +
+            VISION_UI_LIST_HEADER_MAX_WIDTH + VISION_UI_LIST_HEADER_TO_TEXT_PADDING +
+            VISION_UI_LIST_TEXT_MAX_WIDTH(vision_ui_selector_instance_get()->selected_item) +
             VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING + VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING;
     const uint16_t selector_current_width =
             vision_ui_selector_instance_get()->selected_item->type == TitleItem

@@ -100,11 +100,11 @@
 #define VISION_UI_LIST_FRAME_BETWEEN_PADDING 2 // the vertical padding between each item frame in the list view
 #endif
 
-#ifdef CONFIG_VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING
-#define VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING CONFIG_VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING
+#ifdef CONFIG_VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING
+#define VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING CONFIG_VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING
 #else
-#define VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING                                                             \
-    10 // the horizontal padding between the scroll bar and the center of the footer
+#define VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING                                                              \
+    10 // the horizontal padding between the scroll bar and the right of the footer
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_FOOTER_TO_LEFT_PADDING
@@ -160,6 +160,37 @@
 #define VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S CONFIG_VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S
 #else
 #define VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S 15 // the scrolling speed of text, in pixel per second
+#endif
+
+#ifdef CONFIG_VISION_UI_LIST_FOOTER_MAX_HEIGHT
+#define VISION_UI_LIST_FOOTER_MAX_HEIGHT CONFIG_VISION_UI_LIST_FOOTER_MAX_HEIGHT
+#else
+#define VISION_UI_LIST_FOOTER_MAX_HEIGHT                                                                               \
+    11 // the max height of the footer, this should be smaller than the frame height
+#endif
+
+#ifdef CONFIG_VISION_UI_LIST_FOOTER_MAX_WIDTH
+#define VISION_UI_LIST_FOOTER_MAX_WIDTH CONFIG_VISION_UI_LIST_FOOTER_MAX_WIDTH
+#else
+#define VISION_UI_LIST_FOOTER_MAX_WIDTH 19 // the max width of the footer
+#endif
+
+#ifdef CONFIG_VISION_UI_LIST_HEADER_MAX_HEIGHT
+#define VISION_UI_LIST_HEADER_MAX_HEIGHT CONFIG_VISION_UI_LIST_HEADER_MAX_HEIGHT
+#else
+#define VISION_UI_LIST_HEADER_MAX_HEIGHT 7 // the max height of the header, this should be smaller than the frame height
+#endif
+
+#ifdef CONFIG_VISION_UI_LIST_HEADER_MAX_WIDTH
+#define VISION_UI_LIST_HEADER_MAX_WIDTH CONFIG_VISION_UI_LIST_HEADER_MAX_WIDTH
+#else
+#define VISION_UI_LIST_HEADER_MAX_WIDTH 7 // the max width of the footer
+#endif
+
+#ifdef CONFIG_VISION_UI_LIST_SLIDER_FOOTER_WIDTH
+#define VISION_UI_LIST_SLIDER_FOOTER_WIDTH CONFIG_VISION_UI_LIST_SLIDER_FOOTER_WIDTH
+#else
+#define VISION_UI_LIST_SLIDER_FOOTER_WIDTH 10 // the max width of the footer
 #endif
 
 #ifdef CONFIG_VISION_UI_LIST_FRAME_FIXED_HEIGHT
@@ -269,22 +300,10 @@
 #define VISION_UI_LIST_SCROLL_BAR_WIDTH 3
 #define VISION_UI_LIST_SCROLL_BAR_ANIMATION_SPEED 92
 
-#define VISION_UI_LIST_FOOTER_MAX_HEIGHT                                                                               \
-    vision_ui_list_icon_get_current()                                                                                  \
-            .footer_max_height // the max height of the footer, this should be smaller than the frame height
-#define VISION_UI_LIST_FOOTER_MAX_WIDTH                                                                                \
-    vision_ui_list_icon_get_current().footer_max_width // the max width of the footer
-#define VISION_UI_LIST_HEADER_MAX_HEIGHT                                                                               \
-    vision_ui_list_icon_get_current()                                                                                  \
-            .header_max_height // the max height of the header, this should be smaller than the frame height
-#define VISION_UI_LIST_HEADER_MAX_WIDTH                                                                                \
-    vision_ui_list_icon_get_current().header_max_width // the max width of the footer
-
 // derived properties
-#define VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING                                                                    \
-    (VISION_UI_LIST_FOOTER_CENTER_TO_SCROLL_BAR_PADDING - VISION_UI_LIST_FOOTER_MAX_WIDTH / 2)
-#define VISION_UI_LIST_TEXT_MAX_WIDTH                                                                                  \
-    (VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_FOOTER_TO_SCROLL_BAR_PADDING - VISION_UI_LIST_FOOTER_MAX_WIDTH -          \
+#define VISION_UI_LIST_TEXT_MAX_WIDTH(currentListItem)                                                                 \
+    (VISION_UI_SCREEN_WIDTH - VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING -                                      \
+     (currentListItem->type == SliderItem ? VISION_UI_LIST_SLIDER_FOOTER_WIDTH : VISION_UI_LIST_FOOTER_MAX_WIDTH) -    \
      VISION_UI_LIST_FOOTER_TO_LEFT_PADDING - VISION_UI_LIST_HEADER_TO_TEXT_PADDING - VISION_UI_LIST_HEADER_MAX_WIDTH - \
      VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING)
 
