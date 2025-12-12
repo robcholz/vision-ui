@@ -159,6 +159,11 @@ typedef struct vision_ui_selector_t {
 
     vision_ui_list_item_t* scroll_bar_scale_parent;
     float scroll_bar_scale_part_shared;
+
+    // selection change deferred until exit动画结束，避免场景提前切换导致闪烁
+    bool has_pending_selection;
+    uint8_t pending_selected_index;
+    vision_ui_list_item_t* pending_selected_item;
 } vision_ui_selector_t;
 
 typedef struct vision_ui_camera_t {

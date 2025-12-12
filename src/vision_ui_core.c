@@ -385,9 +385,17 @@ static void vision_ui_main_core_step(const float delta_ms) {
         return;
     }
 
+    const bool exit_animation_finished = vision_ui_exit_animation_is_finished();
+
+    vision_ui_selector_t* selector_mut = vision_ui_selector_mutable_instance_get();
+    if (exit_animation_finished && selector_mut->has_pending_selection) {
+        selector_mut->selected_item = selector_mut->pending_selected_item;
+        selector_mut->selected_index = selector_mut->pending_selected_index;
+        selector_mut->has_pending_selection = false;
+    }
+
     // 切换in user item的逻辑
-    if (vision_ui_exit_animation_is_finished()) {
-        vision_ui_selector_t* selector_mut = vision_ui_selector_mutable_instance_get();
+    if (exit_animation_finished) {
         if (selector_mut->selected_item->type == UserItem) {
             vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(selector_mut->selected_item);
             if (selected_user_item->entering_user_item) {

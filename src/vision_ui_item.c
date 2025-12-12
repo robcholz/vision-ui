@@ -325,6 +325,12 @@ bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t* item) {
     return true;
 }
 
+static void vision_ui_selector_schedule_selection(vision_ui_list_item_t* target_item, uint8_t target_index) {
+    VISION_UI_SELECTOR.pending_selected_item = target_item;
+    VISION_UI_SELECTOR.pending_selected_index = target_index;
+    VISION_UI_SELECTOR.has_pending_selection = true;
+}
+
 void vision_ui_selector_go_next_item() {
     if (VISION_UI_SELECTOR.selected_item->type == SliderItem &&
         vision_ui_to_list_slider_item(VISION_UI_SELECTOR.selected_item)->is_confirmed) {
@@ -473,7 +479,7 @@ void vision_ui_selector_jump_to_selected_item() {
                 }
             }
             VISION_UI_SELECTOR.selected_index = icon_index;
-            VISION_UI_SELECTOR.selected_item = only_child;
+            vision_ui_selector_schedule_selection(only_child, icon_index);
 
             vision_ui_user_item_t* user_item = vision_ui_to_list_user_item(only_child);
             user_item->entering_user_item = true;
@@ -495,8 +501,7 @@ void vision_ui_selector_jump_to_selected_item() {
         VISION_UI_SELECTOR.selected_item->child_list_item[i]->y_list_item = 0;
     }
 
-    VISION_UI_SELECTOR.selected_index = 0;
-    VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->child_list_item[0];
+    vision_ui_selector_schedule_selection(VISION_UI_SELECTOR.selected_item->child_list_item[0], 0);
 }
 
 void vision_ui_selector_exit_current_item() {
@@ -546,8 +551,7 @@ void vision_ui_selector_exit_current_item() {
             break;
         }
     }
-    VISION_UI_SELECTOR.selected_index = temp_index;
-    VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->parent;
+    vision_ui_selector_schedule_selection(VISION_UI_SELECTOR.selected_item->parent, temp_index);
 }
 
 static vision_ui_list_item_t* ROOT_ITEM = NULL;
