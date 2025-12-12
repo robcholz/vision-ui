@@ -258,9 +258,7 @@ int main() {
     vision_ui_font_set_subtitle(
             vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 3}
     );
-    vision_ui_font_set(
-            vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 0}
-    );
+    vision_ui_font_set(vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 0});
     vision_ui_list_icon_set(DEFAULT_LIST_ICON);
 
     vision_ui_list_item_t* root = vision_ui_list_item_new(15, false, "VisionUI");
