@@ -142,7 +142,7 @@ const uint8_t BITMAP_30X30[30 * 4] = {
         0b00000000, 0b00000000, 0b00000010,
 };
 
-const uint8_t u8g2_font_my_chinese[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese"
+constexpr uint8_t MY_FONT[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese"
 ) = "\222\0\3\2\4\4\4\4\5\13\15\0\376\10\376\12\377\1d\2\331\4$ \5\0\230\26!\7\221\212"
     "\26\247\0\42\7\64\371\26\221)#\16\226\210\67Q\313\260D\275\14K\324\2$\17\245xV\331RQ"
     "\62QK\224\312\26\1%\20\226x\66Q\322EK\302\64\211\222.Z\2&\16\205\210VY\22%Y"
@@ -256,10 +256,10 @@ int main() {
             .bottom_compensation = 18,
     });
     vision_ui_font_set_subtitle(
-            vision_ui_font_t{.font = (void*) u8g2_font_my_chinese, .top_compensation = 0, .bottom_compensation = 3}
+            vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 3}
     );
     vision_ui_font_set(
-            vision_ui_font_t{.font = (void*) u8g2_font_my_chinese, .top_compensation = 0, .bottom_compensation = 0}
+            vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 0}
     );
     vision_ui_list_icon_set(DEFAULT_LIST_ICON);
 
