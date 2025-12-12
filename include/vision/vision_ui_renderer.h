@@ -26,11 +26,11 @@ typedef struct vision_ui_list_icon_t {
     uint8_t* switch_off_footer;
     uint8_t* slider_footer;
 
-    size_t header_max_width;
-    size_t header_max_height;
+    size_t header_width;
+    size_t header_height;
 
-    size_t footer_max_width;
-    size_t footer_max_height;
+    size_t footer_width;
+    size_t footer_height;
 } vision_ui_icon_t;
 
 extern vision_ui_icon_t DEFAULT_LIST_ICON;
