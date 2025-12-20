@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 typedef struct vision_ui_font_t {
-    void* font;
+    const void* font;
     int8_t top_compensation;
     int8_t bottom_compensation;
 } vision_ui_font_t;
