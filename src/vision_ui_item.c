@@ -631,7 +631,7 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
     return true;
 }
 
-static vision_ui_camera_t VISION_UI_CAMERA = {0, 0, 0, 0, 0}; // 在refresh加上camera的坐标
+static vision_ui_camera_t VISION_UI_CAMERA = {0, 0, 0, 0, 0, 0, NULL}; // 在refresh加上camera的坐标
 
 const vision_ui_camera_t* vision_ui_camera_instance_get() {
     return &VISION_UI_CAMERA;
