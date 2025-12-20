@@ -74,8 +74,6 @@ static void vision_ui_animation_2nd_ode(
     const float clamped_ms = raw_ms > 33.3333f ? 33.3333f : raw_ms;
     const float dt = clamped_ms / 1000.0f;
 
-    const float prev_err = x - pos_trg;
-
     const float omega_n = base_nat_freq + nat_freq_per_speed * speed;
     const float zeta = damping_ratio;
 
