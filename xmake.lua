@@ -20,7 +20,7 @@ end
 target("vision_ui")
 set_kind("static")
 add_files("src/*.c")
-add_includedirs("include","include/vision", { public = true })
+add_includedirs("include", "include/vision", { public = true })
 
 if has_config("simulator") then
     target("vision_ui_simulator")
@@ -29,8 +29,12 @@ if has_config("simulator") then
             "main.cpp",
             "components/u8g2/sys/sdl/common/u8x8_sdl_key.c"
     )
-    add_files("include/driver/*.c")
-    add_includedirs("components/u8g2/csrc", "components/u8g2/sys/sdl/common")
+    add_files("src/driver/*.c")
+    add_includedirs(
+            "components/u8g2/csrc",
+            "components/u8g2/sys/sdl/common",
+            "src"
+    )
     add_deps("u8g2")
     add_deps("vision_ui")
     add_packages("libsdl")
