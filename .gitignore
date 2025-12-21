@@ -1,7 +1,7 @@
 .xmake
 build
 cmake-build-debug
-.ieda
+.idea
 CMakeLists.txt
 venv
 components
