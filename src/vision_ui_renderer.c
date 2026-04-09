@@ -494,7 +494,8 @@ static void vision_ui_alert_render() {
     // Retract the alert after its display time expires.
     if (vision_ui_alert_instance_get()->time - vision_ui_alert_instance_get()->time_start >=
         vision_ui_alert_instance_get()->span) {
-        vision_ui_alert_mutable_instance_get()->y_alert_trg = 0 - 2 * VISION_UI_ALERT_HEIGHT; // Move it back off-screen.
+        vision_ui_alert_mutable_instance_get()->y_alert_trg =
+                0 - 2 * VISION_UI_ALERT_HEIGHT; // Move it back off-screen.
         if (vision_ui_alert_instance_get()->y_alert == vision_ui_alert_instance_get()->y_alert_trg) {
             vision_ui_alert_mutable_instance_get()->is_running = false; // End the lifecycle once it returns home.
         }
