@@ -3,7 +3,7 @@
 <h1 align="center">Vision UI</h1>
 <div align="center">
 
-<a href="https://github.com/robcholz/vision-ui/actions"><img src="https://img.shields.io/github/actions/workflow/status/robcholz/vision-ui/build.yml?label=CI&branch=main"/>
+<a href="https://github.com/robcholz/vision-ui/actions"><img src="https://img.shields.io/github/actions/workflow/status/robcholz/vision-ui/ci.yml?label=CI&branch=main"/>
 <a href="https://github.com/robcholz/vision-ui"><img src="https://img.shields.io/badge/ui-open--source-brightgreen"/>
 <a href="https://github.com/robcholz/vision-ui/blob/main/LICENSE"><img src="https://img.shields.io/github/license/robcholz/vision-ui?color=2b9348" alt="License Badge"/></a>
 
