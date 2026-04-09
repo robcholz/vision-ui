@@ -1,13 +1,26 @@
 ![Vision UI Simulator](docs/cover.jpeg)
 
-# Vision UI
+<h1 align="center">Vision UI</h1>
+<div align="center">
+
+<a href="https://github.com/robcholz/vision-ui/actions"><img src="https://img.shields.io/github/actions/workflow/status/robcholz/vision-ui/build.yml?label=CI&branch=main"/>
+<a href="https://github.com/robcholz/vision-ui"><img src="https://img.shields.io/badge/ui-open--source-brightgreen"/>
+<a href="https://github.com/robcholz/vision-ui/blob/main/LICENSE"><img src="https://img.shields.io/github/license/robcholz/vision-ui?color=2b9348" alt="License Badge"/></a>
+
+<p align="center">
+     <a href="README.md">English</a> | <a href="README-zh-CN.md">简体中文</a>
+  </p>
+
+<i>Like this project? Please consider giving it a Star ⭐️ to help it grow!</i>
+
+</div>
 
 Vision UI is a small list-based UI framework for embedded displays. It provides a menu tree, animated selection and
 scrolling, notifications, alerts, and a driver abstraction so the same UI logic can run in a desktop simulator or on
 device-specific backends. The core library is platform independent and can be integrated with any backend that
 implements the drawing and input driver interface.
 
-The repository includes an SDL2 simulator as one example backend for prototyping menus and custom full-screen scenes
+The repository includes an simulator as one example backend for prototyping menus and custom full-screen scenes
 before integrating the library into firmware.
 
 ## Features
