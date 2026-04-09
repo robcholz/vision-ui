@@ -1,7 +1,7 @@
-.xmake
-build
-cmake-build-debug
-.idea
+.xmake/
+build/
+cmake-build-debug/
+.idea/
 CMakeLists.txt
-venv
-components
+.venv
+components/

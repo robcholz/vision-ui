@@ -22,6 +22,7 @@ def animation_exp(pos, pos_trg, speed, delta_ms):
     step = (pos_trg - pos) / (100.0 - speed) * frame_ratio
     return pos + step
 
+
 def animation_exp_smoother(pos, pos_trg, speed, delta_ms):
     if pos == pos_trg:
         return pos
@@ -38,12 +39,12 @@ def animation_exp_smoother(pos, pos_trg, speed, delta_ms):
     p = min(1.0, dt / duration)
 
     # smootherstep (quintic smoothstart/smoothstop)
-    s = p*p*p * (p*(6*p - 15) + 10)
+    s = p * p * p * (p * (6 * p - 15) + 10)
 
     return pos + (pos_trg - pos) * s
 
 
-DAMPING_RATIO = 0.5 # zeta: lower values are smoother, higher values feel stickier
+DAMPING_RATIO = 0.5  # zeta: lower values are smoother, higher values feel stickier
 BASE_NAT_FREQ = 8.0  # omega_n base natural frequency
 NAT_FREQ_PER_SPEED = 0.2  # how speed affects omega_n
 
@@ -58,7 +59,7 @@ def animation_2nd_ode(pos, pos_trg, speed, delta_ms):
     omega_n = BASE_NAT_FREQ + NAT_FREQ_PER_SPEED * speed
     zeta = DAMPING_RATIO
 
-    a = -2.0 * zeta * omega_n * v - (omega_n ** 2) * (pos - pos_trg)
+    a = -2.0 * zeta * omega_n * v - (omega_n**2) * (pos - pos_trg)
 
     v = v + a * dt
     x = pos + v * dt
@@ -85,8 +86,8 @@ last_time = time.time()
 plt.ion()
 fig, ax = plt.subplots()
 
-line_resp, = ax.plot([], [], lw=2, label="response (pos)")
-line_step, = ax.plot([], [], "--", lw=1.5, label="step input")
+(line_resp,) = ax.plot([], [], lw=2, label="response (pos)")
+(line_step,) = ax.plot([], [], "--", lw=1.5, label="step input")
 
 ax.set_ylim(-50, 150)
 ax.set_xlim(0, 2000)
