@@ -37,4 +37,6 @@ For a concrete desktop integration, see the simulator demo in [`main.cpp`](main.
 
 ## License
 
-This project is licensed under `GPL-2.0-only`.
+Copyright (C) 2026 Finn Sheng.
+
+This project is licensed under `GPL-3.0-only`. See [`LICENSE`](LICENSE).
