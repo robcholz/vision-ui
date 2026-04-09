@@ -8,6 +8,8 @@ time, start with the sections below in order:
 3. Notifications and alerts
 4. Driver contract
 
+If you are porting the backend driver, read [`migration.md`](migration.md) first.
+
 Header locations:
 
 - [`include/vision/vision_ui_core.h`](../include/vision/vision_ui_core.h)

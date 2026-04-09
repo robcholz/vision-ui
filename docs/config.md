@@ -17,6 +17,8 @@ The sketch below matches the naming used in the config header:
 
 ![Vision UI layout sketch](layout.png)
 
+Layout config diagram: [`layout-formal.drawio`](layout-formal.drawio)
+
 Useful mental model:
 
 - `DISPLAY` means the full screen.
