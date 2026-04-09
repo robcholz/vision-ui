@@ -1,8 +1,8 @@
 set_project("vision_ui")
+set_xmakever("2.8.2")
 set_languages("c99", "cxx23")
 add_rules("mode.debug")
-
-add_requires("libsdl >=2.0", { configs = { shared = true } })
+add_requires("libsdl2 >=2.0", { configs = { shared = true } })
 
 option("simulator")
 set_default(true)
@@ -37,5 +37,5 @@ if has_config("simulator") then
     )
     add_deps("u8g2")
     add_deps("vision_ui")
-    add_packages("libsdl")
+    add_packages("libsdl2")
 end

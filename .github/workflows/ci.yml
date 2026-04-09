@@ -16,7 +16,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang clang-tidy clang-format xmake libsdl2-dev
+          sudo apt-get install -y clang clang-tidy clang-format libsdl2-dev curl bash
+
+      - name: Install xmake
+        run: |
+          curl -fsSL https://xmake.io/shget.text | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Fetch u8g2
         run: |
