@@ -327,7 +327,8 @@ bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t* item) {
 
     // Coordinates are updated during refresh.
     if (VISION_UI_SELECTOR.selected_item == NULL) {
-        VISION_UI_SELECTOR.y_selector = 2 * VISION_UI_SCREEN_HEIGHT; // Start off-screen so the first animation has motion.
+        VISION_UI_SELECTOR.y_selector =
+                2 * VISION_UI_SCREEN_HEIGHT; // Start off-screen so the first animation has motion.
         VISION_UI_SELECTOR.h_selector = 160;
     }
     VISION_UI_SELECTOR.selected_index = temp_index;
