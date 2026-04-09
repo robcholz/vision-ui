@@ -94,13 +94,13 @@ uint16_t vision_ui_driver_str_height_get() {
     return (uint16_t) h + STR_TOP;
 }
 
-/* 图元 */
+/* Primitives */
 void vision_ui_driver_pixel_draw(uint16_t x, uint16_t y) {
     u8g2_DrawPixel(S_U8G2, x, y);
 }
 
 void vision_ui_driver_circle_draw(uint16_t x, uint16_t y, uint16_t r) {
-    /* u8g2_DrawCircle 画轮廓；若需实心可用 u8g2_DrawDisc */
+    /* u8g2_DrawCircle draws an outline; use u8g2_DrawDisc for a filled circle. */
     u8g2_DrawCircle(S_U8G2, x, y, r, U8G2_DRAW_ALL);
 }
 
@@ -136,7 +136,7 @@ void vision_ui_driver_line_draw(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t 
     u8g2_DrawLine(S_U8G2, x1, y1, x2, y2);
 }
 
-/* 虚线：简单 1像素间隔（可按需改为更大的 dash/gap） */
+/* Dotted lines: simple 1-pixel spacing (adjust dash/gap if needed). */
 void vision_ui_driver_line_h_dotted_draw(uint16_t x, uint16_t y, uint16_t l) {
     for (uint16_t i = 0; i < l; i += 2) {
         u8g2_DrawPixel(S_U8G2, x + i, y);
@@ -149,14 +149,14 @@ void vision_ui_driver_line_v_dotted_draw(uint16_t x, uint16_t y, uint16_t h) {
     }
 }
 
-/* 位图：假定 bitMap 为 XBM(1bpp) 布局（和 u8g2_DrawXBM 兼容） */
+/* Bitmap: assumes bitMap uses XBM (1bpp) layout compatible with u8g2_DrawXBM. */
 void vision_ui_driver_bmp_draw(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bit_map) {
     u8g2_DrawXBM(S_U8G2, x, y, w, h, bit_map);
 }
 
-/* 属性 */
+/* Attributes */
 void vision_ui_driver_color_draw(uint8_t color) {
-    /* u8g2: 0=clear, 1=set, 2=XOR (部分设备/后端可能不支持 XOR) */
+    /* u8g2: 0=clear, 1=set, 2=XOR (some devices/backends may not support XOR). */
     u8g2_SetDrawColor(S_U8G2, color);
 }
 
@@ -166,7 +166,7 @@ void vision_ui_driver_font_mode_set(uint8_t mode) {
 }
 
 void vision_ui_driver_font_direction_set(uint8_t dir) {
-    /* 方向 0..3：0=左→右，1=下→上，2=右→左，3=上→下 */
+    /* Direction 0..3: 0=left->right, 1=bottom->top, 2=right->left, 3=top->bottom. */
     u8g2_SetFontDirection(S_U8G2, (uint8_t) (dir & 0x03));
 }
 
@@ -178,7 +178,7 @@ void vision_ui_driver_clip_window_reset(void) {
     u8g2_SetMaxClipWindow(S_U8G2);
 }
 
-/* 缓冲区 */
+/* Buffer */
 void vision_ui_driver_buffer_clear(void) {
     u8g2_ClearBuffer(S_U8G2);
 }
@@ -187,14 +187,14 @@ void vision_ui_driver_buffer_send(void) {
     u8g2_SendBuffer(S_U8G2);
 }
 
-/* 部分区域刷新（若驱动支持 tile-based 更新则调用；否则退化为全刷） */
+/* Partial refresh (uses tile-based updates when supported, otherwise falls back to full refresh). */
 void vision_ui_driver_buffer_area_send(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-    /* u8g2_UpdateDisplayArea 以 tile(8x8) 为单位；
-       只有部分驱动/后端支持；否则该调用不会生效。 */
-#if U8G2_WITH_CLIP_WINDOW /* 一些构建里会定义，但不可靠；做宽松处理 */
+    /* u8g2_UpdateDisplayArea works in tile (8x8) units.
+       Only some drivers/backends support it; otherwise the call has no effect. */
+#if U8G2_WITH_CLIP_WINDOW /* Some builds define this, but it is not reliable, so handle it loosely. */
     uint16_t x_end = x + w - 1;
     uint16_t y_end = y + h - 1;
-    /* 像素->tile 的向下取整/向上取整 */
+    /* Convert pixels to tiles using floor/ceiling rounding. */
     uint8_t tx = (uint8_t) (x / 8);
     uint8_t ty = (uint8_t) (y / 8);
     uint8_t tw = (uint8_t) ((x_end / 8) - tx + 1);
@@ -205,7 +205,7 @@ void vision_ui_driver_buffer_area_send(uint16_t x, uint16_t y, uint16_t w, uint1
     (void) y;
     (void) w;
     (void) h;
-    u8g2_SendBuffer(S_U8G2); /* 回退全刷 */
+    u8g2_SendBuffer(S_U8G2); /* Fallback to a full refresh. */
 #endif
 }
 

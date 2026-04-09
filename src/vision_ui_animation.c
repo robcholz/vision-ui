@@ -32,7 +32,7 @@ void vision_ui_animation_s_curve(float* pos, const float pos_trg, const float sp
     const float clamped_ms = raw_ms > 33.3333f ? 33.3333f : raw_ms;
     const float dt = clamped_ms / 1000.0f;
 
-    // 2. speed(0~100) → duration(0.25s ~ 0.05s)
+    // 2. Map speed (0~100) to duration (0.25s ~ 0.05s).
     float s_norm = speed * 0.01f; // 0~1
     if (s_norm < 0.0f) {
         s_norm = 0.0f;
@@ -41,7 +41,7 @@ void vision_ui_animation_s_curve(float* pos, const float pos_trg, const float sp
         s_norm = 1.0f;
     }
 
-    float duration = 0.25f - 0.20f * s_norm; // 0.25 → 0.05
+    float duration = 0.25f - 0.20f * s_norm; // 0.25 -> 0.05
     if (duration < 0.01f) {
         duration = 0.01f;
     }

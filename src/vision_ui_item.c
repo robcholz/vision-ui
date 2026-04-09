@@ -167,7 +167,7 @@ void vision_ui_alert_push(const char* content, const uint16_t span) {
     VISION_UI_ALERT.span = span;
     VISION_UI_ALERT.is_running = false;
 
-    // 弹出
+    // Show the alert.
     if (!VISION_UI_ALERT.is_running) {
         VISION_UI_ALERT.time_start = vision_ui_driver_ticks_ms_get();
         VISION_UI_ALERT.y_alert_trg = (VISION_UI_SCREEN_HEIGHT - VISION_UI_ALERT_HEIGHT) / 2;
@@ -314,7 +314,7 @@ bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t* item) {
         return false;
     }
 
-    // 找item在父节点中的序号
+    // Find the item's index inside its parent.
     uint8_t temp_index = 0;
     if (item->parent != NULL) {
         for (uint8_t i = 0; i < item->parent->child_num; i++) {
@@ -325,9 +325,9 @@ bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t* item) {
         }
     }
 
-    // 坐标在refresh内部更新
+    // Coordinates are updated during refresh.
     if (VISION_UI_SELECTOR.selected_item == NULL) {
-        VISION_UI_SELECTOR.y_selector = 2 * VISION_UI_SCREEN_HEIGHT; // 给个初始坐标做动画
+        VISION_UI_SELECTOR.y_selector = 2 * VISION_UI_SCREEN_HEIGHT; // Start off-screen so the first animation has motion.
         VISION_UI_SELECTOR.h_selector = 160;
     }
     VISION_UI_SELECTOR.selected_index = temp_index;
@@ -359,7 +359,7 @@ void vision_ui_selector_go_next_item() {
         return;
     }
 
-    // 到达最末端
+    // Wrap around at the end of the list.
     if (VISION_UI_SELECTOR.selected_index == VISION_UI_SELECTOR.selected_item->parent->child_num - 1) {
         VISION_UI_SELECTOR.selected_item = VISION_UI_SELECTOR.selected_item->parent->child_list_item[0];
         VISION_UI_SELECTOR.selected_index = 0;
@@ -387,7 +387,7 @@ void vision_ui_selector_go_prev_item() {
         return;
     }
 
-    // 到达最前端
+    // Wrap around at the start of the list.
     if (VISION_UI_SELECTOR.selected_index == 0) {
         VISION_UI_SELECTOR.selected_item =
                 VISION_UI_SELECTOR.selected_item->parent
@@ -428,9 +428,9 @@ extern void vision_ui_enter_animation_start() {
     VISION_UI_ENTER_ANIMATION_FINISHED = false;
 }
 
-/** @brief 确认当前选择的item
- * @note 如果选择了list 就进入选择的list
- * @note 如果选择了特殊item 就翻转/调整对应的值
+/** @brief Confirm the currently selected item.
+ * @note If a list is selected, enter that list.
+ * @note If a special item is selected, toggle or adjust its value.
  */
 void vision_ui_selector_jump_to_selected_item() {
     if (!IS_IN_VISION_UI) {
@@ -469,7 +469,7 @@ void vision_ui_selector_jump_to_selected_item() {
     if (VISION_UI_SELECTOR.selected_item->type == SliderItem) {
         vision_ui_slider_item_t* selected_slider_item = vision_ui_to_list_slider_item(VISION_UI_SELECTOR.selected_item);
         if (!selected_slider_item->is_confirmed) {
-            selected_slider_item->is_confirmed = true; // 如果没选中 就选中
+            selected_slider_item->is_confirmed = true; // Confirm the slider if it is not already confirmed.
             return;
         }
         if (selected_slider_item->is_confirmed) {
@@ -513,7 +513,7 @@ void vision_ui_selector_jump_to_selected_item() {
 
     vision_ui_exit_animation_start();
 
-    // 给选择的item的子item坐标清零 做动画
+    // Reset child item positions so the enter animation can replay.
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->child_num; i++) {
         VISION_UI_SELECTOR.selected_item->child_list_item[i]->y_list_item = 0;
     }
@@ -524,7 +524,7 @@ void vision_ui_selector_jump_to_selected_item() {
 void vision_ui_selector_exit_current_item() {
     if (VISION_UI_SELECTOR.selected_item->type == SliderItem &&
         vision_ui_to_list_slider_item(VISION_UI_SELECTOR.selected_item)->is_confirmed) {
-        // 如果已选中又长按退出键
+        // Exit slider adjustment mode when the slider is already confirmed.
         vision_ui_slider_item_t* selected_slider_item = vision_ui_to_list_slider_item(VISION_UI_SELECTOR.selected_item);
 
         if (selected_slider_item->is_confirmed) {
@@ -535,7 +535,7 @@ void vision_ui_selector_exit_current_item() {
 
     if (VISION_UI_SELECTOR.selected_item->type == UserItem &&
         vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item)->in_user_item) {
-        vision_ui_exit_animation_start(); // 需要重新绘制退场动画
+        vision_ui_exit_animation_start(); // Restart the exit animation for the user item.
         // vision_ui_selector.selected_item->in_user_item = false;
         vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(VISION_UI_SELECTOR.selected_item);
         selected_user_item->entering_user_item = false;
@@ -554,12 +554,12 @@ void vision_ui_selector_exit_current_item() {
 
     vision_ui_exit_animation_start();
 
-    // 给选择的item的父item的父item的所有子item坐标清零 做动画
+    // Reset the grandparent's child item positions so the exit animation can replay.
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->parent->child_num; i++) {
         VISION_UI_SELECTOR.selected_item->parent->parent->child_list_item[i]->y_list_item = 0;
     }
 
-    // 找到当前选择的item的父item在它的父item中的位置
+    // Find the parent item's index inside its own parent.
     uint8_t temp_index = 0;
     for (uint8_t i = 0; i < VISION_UI_SELECTOR.selected_item->parent->parent->child_num; i++) {
         if (VISION_UI_SELECTOR.selected_item->parent->parent->child_list_item[i] ==
@@ -612,7 +612,7 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
                                                                        : VISION_UI_LIST_FRAME_BETWEEN_PADDING;
         next_y = last_child->y_list_item_trg + VISION_UI_LIST_FRAME_FIXED_HEIGHT + gap_after_last;
     } else if (child->type != TitleItem) {
-        // 没有标题时仍旧保留顶端 padding
+        // Keep the top padding even when there is no title.
         next_y = VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING;
     }
     child->y_list_item_trg = next_y;
@@ -621,8 +621,8 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
     const bool selector_needs_root_binding = selected_item == NULL || selected_item->parent == NULL;
     if (parent == vision_ui_root_list_get() && selector_needs_root_binding) {
         vision_ui_list_item_t* first_root_item = parent->child_num > 0 ? parent->child_list_item[0] : child;
-        vision_ui_selector_t_selector_bind_item(first_root_item); // 初始化并绑定selector
-        vision_ui_camera_bind_selector(&VISION_UI_SELECTOR); // 初始化并绑定camera
+        vision_ui_selector_t_selector_bind_item(first_root_item); // Initialize and bind the selector.
+        vision_ui_camera_bind_selector(&VISION_UI_SELECTOR); // Initialize and bind the camera.
     }
 
     parent->child_list_item[parent->child_num++] = child;
@@ -631,7 +631,7 @@ bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item
     return true;
 }
 
-static vision_ui_camera_t VISION_UI_CAMERA = {0, 0, 0, 0, 0, 0, NULL}; // 在refresh加上camera的坐标
+static vision_ui_camera_t VISION_UI_CAMERA = {0, 0, 0, 0, 0, 0, NULL}; // Camera coordinates are applied during refresh.
 
 const vision_ui_camera_t* vision_ui_camera_instance_get() {
     return &VISION_UI_CAMERA;
@@ -654,5 +654,5 @@ void vision_ui_camera_bind_selector(vision_ui_selector_t* selector) {
         return;
     }
 
-    VISION_UI_CAMERA.selector = selector; // 坐标在refresh内部更新
+    VISION_UI_CAMERA.selector = selector; // Coordinates are updated during refresh.
 }

@@ -106,7 +106,7 @@ static void vision_ui_camera_position_update(const float delta_ms) {
     if (selector->y_selector_trg + VISION_UI_LIST_SELECTOR_FIXED_HEIGHT +
                 vision_ui_camera_instance_get()->y_camera_trg >
         VISION_UI_SCREEN_HEIGHT) {
-        // 向下超出屏幕 需要向下移动
+        // Move down when the selector would extend past the bottom of the screen.
         vision_ui_camera_instance_y_trg_set(
                 VISION_UI_SCREEN_HEIGHT - selector->y_selector_trg - VISION_UI_LIST_SELECTOR_FIXED_HEIGHT
         );
@@ -114,7 +114,7 @@ static void vision_ui_camera_position_update(const float delta_ms) {
 
     const float top_padding = VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING;
     if (selector->y_selector_trg + vision_ui_camera_instance_get()->y_camera_trg < top_padding) {
-        // 向上超出屏幕 需要向上移动
+        // Move up when the selector would extend past the top padding.
         vision_ui_camera_instance_y_trg_set(top_padding - selector->y_selector_trg);
     }
 
@@ -136,13 +136,13 @@ static void vision_ui_camera_position_update(const float delta_ms) {
 }
 
 static void vision_ui_widget_core_position_update(const float delta_ms) {
-    // 需要调用所有的widget update
+    // Run updates for all widgets.
     vision_ui_notification_update(delta_ms);
     vision_ui_alert_update(delta_ms);
 }
 
 static void vision_ui_list_init() {
-    // 做动画
+    // Initialize animation-related state.
     for (uint8_t i = 0; i < vision_ui_root_list_get()->child_num; i++) {
         vision_ui_list_item_t* list = vision_ui_root_list_get()->child_list_item[i];
         list->y_list_item = 0;
@@ -395,7 +395,7 @@ static void vision_ui_main_core_step(const float delta_ms) {
         selector_mut->has_pending_selection = false;
     }
 
-    // 切换in user item的逻辑
+    // Handle enter/exit transitions for user items.
     if (exit_animation_finished) {
         if (selector_mut->selected_item->type == UserItem) {
             vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(selector_mut->selected_item);
@@ -432,12 +432,12 @@ static void vision_ui_main_core_step(const float delta_ms) {
         }
     }
 
-    // 渲染的逻辑
+    // Main render flow.
     if (vision_ui_selector_instance_get()->selected_item->type == UserItem &&
         vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item)->in_user_item) {
         vision_ui_user_item_t* selected_user_item =
                 vision_ui_to_list_user_item(vision_ui_selector_instance_get()->selected_item);
-        // 初始化
+        // Initialize on first entry.
         if (!selected_user_item->user_item_inited) {
             if (selected_user_item->init_function != NULL) {
                 selected_user_item->init_function();
@@ -458,8 +458,8 @@ static void vision_ui_main_core_step(const float delta_ms) {
 
     IS_BACKGROUND_FROZEN = vision_ui_alert_instance_get()->is_running;
 
-    // 退场动画
-    // 上面都是正常应当绘制的内容 退场动画需要绘制时 只需要在上面的基础上绘制遮罩即可
+    // Exit animation.
+    // Everything above is the normal frame; the exit pass only needs to add the overlay.
     if (!vision_ui_exit_animation_is_finished()) {
         vision_ui_exit_animation_render(delta_ms);
         return;
@@ -527,8 +527,8 @@ void vision_ui_step_render() {
         default:
             break;
     }
-    vision_ui_main_core_step(delta_ms); // 核心处理函数
-    vision_ui_widget_core_step(delta_ms); // 弹窗处理函数
+    vision_ui_main_core_step(delta_ms); // Main UI update/render path.
+    vision_ui_widget_core_step(delta_ms); // Notification/alert update path.
 }
 
 extern bool vision_ui_is_exited() {

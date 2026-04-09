@@ -39,12 +39,12 @@ void test_user_item_loop_function() {
     vision_ui_driver_box_r_draw(
             2,
             Y_BOX - 1,
-            vision_ui_driver_str_utf8_width_get("「astraLauncher」") + 4,
+            vision_ui_driver_str_utf8_width_get("astraLauncher") + 4,
             vision_ui_driver_str_height_get() + 2,
             1
     );
     vision_ui_driver_color_draw(2);
-    vision_ui_driver_str_utf8_draw(4, Y_LOGO - 2, "「astraLauncher」");
+    vision_ui_driver_str_utf8_draw(4, Y_LOGO - 2, "astraLauncher");
 
     vision_ui_driver_color_draw(1);
     vision_ui_driver_str_draw(106, Y_VERSION, "v1.0");

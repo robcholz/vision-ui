@@ -43,9 +43,9 @@ def animation_exp_smoother(pos, pos_trg, speed, delta_ms):
     return pos + (pos_trg - pos) * s
 
 
-DAMPING_RATIO = 0.5 # ζ: overshoot 越小越平，越大越粘
-BASE_NAT_FREQ = 8.0  # ω_n base，自然频率
-NAT_FREQ_PER_SPEED = 0.2  # speed 对 ω_n 的影响
+DAMPING_RATIO = 0.5 # zeta: lower values are smoother, higher values feel stickier
+BASE_NAT_FREQ = 8.0  # omega_n base natural frequency
+NAT_FREQ_PER_SPEED = 0.2  # how speed affects omega_n
 
 
 def animation_2nd_ode(pos, pos_trg, speed, delta_ms):

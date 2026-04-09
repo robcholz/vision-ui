@@ -134,7 +134,7 @@ typedef struct vision_ui_user_item_t {
 
     void (*init_function)();
 
-    void (*loop_function)(); // user_item的逻辑和item写在一起 方便渲染
+    void (*loop_function)(); // keep user_item logic with the item for easier rendering
     void (*exit_function)();
 
     bool user_item_inited;
@@ -160,7 +160,7 @@ typedef struct vision_ui_selector_t {
     vision_ui_list_item_t* scroll_bar_scale_parent;
     float scroll_bar_scale_part_shared;
 
-    // selection change deferred until exit动画结束，避免场景提前切换导致闪烁
+    // Defer selection changes until the exit animation finishes to avoid flicker.
     bool has_pending_selection;
     uint8_t pending_selected_index;
     vision_ui_list_item_t* pending_selected_item;

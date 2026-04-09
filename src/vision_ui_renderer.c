@@ -183,19 +183,19 @@ static void vision_ui_background_blur_animation_render(
         return;
     }
 
-    // 定义2x2网格的渐隐模式
-    // 每个数组表示一个2x2网格中哪些像素需要熄灭
-    // 0表示保持亮，1表示熄灭
+    // Define 2x2 grid fade patterns.
+    // Each entry marks which pixels in the 2x2 grid should be turned off.
+    // 0 keeps the pixel lit, 1 turns it off.
     static const uint8_t patterns[5][2][2] = {
-            {{0, 0}, // Level 1: 全亮
+            {{0, 0}, // Level 1: fully lit
              {0, 0}},
-            {{1, 0}, // Level 2: 左上角熄灭
+            {{1, 0}, // Level 2: top-left off
              {0, 0}},
-            {{1, 0}, // Level 3: 左上角和右下角熄灭
+            {{1, 0}, // Level 3: top-left and bottom-right off
              {0, 1}},
-            {{1, 0}, // Level 4: 只保留右上角
+            {{1, 0}, // Level 4: keep only the top-right pixel
              {1, 1}},
-            {{1, 1}, // Level 5: 全暗
+            {{1, 1}, // Level 5: fully dark
              {1, 1}}
     };
 
@@ -322,10 +322,10 @@ void vision_ui_exit_animation_render(const float delta_ms) {
     exit_elapsed_ms += delta_ms;
     const float progress = fminf(exit_elapsed_ms / VISION_UI_EXIT_ANIMATION_DURATION_MS, 1.0f);
 
-    // 先做 ease-in-out，再映射到离散等级
-    const float eased = vision_ui_smoothstep(progress); // 0~1
+    // Apply ease-in-out first, then map to discrete levels.
+    const float eased = vision_ui_smoothstep(progress); // 0..1
     const float scaled = eased * (float) (VISION_UI_EXIT_ANIMATION_LEVELS - 1);
-    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled + 0.5f); // +0.5f 更接近四舍五入
+    const uint8_t fade_level = 1 + (uint8_t) floorf(scaled + 0.5f); // +0.5f gives rounding closer to nearest.
     vision_ui_background_blur_animation_render(0, 0, VISION_UI_SCREEN_WIDTH, VISION_UI_SCREEN_HEIGHT, fade_level);
 
     if (progress >= 1.0f) {
@@ -351,7 +351,7 @@ void vision_ui_enter_animation_render(const float delta_ms) {
     const float progress = fminf(enter_elapsed_ms / VISION_UI_ENTER_ANIMATION_DURATION_MS, 1.0f);
     const float inverted = 1.0f - progress;
 
-    // 先对 inverted 做 smoothstep
+    // Apply smoothstep to the inverted progress first.
     const float eased = vision_ui_smoothstep(inverted);
     const float scaled = eased * (float) (VISION_UI_ENTER_ANIMATION_LEVELS - 1);
     const uint8_t fade_level = 1 + (uint8_t) floorf(scaled + 0.5f);
@@ -436,7 +436,7 @@ static void vision_ui_notification_render() {
 
     vision_ui_font_set(vision_ui_font_get());
 
-    vision_ui_driver_color_draw(0); // 黑遮罩打底
+    vision_ui_driver_color_draw(0); // Black underlay.
     vision_ui_driver_box_r_draw(
             (int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_notification_instance_get()->w_notification + 4) / 2),
             y_notification_1,
@@ -453,7 +453,7 @@ static void vision_ui_notification_render() {
             VISION_UI_NOTIFICATION_HEIGHT + 4,
             3
     );
-    // 向上移动四个像素 同时向下多画四个像素 只用下半部分圆角
+    // Shift upward by four pixels and extend downward by four pixels to keep only the lower rounded corners.
 
     vision_ui_driver_color_draw(2);
     vision_ui_driver_line_h_draw(
@@ -486,17 +486,17 @@ static void vision_ui_alert_render() {
         return;
     }
 
-    // 弹窗到位后才开始计算时间
+    // Start timing only after the alert reaches its target position.
     if (vision_ui_alert_instance_get()->y_alert == vision_ui_alert_instance_get()->y_alert_trg) {
         vision_ui_alert_mutable_instance_get()->time = vision_ui_driver_ticks_ms_get();
     }
 
-    // 时间到了就收回
+    // Retract the alert after its display time expires.
     if (vision_ui_alert_instance_get()->time - vision_ui_alert_instance_get()->time_start >=
         vision_ui_alert_instance_get()->span) {
-        vision_ui_alert_mutable_instance_get()->y_alert_trg = 0 - 2 * VISION_UI_ALERT_HEIGHT; // 收回
+        vision_ui_alert_mutable_instance_get()->y_alert_trg = 0 - 2 * VISION_UI_ALERT_HEIGHT; // Move it back off-screen.
         if (vision_ui_alert_instance_get()->y_alert == vision_ui_alert_instance_get()->y_alert_trg) {
-            vision_ui_alert_mutable_instance_get()->is_running = false; // 等归位后结束生命周期
+            vision_ui_alert_mutable_instance_get()->is_running = false; // End the lifecycle once it returns home.
         }
     }
 
@@ -505,7 +505,7 @@ static void vision_ui_alert_render() {
 
     vision_ui_font_set(vision_ui_font_get());
 
-    vision_ui_driver_color_draw(0); // 黑遮罩
+    vision_ui_driver_color_draw(0); // Black underlay.
     vision_ui_driver_box_r_draw(
             (int16_t) (VISION_UI_SCREEN_WIDTH / 2 - (vision_ui_alert_instance_get()->w_alert + 4) / 2 - 2),
             (int16_t) (vision_ui_alert_instance_get()->y_alert - 2),
@@ -593,10 +593,10 @@ static void vision_ui_text_draw(
 
     const int16_t line_h = vision_ui_driver_str_height_get();
     const int16_t text_x = x0;
-    const int16_t text_y = y0 + (y1 - y0) / 2 + line_h / 2 + clip_edge_width; // 垂直居中到rect内
+    const int16_t text_y = y0 + (y1 - y0) / 2 + line_h / 2 + clip_edge_width; // Vertically center within the rect.
     const int16_t visible_width = x1 - x0;
 
-    // 文本总宽度
+    // Total text width.
     const int16_t text_width = vision_ui_driver_str_utf8_width_get(text);
 
     const int16_t clip_x0 = x0 < 0 ? 0 : x0;
@@ -605,7 +605,7 @@ static void vision_ui_text_draw(
     const int16_t clip_y1 = y1 > VISION_UI_SCREEN_HEIGHT ? VISION_UI_SCREEN_HEIGHT : y1;
     const bool has_visible_area = clip_x0 < clip_x1 && clip_y0 < clip_y1;
 
-    // 如果文本太长，需要滚动
+    // Scroll when the text is wider than the visible area.
     if (text_width > visible_width && visible_width > 0 && !vision_ui_is_background_frozen()) {
         int16_t scroll_offset = 0;
         const int16_t overflow = text_width - visible_width;
@@ -652,7 +652,7 @@ static void vision_ui_text_draw(
             vision_ui_driver_clip_window_reset();
         }
     } else {
-        // 不滚动，直接居中画
+        // No scrolling needed; draw it directly.
         *text_scroll_anchor = 0;
         if (has_visible_area) {
 #ifdef DEBUG
@@ -1026,7 +1026,7 @@ void vision_ui_list_render() {
         return;
     }
 
-    // 调用所有的列表相关draw函数
+    // Run all list-related draw routines.
     vision_ui_list_appearance_render();
     vision_ui_list_item_render();
     vision_ui_selector_render();
