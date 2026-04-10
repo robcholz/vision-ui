@@ -4,13 +4,13 @@ Safe Rust bindings for the Vision UI C library.
 
 ## Coverage
 
-This crate now provides safe wrappers for **all public Vision UI C headers**, including:
+This crate follows the documented public APIs in `docs/api.md`, including:
 
-- Core/runtime APIs
-- Driver APIs (`vision_ui_draw_driver.h`)
-- Animation APIs
-- Item/menu tree APIs
-- Renderer/icon APIs
+- Lifecycle APIs
+- UI tree builder APIs
+- Notifications and alerts
+- Font configuration and allocator APIs
+- Driver contract APIs (`vision_ui_draw_driver.h`)
 
 ## Usage
 
@@ -22,15 +22,15 @@ vision-ui = { path = "bindings/rust" }
 ```rust
 use vision_ui as vui;
 
-vui::vision_ui_render_init_safe();
-vui::vision_ui_core_init_safe();
-vui::vision_ui_notification_push_safe("Hello", 1200)?;
+vui::vision_ui_render_init();
+vui::vision_ui_core_init();
+vui::vision_ui_notification_push("Hello", 1200)?;
 ```
 
 ## Examples
 
 - `examples/lifecycle.rs`: initialize/render loop basics + notifications.
-- `examples/menu_tree.rs`: create a root list, add a switch item, and bind selector.
+- `examples/menu_tree.rs`: create a root list and add a switch item.
 
 ## Notes
 
