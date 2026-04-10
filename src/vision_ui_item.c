@@ -18,6 +18,18 @@ static void* vision_ui_malloc(const vision_ui_t* ui, const size_t size) {
     return ui->allocator(VisionAllocMalloc, size, 0, NULL);
 }
 
+static void vision_ui_free(const vision_ui_t* ui, void* ptr) {
+    assert(ui != NULL);
+    if (ptr == NULL) {
+        return;
+    }
+    if (ui->allocator == NULL) {
+        free(ptr);
+        return;
+    }
+    ui->allocator(VisionAllocFree, 0, 0, ptr);
+}
+
 static void vision_ui_owned_item_register(const vision_ui_t* ui, vision_ui_list_item_t* item) {
     assert(ui != NULL);
     assert(item != NULL);
@@ -80,7 +92,7 @@ vision_ui_list_item_t* vision_ui_list_item_new(
     list_item->icon_view_mode = icon_mode;
     list_item->content = content;
     if (!vision_ui_child_list_init(ui, list_item, capacity)) {
-        free(list_item);
+        vision_ui_free(ui, list_item);
         return NULL;
     }
     vision_ui_owned_item_register(ui, list_item);
@@ -115,7 +127,7 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(
     list_item->type = IconItem;
     list_item->content = title;
     if (!vision_ui_child_list_init(ui, list_item, capacity)) {
-        free(list_item);
+        vision_ui_free(ui, list_item);
         return NULL;
     }
 
