@@ -25,3 +25,5 @@ This repository expects `components/u8g2` to exist locally when building the sim
 - [`api.md`](api.md) for the exported API.
 - [`config.md`](config.md) for configuration constants.
 - [`../main.cpp`](../main.cpp) for a full working example.
+
+- `bindings/rust/`: Rust package (`vision-ui`) exposing safe wrappers over key C APIs.
