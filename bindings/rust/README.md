@@ -2,11 +2,15 @@
 
 Safe Rust bindings for the Vision UI C library.
 
-## What this crate provides
+## Coverage
 
-- Rust-friendly APIs for core Vision UI lifecycle and notification/alert calls.
-- No `unsafe` required at call sites.
-- Internal lifetime management for C pointers used by Vision UI.
+This crate now provides safe wrappers for **all public Vision UI C headers**, including:
+
+- Core/runtime APIs
+- Driver APIs (`vision_ui_draw_driver.h`)
+- Animation APIs
+- Item/menu tree APIs
+- Renderer/icon APIs
 
 ## Usage
 
@@ -18,13 +22,13 @@ vision-ui = { path = "bindings/rust" }
 ```rust
 use vision_ui as vui;
 
-vui::render_init();
-vui::core_init();
-vui::push_notification("Hello", 1200)?;
+vui::vision_ui_render_init_safe();
+vui::vision_ui_core_init_safe();
+vui::vision_ui_notification_push_safe("Hello", 1200)?;
 ```
 
 ## Notes
 
-- This crate wraps selected public Vision UI C APIs.
-- It retains message/logo storage internally to satisfy C pointer lifetime requirements.
+- Wrapper functions are safe to call from Rust (no `unsafe` required at call sites).
+- Internally-retained storage is used for text/logo pointers that the C API keeps.
 - Your application still needs to link against the Vision UI C library.
