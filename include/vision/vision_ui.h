@@ -10,6 +10,7 @@ extern "C" {
 #include "vision_ui_draw_driver.h"
 #include "vision_ui_item.h"
 #include "vision_ui_renderer.h"
+#include "vision_ui_types.h"
 
 #ifdef __cplusplus
 }

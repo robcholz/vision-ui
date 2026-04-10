@@ -5,38 +5,60 @@
 #ifndef VISION_UI_VISION_UI_RENDERER_H
 #define VISION_UI_VISION_UI_RENDERER_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include "vision_ui_types.h"
 
-extern void vision_ui_exit_animation_render(float delta_ms);
+extern void vision_ui_exit_animation_render(vision_ui_t* ui, float delta_ms);
 
-extern void vision_ui_enter_animation_render(float delta_ms);
+extern void vision_ui_enter_animation_render(vision_ui_t* ui, float delta_ms);
 
-extern void vision_ui_widget_render();
+extern void vision_ui_widget_render(vision_ui_t* ui);
 
-extern void vision_ui_list_render();
+extern void vision_ui_list_render(vision_ui_t* ui);
 
-typedef struct vision_ui_list_icon_t {
-    uint8_t* list_header;
-    uint8_t* switch_header;
-    uint8_t* slider_header;
-    uint8_t* default_header;
+extern const vision_ui_notification_t* vision_ui_notification_instance_get(const vision_ui_t* ui);
 
-    uint8_t* switch_on_footer;
-    uint8_t* switch_off_footer;
-    uint8_t* slider_footer;
+extern vision_ui_notification_t* vision_ui_notification_mutable_instance_get(vision_ui_t* ui);
 
-    size_t header_width;
-    size_t header_height;
+/**
+ * Shows a transient notification bar for the given duration in milliseconds.
+ *
+ * If another notification is already running, the new message is queued as the pending replacement.
+ *
+ * @param ui UI instance that owns the notification state. Must not be `NULL`.
+ * @param content Borrowed NUL-terminated message string used for layout and rendering. The pointed-to string should
+ * remain valid while the notification is visible or pending.
+ * @param span Display duration in milliseconds.
+ */
+extern void vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span);
 
-    size_t footer_width;
-    size_t footer_height;
-} vision_ui_icon_t;
+extern const vision_ui_alert_t* vision_ui_alert_instance_get(const vision_ui_t* ui);
 
+extern vision_ui_alert_t* vision_ui_alert_mutable_instance_get(vision_ui_t* ui);
+
+/**
+ * Shows a centered alert for the given duration in milliseconds.
+ *
+ * @param ui UI instance that owns the alert state. Must not be `NULL`.
+ * @param content Borrowed NUL-terminated message string used for layout and rendering. The pointed-to string should
+ * remain valid while the alert is visible.
+ * @param span Display duration in milliseconds.
+ */
+extern void vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span);
+
+/// Built-in list icon pack used by the simulator and default renderer setup.
 extern vision_ui_icon_t DEFAULT_LIST_ICON;
 
-extern void vision_ui_list_icon_set(vision_ui_icon_t icon);
+/**
+ * Replaces the active list icon pack.
+ *
+ * @param ui UI instance to configure. Must not be `NULL`.
+ * @param icon Icon bitmap pack to store by value.
+ *
+ * @note The struct is copied by value, but any bitmap pointers inside it remain borrowed and should stay valid while
+ * the icon pack is active.
+ */
+extern void vision_ui_list_icon_set(vision_ui_t* ui, vision_ui_icon_t icon);
 
-extern vision_ui_icon_t vision_ui_list_icon_get_current();
+extern vision_ui_icon_t vision_ui_list_icon_get_current(const vision_ui_t* ui);
 
 #endif // VISION_UI_VISION_UI_RENDERER_H
