@@ -18,7 +18,7 @@ static int16_t X_BOARD = -200;
 static int16_t Y_WIRE_1 = 200;
 static int16_t Y_WIRE_2 = 200;
 
-void animation(int16_t* pos, int16_t pos_trg, int16_t speed) {
+void animation(int16_t* pos, const int16_t pos_trg, const int16_t speed) {
     if (*pos != pos_trg) {
         if (fabs(*pos - pos_trg) <= 1.0f) {
             *pos = pos_trg;
@@ -28,19 +28,24 @@ void animation(int16_t* pos, int16_t pos_trg, int16_t speed) {
     }
 }
 
-void test_user_item_init_function() {
-    TIME_START = vision_ui_driver_ticks_ms_get();
+void test_user_item_init_function(vision_ui_t* ui) {
+    TIME_START = vision_ui_driver_ticks_ms_get(ui);
 }
 
-void test_user_item_loop_function() {
-    const uint32_t time = vision_ui_driver_ticks_ms_get();
-    vision_ui_driver_color_draw(1);
+void test_user_item_loop_function(vision_ui_t* ui) {
+    vision_ui_driver_color_draw(ui, 1);
     vision_ui_driver_box_r_draw(
-            2, Y_BOX - 1, vision_ui_driver_str_utf8_width_get("Vision UI") + 4, vision_ui_driver_str_height_get() + 2, 1
+            ui,
+            2,
+            Y_BOX - 1,
+            vision_ui_driver_str_utf8_width_get(ui, "Vision UI") + 4,
+            vision_ui_driver_str_height_get(ui) + 2,
+            1
     );
 }
 
-void test_user_item_exit_function() {
+void test_user_item_exit_function(vision_ui_t* ui) {
+    (void) ui;
     TIME_START = 0;
     Y_LOGO = 200;
     Y_VERSION = 200;
@@ -148,20 +153,20 @@ constexpr uint8_t MY_FONT[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese") =
         "D\36\232q \273x\34C\64hQ\232DYR\222\222RR\31\222(M\242d\351\230Ha\22K"
         "\203\0\0";
 
-void* allocator(vision_alloc_op_t op, size_t size, size_t count, void* ptr) {
+void* allocator(const vision_alloc_op_t op, const size_t size, const size_t count, void* ptr) {
     static size_t total = 0;
     switch (op) {
         case VisionAllocMalloc:
             total += size;
-            printf("malloc: size %d, total: %d \n", size, total);
+            printf("malloc: size %lu, total: %lu \n", size, total);
             return malloc(size);
             break;
         case VisionAllocCalloc:
-            printf("calloc: size %d, count %d\n", size, count);
+            printf("calloc: size %lu, count %lu\n", size, count);
             return calloc(count, size);
             break;
         case VisionAllocFree:
-            printf("free: %d\n", ptr);
+            printf("free: %p\n", ptr);
             free(ptr);
             return nullptr;
             break;
@@ -170,16 +175,20 @@ void* allocator(vision_alloc_op_t op, size_t size, size_t count, void* ptr) {
 }
 
 int main() {
+    vision_ui_t ui;
+    vision_ui_init(&ui);
+
     u8x8_setup_sdl_240x240(u8g2_GetU8x8(&U8G2));
     u8g2_SetupBuffer(&U8G2, U8G2_BUFFER, VISION_UI_TILE_BUF_HEIGHT, u8g2_ll_hvline_vertical_top_lsb, U8G2_R0);
     u8g2_InitDisplay(&U8G2);
     u8g2_SetPowerSave(&U8G2, 0);
 
-    vision_ui_driver_bind(&U8G2);
+    vision_ui_driver_bind(&ui, &U8G2);
 
-    vision_ui_allocator_set(allocator);
+    vision_ui_allocator_set(&ui, allocator);
 
     vision_ui_font_set_title(
+            &ui,
             vision_ui_font_t{
                     .font = (void*) u8g2_font_fub42_tf,
                     .top_compensation = -2,
@@ -187,162 +196,202 @@ int main() {
             }
     );
     vision_ui_font_set_subtitle(
-            vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 3}
+            &ui, vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 3}
     );
-    vision_ui_font_set(vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 0});
-    vision_ui_list_icon_set(DEFAULT_LIST_ICON);
+    vision_ui_font_set(&ui, vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 0});
+    vision_ui_list_icon_set(&ui, DEFAULT_LIST_ICON);
 
-    vision_ui_list_item_t* root = vision_ui_list_item_new(15, false, "VisionUI");
+    vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 15, false, "VisionUI");
 
-    vision_ui_root_item_set(root);
-    vision_ui_core_init();
+    vision_ui_root_item_set(&ui, root);
 
-    vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new(5, false, "Board Settings");
-    vision_ui_list_item_t* launcher_setting_list_item_2 = vision_ui_list_item_new(3, true, "Board Settings 2");
+    vision_ui_list_item_t* launcher_setting_list_item = vision_ui_list_item_new(&ui, 5, false, "Board Settings");
+    vision_ui_list_item_t* launcher_setting_list_item_2 = vision_ui_list_item_new(&ui, 3, true, "Board Settings 2");
 
     vision_ui_list_push_item(
-            launcher_setting_list_item_2, vision_ui_list_icon_item_new(0, nullptr, "Icon 1", "Example Icon 1")
+            &ui, launcher_setting_list_item_2, vision_ui_list_icon_item_new(&ui, 0, nullptr, "Icon 1", "Example Icon 1")
     );
     vision_ui_list_push_item(
+            &ui,
             launcher_setting_list_item_2,
-            vision_ui_list_icon_item_new(0, BITMAP_30X30, "Icon Super Looooooooong", "Example Icon 2")
+            vision_ui_list_icon_item_new(&ui, 0, BITMAP_30X30, "Icon Super Looooooooong", "Example Icon 2")
     );
-    vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(1, nullptr, "Icon Item 3", nullptr);
-    vision_ui_list_item_t* list3 = vision_ui_list_item_new(0, false, "Board Settings3");
-    vision_ui_list_push_item(icon, list3);
-    vision_ui_list_push_item(launcher_setting_list_item_2, icon);
+    vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(&ui, 1, nullptr, "Icon Item 3", nullptr);
+    vision_ui_list_item_t* list3 = vision_ui_list_item_new(&ui, 0, false, "Board Settings3");
+    vision_ui_list_push_item(&ui, icon, list3);
+    vision_ui_list_push_item(&ui, launcher_setting_list_item_2, icon);
 
-    vision_ui_list_push_item(root, vision_ui_list_title_item_new("VisionUI"));
-    vision_ui_list_push_item(root, launcher_setting_list_item);
-    vision_ui_list_push_item(root, launcher_setting_list_item_2);
+    vision_ui_list_push_item(&ui, root, vision_ui_list_title_item_new(&ui, "VisionUI"));
+    vision_ui_list_push_item(&ui, root, launcher_setting_list_item);
+    vision_ui_list_push_item(&ui, root, launcher_setting_list_item_2);
     vision_ui_list_push_item(
+            &ui,
             root,
             vision_ui_list_user_item_new(
+                    &ui,
                     "About the Board...",
                     test_user_item_init_function,
                     test_user_item_loop_function,
                     test_user_item_exit_function
             )
     );
-    vision_ui_list_push_item(root, vision_ui_list_switch_item_new("Test Notification 1", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 1", 5000);
-                             }));
-    vision_ui_list_push_item(root, vision_ui_list_switch_item_new("Test Notification 2", false, [](bool b) {
-                                 vision_ui_notification_push("Notification Test 2", 5000);
-                             }));
-    vision_ui_list_push_item(root, vision_ui_list_switch_item_new("Test Alert", false, [](bool b) {
-                                 vision_ui_alert_push("Alert Test", 5000);
-                             }));
     vision_ui_list_push_item(
-            root,
-            vision_ui_list_switch_item_new(
-                    "Test Notification 1 Notification Test 2 Notification Test 2", false, [](bool b) {
-                        vision_ui_notification_push("Notification Test 1", 5000);
-                    }
-            )
-    );
-    vision_ui_list_push_item(
-            root,
-            vision_ui_list_switch_item_new(
-                    "Test Notification 2 Notification Test 2 Notification Test 2", false, [](bool b) {
-                        vision_ui_notification_push("Notification Test 2", 5000);
-                    }
-            )
-    );
-    vision_ui_list_push_item(
-            root,
-            vision_ui_list_switch_item_new("Test Alert Notification Test 2 Notification Test 2", false, [](bool b) {
-                vision_ui_alert_push("Alert Test", 5000);
+            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 1", false, [](vision_ui_t* ui, bool b) {
+                vision_ui_notification_push(ui, "Notification Test 1", 5000);
             })
     );
     vision_ui_list_push_item(
-            root,
-            vision_ui_list_switch_item_new(
-                    "Test Notification 1 Notification Test 2 Notification Test 2", false, [](bool b) {
-                        vision_ui_notification_push("Notification Test 1", 5000);
-                    }
-            )
-    );
-    vision_ui_list_push_item(
-            root,
-            vision_ui_list_switch_item_new(
-                    "Test Notification 2Notification Test 2 Notification Test 2", false, [](bool b) {
-                        vision_ui_notification_push("Notification Test 2", 5000);
-                    }
-            )
-    );
-    vision_ui_list_push_item(
-            root,
-            vision_ui_list_switch_item_new("Test Alert Notification Test 2 Notification Test 2", false, [](bool b) {
-                vision_ui_alert_push("Alert Test", 5000);
+            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 2", false, [](vision_ui_t* ui, bool b) {
+                vision_ui_notification_push(ui, "Notification Test 2", 5000);
             })
     );
     vision_ui_list_push_item(
+            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Alert", false, [](vision_ui_t* ui, bool b) {
+                vision_ui_alert_push(ui, "Alert Test", 5000);
+            })
+    );
+    vision_ui_list_push_item(
+            &ui,
             root,
             vision_ui_list_switch_item_new(
-                    "Test Notification 1 Notification Test 2 Notification Test 2", false, [](bool b) {
-                        vision_ui_notification_push("Notification Test 1", 5000);
+                    &ui,
+                    "Test Notification 1 Notification Test 2 Notification Test 2",
+                    false,
+                    [](vision_ui_t* ui_ptr, bool b) {
+                        vision_ui_notification_push(ui_ptr, "Notification Test 1", 5000);
                     }
             )
     );
     vision_ui_list_push_item(
+            &ui,
             root,
             vision_ui_list_switch_item_new(
-                    "Test Notification 2 Notification Test 2 Notification Test 2", false, [](bool b) {
-                        vision_ui_notification_push("Notification Test 2", 5000);
+                    &ui,
+                    "Test Notification 2 Notification Test 2 Notification Test 2",
+                    false,
+                    [](vision_ui_t* ui_ptr, bool b) {
+                        vision_ui_notification_push(ui_ptr, "Notification Test 2", 5000);
                     }
             )
     );
     vision_ui_list_push_item(
+            &ui,
             root,
             vision_ui_list_switch_item_new(
-                    "Test Alert Notification Test 2 Notification Test 2 Notification Test 2", false, [](bool b) {
-                        vision_ui_alert_push("Alert Test", 5000);
+                    &ui, "Test Alert Notification Test 2 Notification Test 2", false, [](vision_ui_t* ui, bool b) {
+                        vision_ui_alert_push(ui, "Alert Test", 5000);
                     }
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui,
+                    "Test Notification 1 Notification Test 2 Notification Test 2",
+                    false,
+                    [](vision_ui_t* ui, bool b) { vision_ui_notification_push(ui, "Notification Test 1", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui,
+                    "Test Notification 2Notification Test 2 Notification Test 2",
+                    false,
+                    [](vision_ui_t* ui, bool b) { vision_ui_notification_push(ui, "Notification Test 2", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Alert Notification Test 2 Notification Test 2", false, [](vision_ui_t* ui, bool b) {
+                        vision_ui_alert_push(ui, "Alert Test", 5000);
+                    }
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui,
+                    "Test Notification 1 Notification Test 2 Notification Test 2",
+                    false,
+                    [](vision_ui_t* ui_ptr, bool) { vision_ui_notification_push(ui_ptr, "Notification Test 1", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui,
+                    "Test Notification 2 Notification Test 2 Notification Test 2",
+                    false,
+                    [](vision_ui_t* ui_ptr, bool) { vision_ui_notification_push(ui_ptr, "Notification Test 2", 5000); }
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui,
+                    "Test Alert Notification Test 2 Notification Test 2 Notification Test 2",
+                    false,
+                    [](vision_ui_t* ui_ptr, bool b) { vision_ui_alert_push(ui_ptr, "Alert Test", 5000); }
             )
     );
 
     vision_ui_list_push_item(
-            launcher_setting_list_item, vision_ui_list_title_item_new(launcher_setting_list_item->content)
+            &ui, launcher_setting_list_item, vision_ui_list_title_item_new(&ui, launcher_setting_list_item->content)
     );
     vision_ui_list_push_item(
-            launcher_setting_list_item, vision_ui_list_switch_item_new("Heartbeat LED", true, [](bool b) {})
-    );
-    vision_ui_list_push_item(
-            launcher_setting_list_item, vision_ui_list_switch_item_new("Reverse Keys", false, [](bool b) {})
-    );
-    vision_ui_list_push_item(
+            &ui,
             launcher_setting_list_item,
-            vision_ui_list_slider_item_new("Display Style", 1600, 5, 1, 9999, [](int16_t value) {})
+            vision_ui_list_switch_item_new(&ui, "Heartbeat LED", true, [](vision_ui_t*, bool) {})
     );
     vision_ui_list_push_item(
-            launcher_setting_list_item, vision_ui_list_switch_item_new("Invert Display", false, [](bool b) {})
+            &ui,
+            launcher_setting_list_item,
+            vision_ui_list_switch_item_new(&ui, "Reverse Keys", false, [](vision_ui_t*, bool) {})
+    );
+    vision_ui_list_push_item(
+            &ui,
+            launcher_setting_list_item,
+            vision_ui_list_slider_item_new(&ui, "Display Style", 1600, 5, 1, 9999, [](vision_ui_t*, int16_t) {})
+    );
+    vision_ui_list_push_item(
+            &ui,
+            launcher_setting_list_item,
+            vision_ui_list_switch_item_new(&ui, "Invert Display", false, [](vision_ui_t*, bool) {})
     );
 
-    vision_ui_start_logo_set(BITMAP_30X30, 500);
+    vision_ui_core_init(&ui);
+    vision_ui_start_logo_set(&ui, BITMAP_30X30, 500);
 
-    vision_ui_render_init();
+    vision_ui_render_init(&ui);
 
-    const float prev_ms = vision_ui_driver_ticks_ms_get();
+    const float prev_ms = vision_ui_driver_ticks_ms_get(&ui);
     float fps_timer = prev_ms;
     int frame_count = 0;
 
     constexpr float target_ms = 1000.0f / 80.f;
 
-    while (!vision_ui_is_exited()) {
-        const float frame_begin = vision_ui_driver_ticks_ms_get();
+    while (!vision_ui_is_exited(&ui)) {
+        const float frame_begin = vision_ui_driver_ticks_ms_get(&ui);
 
         // render
-        vision_ui_driver_buffer_clear();
-        vision_ui_step_render();
-        vision_ui_driver_buffer_send();
+        vision_ui_driver_buffer_clear(&ui);
+        vision_ui_step_render(&ui);
+        vision_ui_driver_buffer_send(&ui);
 
         // pace to 120 fps (include render time)
-        float now_ms = vision_ui_driver_ticks_ms_get();
+        float now_ms = vision_ui_driver_ticks_ms_get(&ui);
         if (const float elapsed_ms = now_ms - frame_begin; elapsed_ms < target_ms) {
             // sleep the remainder (rounded; replace delay() with a microsecond sleep if you have one)
-            vision_ui_driver_delay(static_cast<uint32_t>(lrintf(target_ms - elapsed_ms)));
-            now_ms = vision_ui_driver_ticks_ms_get(); // re-sample after sleep
+            vision_ui_driver_delay(&ui, static_cast<uint32_t>(lrintf(target_ms - elapsed_ms)));
+            now_ms = vision_ui_driver_ticks_ms_get(&ui); // re-sample after sleep
         }
 
         // fps

@@ -91,7 +91,7 @@ typedef struct vision_ui_switch_item_t {
 
     bool value;
 
-    void (*on_changed)(bool value);
+    void (*on_changed)(vision_ui_t* ui, bool value);
 } vision_ui_switch_item_t;
 
 typedef struct vision_ui_slider_item_t {
@@ -105,7 +105,7 @@ typedef struct vision_ui_slider_item_t {
 
     uint32_t text_scroll_anchor;
 
-    void (*on_changed)(int16_t value);
+    void (*on_changed)(vision_ui_t* ui, int16_t value);
 } vision_ui_slider_item_t;
 
 typedef struct vision_ui_title_item_t {
@@ -132,10 +132,10 @@ typedef struct vision_ui_user_item_t {
     bool entering_user_item;
     bool exiting_user_item;
 
-    void (*init_function)();
+    void (*init_function)(vision_ui_t* ui);
 
-    void (*loop_function)(); // keep user_item logic with the item for easier rendering
-    void (*exit_function)();
+    void (*loop_function)(vision_ui_t* ui); // keep user_item logic with the item for easier rendering
+    void (*exit_function)(vision_ui_t* ui);
 
     bool user_item_inited;
     bool user_item_looping;
@@ -179,47 +179,86 @@ typedef struct vision_ui_camera_t {
 
 typedef enum { VisionAllocMalloc, VisionAllocCalloc, VisionAllocFree } vision_alloc_op_t;
 
-extern void vision_ui_allocator_set(void* (*allocator)(vision_alloc_op_t op, size_t size, size_t count, void* ptr));
+typedef void* (*vision_ui_allocator_t)(vision_alloc_op_t op, size_t size, size_t count, void* ptr);
 
-extern void vision_ui_minifont_set(vision_ui_font_t font);
+struct vision_ui_t {
+    bool is_in_vision_ui;
+    bool is_background_frozen;
 
-extern void vision_ui_font_set(vision_ui_font_t font);
+    const uint8_t* logo;
+    uint32_t logo_span;
+    uint32_t last_tick;
+    bool logo_finished;
+    bool logo_started;
+    uint32_t logo_start_time;
 
-extern void vision_ui_font_set_title(vision_ui_font_t font);
+    bool exit_animation_finished;
+    bool enter_animation_finished;
+    float exit_elapsed_ms;
+    bool running_exit;
+    float enter_elapsed_ms;
+    bool running_enter;
 
-extern void vision_ui_font_set_subtitle(vision_ui_font_t font);
+    vision_ui_font_t minifont;
+    vision_ui_font_t font;
+    vision_ui_font_t title_font;
+    vision_ui_font_t subtitle_font;
 
-extern vision_ui_font_t vision_ui_minifont_get();
+    vision_ui_allocator_t allocator;
+    vision_ui_notification_t notification;
+    vision_ui_alert_t alert;
+    vision_ui_selector_t selector;
+    vision_ui_camera_t camera;
+    vision_ui_list_item_t* root_item;
+    vision_ui_icon_t list_icon;
 
-extern vision_ui_font_t vision_ui_font_get();
+    void* driver;
+    vision_ui_font_t driver_current_font;
+    int8_t driver_str_top;
+    int8_t driver_str_bottom;
+};
 
-extern vision_ui_font_t vision_ui_font_get_title();
+extern void vision_ui_allocator_set(vision_ui_t* ui, vision_ui_allocator_t allocator);
 
-extern vision_ui_font_t vision_ui_font_get_subtitle();
+extern void vision_ui_minifont_set(vision_ui_t* ui, vision_ui_font_t font);
 
-extern bool vision_ui_exit_animation_is_finished();
+extern void vision_ui_font_set(vision_ui_t* ui, vision_ui_font_t font);
 
-extern void vision_ui_exit_animation_set_is_finished();
+extern void vision_ui_font_set_title(vision_ui_t* ui, vision_ui_font_t font);
 
-extern void vision_ui_exit_animation_start();
+extern void vision_ui_font_set_subtitle(vision_ui_t* ui, vision_ui_font_t font);
 
-extern bool vision_ui_enter_animation_is_finished();
+extern vision_ui_font_t vision_ui_minifont_get(const vision_ui_t* ui);
 
-extern void vision_ui_enter_animation_set_is_finished();
+extern vision_ui_font_t vision_ui_font_get(const vision_ui_t* ui);
 
-extern void vision_ui_enter_animation_start();
+extern vision_ui_font_t vision_ui_font_get_title(const vision_ui_t* ui);
 
-extern const vision_ui_notification_t* vision_ui_notification_instance_get();
+extern vision_ui_font_t vision_ui_font_get_subtitle(const vision_ui_t* ui);
 
-extern vision_ui_notification_t* vision_ui_notification_mutable_instance_get();
+extern bool vision_ui_exit_animation_is_finished(const vision_ui_t* ui);
 
-extern void vision_ui_notification_push(const char* content, uint16_t span);
+extern void vision_ui_exit_animation_set_is_finished(vision_ui_t* ui);
 
-extern const vision_ui_alert_t* vision_ui_alert_instance_get();
+extern void vision_ui_exit_animation_start(vision_ui_t* ui);
 
-extern vision_ui_alert_t* vision_ui_alert_mutable_instance_get();
+extern bool vision_ui_enter_animation_is_finished(const vision_ui_t* ui);
 
-extern void vision_ui_alert_push(const char* content, uint16_t span);
+extern void vision_ui_enter_animation_set_is_finished(vision_ui_t* ui);
+
+extern void vision_ui_enter_animation_start(vision_ui_t* ui);
+
+extern const vision_ui_notification_t* vision_ui_notification_instance_get(const vision_ui_t* ui);
+
+extern vision_ui_notification_t* vision_ui_notification_mutable_instance_get(vision_ui_t* ui);
+
+extern void vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span);
+
+extern const vision_ui_alert_t* vision_ui_alert_instance_get(const vision_ui_t* ui);
+
+extern vision_ui_alert_t* vision_ui_alert_mutable_instance_get(vision_ui_t* ui);
+
+extern void vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span);
 
 extern vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item);
 
@@ -229,11 +268,17 @@ extern vision_ui_icon_item_t* vision_ui_to_list_icon_item(vision_ui_list_item_t*
 
 extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item);
 
-extern vision_ui_list_item_t* vision_ui_list_item_new(size_t capacity, bool icon_mode, const char* content);
+extern vision_ui_list_item_t* vision_ui_list_item_new(
+        const vision_ui_t* ui,
+        size_t capacity,
+        bool icon_mode,
+        const char* content
+);
 
-extern vision_ui_list_item_t* vision_ui_list_title_item_new(const char* title);
+extern vision_ui_list_item_t* vision_ui_list_title_item_new(const vision_ui_t* ui, const char* title);
 
 extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
+        const vision_ui_t* ui,
         size_t capacity,
         const uint8_t* icon,
         const char* title,
@@ -241,55 +286,58 @@ extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
 );
 
 extern vision_ui_list_item_t* vision_ui_list_switch_item_new(
+        const vision_ui_t* ui,
         const char* content,
         bool default_value,
-        void (*on_changed)(bool value)
+        void (*on_changed)(vision_ui_t* ui, bool value)
 );
 
 extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
+        const vision_ui_t* ui,
         const char* content,
         int16_t default_value,
         uint8_t step,
         int16_t min,
         int16_t max,
-        void (*on_changed)(int16_t value)
+        void (*on_changed)(vision_ui_t* ui, int16_t value)
 );
 
 extern vision_ui_list_item_t* vision_ui_list_user_item_new(
+        const vision_ui_t* ui,
         const char* content,
-        void (*init_function)(),
-        void (*loop_function)(),
-        void (*exit_function)()
+        void (*init_function)(vision_ui_t* ui),
+        void (*loop_function)(vision_ui_t* ui),
+        void (*exit_function)(vision_ui_t* ui)
 );
 
-extern bool vision_ui_root_item_set(vision_ui_list_item_t* item);
+extern bool vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item);
 
-extern vision_ui_list_item_t* vision_ui_root_list_get();
+extern vision_ui_list_item_t* vision_ui_root_list_get(const vision_ui_t* ui);
 
-extern bool vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
+extern bool vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
 
-extern const vision_ui_selector_t* vision_ui_selector_instance_get();
+extern const vision_ui_selector_t* vision_ui_selector_instance_get(const vision_ui_t* ui);
 
-extern vision_ui_selector_t* vision_ui_selector_mutable_instance_get();
+extern vision_ui_selector_t* vision_ui_selector_mutable_instance_get(vision_ui_t* ui);
 
-extern bool vision_ui_selector_t_selector_bind_item(vision_ui_list_item_t* item);
+extern bool vision_ui_selector_t_selector_bind_item(vision_ui_t* ui, vision_ui_list_item_t* item);
 
-extern void vision_ui_selector_go_next_item();
+extern void vision_ui_selector_go_next_item(vision_ui_t* ui);
 
-extern void vision_ui_selector_go_prev_item();
+extern void vision_ui_selector_go_prev_item(vision_ui_t* ui);
 
-extern void vision_ui_selector_jump_to_selected_item();
+extern void vision_ui_selector_jump_to_selected_item(vision_ui_t* ui);
 
-extern void vision_ui_selector_exit_current_item();
+extern void vision_ui_selector_exit_current_item(vision_ui_t* ui);
 
-extern const vision_ui_camera_t* vision_ui_camera_instance_get();
+extern const vision_ui_camera_t* vision_ui_camera_instance_get(const vision_ui_t* ui);
 
-extern vision_ui_camera_t* vision_ui_camera_mutable_instance_get();
+extern vision_ui_camera_t* vision_ui_camera_mutable_instance_get(vision_ui_t* ui);
 
-extern void vision_ui_camera_instance_x_trg_set(float x_trg);
+extern void vision_ui_camera_instance_x_trg_set(vision_ui_t* ui, float x_trg);
 
-extern void vision_ui_camera_instance_y_trg_set(float y_trg);
+extern void vision_ui_camera_instance_y_trg_set(vision_ui_t* ui, float y_trg);
 
-extern void vision_ui_camera_bind_selector(vision_ui_selector_t* selector);
+extern void vision_ui_camera_bind_selector(vision_ui_t* ui, vision_ui_selector_t* selector);
 
 #endif // VISION_UI_VISION_UI_ITEM_H
