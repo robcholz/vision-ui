@@ -15,6 +15,7 @@ extern vision_ui_icon_item_t* vision_ui_to_list_icon_item(vision_ui_list_item_t*
 
 extern vision_ui_user_item_t* vision_ui_to_list_user_item(vision_ui_list_item_t* list_item);
 
+/// Creates a plain list container that can hold child items.
 extern vision_ui_list_item_t* vision_ui_list_item_new(
         const vision_ui_t* ui,
         size_t capacity,
@@ -22,8 +23,10 @@ extern vision_ui_list_item_t* vision_ui_list_item_new(
         const char* content
 );
 
+/// Creates a non-interactive title row.
 extern vision_ui_list_item_t* vision_ui_list_title_item_new(const vision_ui_t* ui, const char* title);
 
+/// Creates a selectable icon card, optionally with child items.
 extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
         const vision_ui_t* ui,
         size_t capacity,
@@ -32,6 +35,7 @@ extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
         const char* description
 );
 
+/// Creates a switch row whose callback runs when the value changes.
 extern vision_ui_list_item_t* vision_ui_list_switch_item_new(
         const vision_ui_t* ui,
         const char* content,
@@ -39,6 +43,7 @@ extern vision_ui_list_item_t* vision_ui_list_switch_item_new(
         void (*on_changed)(vision_ui_t* ui, bool value)
 );
 
+/// Creates a numeric slider row.
 extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
         const vision_ui_t* ui,
         const char* content,
@@ -49,6 +54,7 @@ extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
         void (*on_changed)(vision_ui_t* ui, int16_t value)
 );
 
+/// Creates a full-screen user scene that takes over drawing while selected.
 extern vision_ui_list_item_t* vision_ui_list_user_item_new(
         const vision_ui_t* ui,
         const char* content,
@@ -57,10 +63,11 @@ extern vision_ui_list_item_t* vision_ui_list_user_item_new(
         void (*exit_function)(vision_ui_t* ui)
 );
 
+/// Sets the root list displayed by the UI.
 extern bool vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item);
 
 extern vision_ui_list_item_t* vision_ui_root_list_get(const vision_ui_t* ui);
-
+/// Appends a child item to a parent list container.
 extern bool vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
 
 extern const vision_ui_selector_t* vision_ui_selector_instance_get(const vision_ui_t* ui);

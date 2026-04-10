@@ -5,33 +5,53 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/// Opaque UI instance that owns runtime state for one Vision UI session.
 typedef struct vision_ui_t vision_ui_t;
+
+/// Public tree node type used to build list screens and child items.
 typedef struct vision_ui_list_item_t vision_ui_list_item_t;
 typedef struct vision_ui_selector_t vision_ui_selector_t;
 
+/// Font configuration passed to the public font setter and driver APIs.
 typedef struct vision_ui_font_t {
+    /// Backend font object, such as a u8g2 font pointer.
     const void* font;
+    /// Adjusts text metrics upward when the font baseline sits too low.
     int8_t top_compensation;
+    /// Adjusts text metrics downward when the font clips or sits too high.
     int8_t bottom_compensation;
 } vision_ui_font_t;
 
+/// Shared bitmap pack used by the list icon renderer.
 typedef struct vision_ui_list_icon_t {
+    /// Header bitmap for a plain list container.
     const uint8_t* list_header;
+    /// Header bitmap for a switch item.
     const uint8_t* switch_header;
+    /// Header bitmap for a slider item.
     const uint8_t* slider_header;
+    /// Header bitmap for other list item styles.
     const uint8_t* default_header;
 
+    /// Footer bitmap for an enabled switch item.
     const uint8_t* switch_on_footer;
+    /// Footer bitmap for a disabled switch item.
     const uint8_t* switch_off_footer;
+    /// Footer bitmap for a slider item.
     const uint8_t* slider_footer;
 
+    /// Shared width of header bitmaps.
     size_t header_width;
+    /// Shared height of header bitmaps.
     size_t header_height;
 
+    /// Shared width of footer bitmaps.
     size_t footer_width;
+    /// Shared height of footer bitmaps.
     size_t footer_height;
 } vision_ui_icon_t;
 
+/// High-level input actions consumed by Vision UI.
 typedef enum vision_ui_action_t {
     UiActionNone,
     UiActionGoPrev,

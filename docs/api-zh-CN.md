@@ -147,7 +147,6 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 | 函数                                                                                                       | 作用          |
 |----------------------------------------------------------------------------------------------------------|-------------|
 | `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | 设置顶层列表。     |
-| `vision_ui_root_list_get(vision_ui_t* ui)`                                                               | 返回当前根列表。    |
 | `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | 向父列表添加一个子项。 |
 
 ### Item 构造函数
@@ -172,17 +171,6 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 在 user item 内部，你仍然使用普通渲染器所用的 `vision_ui_driver_*` 函数进行绘制。当前
 `vision_ui_t*` 会传给每个 user item 回调。
 
-### 类型辅助函数
-
-这些函数用于把通用的 `vision_ui_list_item_t*` 转成更具体的 item 类型：
-
-- `vision_ui_to_list_switch_item(...)`
-- `vision_ui_to_list_slider_item(...)`
-- `vision_ui_to_list_icon_item(...)`
-- `vision_ui_to_list_user_item(...)`
-
-除非你要在默认回调之外做自定义逻辑，否则通常不需要它们。
-
 ## 通知与警告
 
 这些函数会在当前界面上方显示临时消息。
@@ -191,15 +179,6 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 |------------------------------------------------------------------------------------|-------------------------|
 | `vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span)` | 显示一条持续 `span` 毫秒的通知条。   |
 | `vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span)`        | 显示一条居中的警告，持续 `span` 毫秒。 |
-
-`vision_ui_item.h` 中还有一些实例 getter：
-
-- `vision_ui_notification_instance_get(const vision_ui_t* ui)`
-- `vision_ui_notification_mutable_instance_get(vision_ui_t* ui)`
-- `vision_ui_alert_instance_get(const vision_ui_t* ui)`
-- `vision_ui_alert_mutable_instance_get(vision_ui_t* ui)`
-
-大多数应用不需要直接使用这些 getter。只有在你要扩展渲染器行为时，它们才比较有用。
 
 ## 字体与内存
 
@@ -296,14 +275,13 @@ void vision_ui_allocator_set(
 `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)` 主要用于过渡和模糊效果。如果你的后端要完整支持 Vision
 UI，它必须返回一个有效的整帧缓冲区指针。
 
-## 列表图标辅助函数
+## 列表图标
 
 渲染器在 `vision_ui_renderer.h` 中提供了一个小型图标主题入口。
 
 | 函数                                                                | 作用            |
 |-------------------------------------------------------------------|---------------|
 | `vision_ui_list_icon_set(vision_ui_t* ui, vision_ui_icon_t icon)` | 替换当前列表图标包。    |
-| `vision_ui_list_icon_get_current(const vision_ui_t* ui)`          | 返回当前激活的图标包。   |
 | `DEFAULT_LIST_ICON`                                               | 示例程序使用的内置图标包。 |
 
 `vision_ui_icon_t` 包含列表 header/footer 的位图指针和尺寸。

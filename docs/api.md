@@ -149,7 +149,6 @@ For container items, `capacity` means "how many direct children this item can ho
 | Function                                                                                                 | What it does                        |
 |----------------------------------------------------------------------------------------------------------|-------------------------------------|
 | `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | Sets the top-level list.            |
-| `vision_ui_root_list_get(vision_ui_t* ui)`                                                               | Returns the current root list.      |
 | `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | Adds a child item to a parent list. |
 
 ### Item constructors
@@ -173,15 +172,6 @@ For container items, `capacity` means "how many direct children this item can ho
 
 Inside a user item, you draw using the same `vision_ui_driver_*` functions that the normal renderer uses. The active
 `vision_ui_t*` is passed into each user-item callback.
-
-### Type helpers
-
-These cast a generic `vision_ui_list_item_t*` to a more specific item type:
-
-- `vision_ui_to_list_switch_item(...)`
-- `vision_ui_to_list_slider_item(...)`
-- `vision_ui_to_list_icon_item(...)`
-- `vision_ui_to_list_user_item(...)`
 
 You usually only need these if you are doing custom logic outside the default callbacks.
 
