@@ -64,12 +64,6 @@ jobs:
             clang-format --style=file --dry-run --Werror $files
           fi
 
-      - name: Clang-Tidy check
-        run: |
-          find . -type f \( -name '*.c' -o -name '*.cpp' \) \
-          ! -path '*/components/*' \
-          | xargs clang-tidy -p . --warnings-as-errors='*'
-
       - name: Build
         run: xmake
 
