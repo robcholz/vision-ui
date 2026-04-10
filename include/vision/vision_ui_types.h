@@ -87,6 +87,7 @@ typedef enum vision_ui_list_item_type_t {
 struct vision_ui_list_item_t {
     vision_ui_list_item_type_t type;
     bool icon_view_mode;
+    bool owns_child_list;
 
     const char* content;
     uint32_t text_scroll_anchor;
@@ -114,6 +115,7 @@ struct vision_ui_list_item_t {
     size_t capacity;
     vision_ui_list_item_t** child_list_item;
     vision_ui_list_item_t* parent;
+    vision_ui_list_item_t* owned_next;
 };
 
 typedef struct vision_ui_switch_item_t {
@@ -216,6 +218,7 @@ typedef void* (*vision_ui_allocator_t)(vision_alloc_op_t op, size_t size, size_t
 struct vision_ui_t {
     bool is_in_vision_ui;
     bool is_background_frozen;
+    bool owns_self;
 
     const uint8_t* logo;
     uint32_t logo_span;
@@ -242,6 +245,7 @@ struct vision_ui_t {
     vision_ui_selector_t selector;
     vision_ui_camera_t camera;
     vision_ui_list_item_t* root_item;
+    vision_ui_list_item_t* owned_item_head;
     vision_ui_icon_t list_icon;
 
     void* driver;

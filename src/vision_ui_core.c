@@ -53,11 +53,45 @@ vision_ui_t* vision_ui_create() {
         return NULL;
     }
     vision_ui_init(ui);
+    ui->owns_self = true;
     return ui;
 }
 
+static void vision_ui_allocator_free(const vision_ui_t* ui, void* ptr) {
+    assert(ui != NULL);
+    if (ptr == NULL) {
+        return;
+    }
+    if (ui->allocator == NULL) {
+        free(ptr);
+        return;
+    }
+    ui->allocator(VisionAllocFree, 0, 0, ptr);
+}
+
+static void vision_ui_owned_items_destroy(vision_ui_t* ui) {
+    vision_ui_list_item_t* item = ui->owned_item_head;
+    while (item != NULL) {
+        vision_ui_list_item_t* next = item->owned_next;
+        if (item->owns_child_list) {
+            vision_ui_allocator_free(ui, item->child_list_item);
+        }
+        vision_ui_allocator_free(ui, item);
+        item = next;
+    }
+
+    ui->owned_item_head = NULL;
+    ui->root_item = NULL;
+}
+
 void vision_ui_destroy(vision_ui_t* ui) {
-    free(ui);
+    if (ui == NULL) {
+        return;
+    }
+    vision_ui_owned_items_destroy(ui);
+    if (ui->owns_self) {
+        free(ui);
+    }
 }
 
 void vision_ui_allocator_set(vision_ui_t* ui, const vision_ui_allocator_t allocator) {

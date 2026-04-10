@@ -180,22 +180,108 @@ static const uint8_t MY_FONT[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese") =
         "D\36\232q \273x\34C\64hQ\232DYR\222\222RR\31\222(M\242d\351\230Ha\22K"
         "\203\0\0";
 
+typedef union VisionAllocHeader {
+    size_t size;
+    max_align_t _align;
+} VisionAllocHeader;
+
+static int vision_mul_overflow(size_t a, size_t b, size_t* out) {
+    if (a != 0 && b > SIZE_MAX / a) {
+        return 1;
+    }
+    *out = a * b;
+    return 0;
+}
+
+static int vision_add_overflow(size_t a, size_t b, size_t* out) {
+    if (b > SIZE_MAX - a) {
+        return 1;
+    }
+    *out = a + b;
+    return 0;
+}
+
 void* allocator(const vision_alloc_op_t op, const size_t size, const size_t count, void* ptr) {
     static size_t total = 0;
+
     switch (op) {
-        case VisionAllocMalloc:
+        case VisionAllocMalloc: {
+            size_t alloc_size = 0;
+            if (vision_add_overflow(sizeof(VisionAllocHeader), size, &alloc_size)) {
+                fprintf(stderr, "malloc overflow: size=%zu\n", size);
+                return NULL;
+            }
+
+            unsigned char* base = (unsigned char*) malloc(alloc_size);
+            if (base == NULL) {
+                fprintf(stderr, "malloc failed: size=%zu\n", size);
+                return NULL;
+            }
+
+            ((VisionAllocHeader*) base)->size = size;
             total += size;
-            printf("malloc: size %lu, total: %lu \n", size, total);
-            return malloc(size);
-        case VisionAllocCalloc:
-            printf("calloc: size %lu, count %lu\n", size, count);
-            return calloc(count, size);
-        case VisionAllocFree:
-            printf("free: %p\n", ptr);
-            free(ptr);
+
+            printf("malloc: size=%zu, total=%zu\n", size, total);
+            return base + sizeof(VisionAllocHeader);
+        }
+
+        case VisionAllocCalloc: {
+            size_t payload_size = 0;
+            size_t alloc_size = 0;
+
+            if (vision_mul_overflow(size, count, &payload_size)) {
+                fprintf(stderr, "calloc overflow: size=%zu, count=%zu\n", size, count);
+                return NULL;
+            }
+
+            if (vision_add_overflow(sizeof(VisionAllocHeader), payload_size, &alloc_size)) {
+                fprintf(stderr, "calloc overflow after header: payload=%zu\n", payload_size);
+                return NULL;
+            }
+
+            unsigned char* base = (unsigned char*) calloc(1, alloc_size);
+            if (base == NULL) {
+                fprintf(stderr, "calloc failed: size=%zu, count=%zu\n", size, count);
+                return NULL;
+            }
+
+            ((VisionAllocHeader*) base)->size = payload_size;
+            total += payload_size;
+
+            printf("calloc: size=%zu, count=%zu, payload=%zu, total=%zu\n", size, count, payload_size, total);
+            return base + sizeof(VisionAllocHeader);
+        }
+
+        case VisionAllocFree: {
+            if (ptr == NULL) {
+                return NULL;
+            }
+
+            unsigned char* user_ptr = (unsigned char*) ptr;
+            unsigned char* base = user_ptr - sizeof(VisionAllocHeader);
+            size_t payload_size = ((VisionAllocHeader*) base)->size;
+
+            if (payload_size > total) {
+                /*
+                Defensive guard against corrupted pointer/header.
+                You can remove this if you do not want the check.
+                */
+                fprintf(stderr, "free detected corrupted size: payload=%zu, total=%zu\n", payload_size, total);
+                free(base);
+                return NULL;
+            }
+
+            total -= payload_size;
+            printf("free: ptr=%p, payload=%zu, total=%zu\n", ptr, payload_size, total);
+
+            free(base);
+            return NULL;
+        }
+
+        default:
+            fprintf(stderr, "allocator: unknown op=%d\n", (int) op);
             return NULL;
     }
-    return NULL;
 }
 
 int main() {
@@ -364,6 +450,9 @@ int main() {
     const float target_ms = 1000.0f / 80.0f;
 
     while (!vision_ui_is_exited(&ui)) {
+        if (vision_ui_driver_ticks_ms_get(&ui) - prev_ms >= 5000) {
+            break;
+        }
         const float frame_begin = vision_ui_driver_ticks_ms_get(&ui);
 
         // render
@@ -390,6 +479,8 @@ int main() {
             frame_count = 0;
         }
     }
+
+    vision_ui_destroy(&ui);
 
     return 0;
 }

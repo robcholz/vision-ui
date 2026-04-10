@@ -18,6 +18,15 @@ static void* vision_ui_malloc(const vision_ui_t* ui, const size_t size) {
     return ui->allocator(VisionAllocMalloc, size, 0, NULL);
 }
 
+static void vision_ui_owned_item_register(const vision_ui_t* ui, vision_ui_list_item_t* item) {
+    assert(ui != NULL);
+    assert(item != NULL);
+
+    vision_ui_t* ui_mut = (vision_ui_t*) ui;
+    item->owned_next = ui_mut->owned_item_head;
+    ui_mut->owned_item_head = item;
+}
+
 // vision_ui_list_item_t vision_ui_list_item_root = {};
 
 vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item) {
@@ -55,7 +64,9 @@ vision_ui_list_item_t* vision_ui_list_item_new(
     list_item->icon_view_mode = icon_mode;
     list_item->content = content;
     list_item->capacity = capacity;
+    list_item->owns_child_list = true;
     list_item->child_list_item = vision_ui_malloc(ui, list_item->capacity * sizeof(vision_ui_list_item_t*));
+    vision_ui_owned_item_register(ui, list_item);
     return list_item;
 }
 
@@ -69,6 +80,7 @@ vision_ui_list_item_t* vision_ui_list_title_item_new(const vision_ui_t* ui, cons
     list_item->content = title;
     list_item->capacity = 0;
     list_item->child_list_item = NULL;
+    vision_ui_owned_item_register(ui, list_item);
     return list_item;
 }
 
@@ -87,6 +99,7 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(
     list_item->type = IconItem;
     list_item->content = title;
     list_item->capacity = capacity;
+    list_item->owns_child_list = true;
     list_item->child_list_item = vision_ui_malloc(ui, list_item->capacity * sizeof(vision_ui_list_item_t*));
 
     ((vision_ui_icon_item_t*) list_item)->icon = icon;
@@ -95,6 +108,7 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(
     ((vision_ui_icon_item_t*) list_item)->title_y = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
     ((vision_ui_icon_item_t*) list_item)->title_y_velocity = 0;
     ((vision_ui_icon_item_t*) list_item)->title_y_trg = VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT;
+    vision_ui_owned_item_register(ui, list_item);
     return list_item;
 }
 
@@ -115,6 +129,7 @@ vision_ui_list_item_t* vision_ui_list_switch_item_new(
     switch_item->on_changed = on_changed;
     ((vision_ui_list_item_t*) switch_item)->capacity = 0;
     ((vision_ui_list_item_t*) switch_item)->child_list_item = NULL;
+    vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) switch_item);
     return (vision_ui_list_item_t*) switch_item;
 }
 
@@ -141,6 +156,7 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(
     slider_item->on_changed = on_changed;
     ((vision_ui_list_item_t*) slider_item)->capacity = 0;
     ((vision_ui_list_item_t*) slider_item)->child_list_item = NULL;
+    vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) slider_item);
     return (vision_ui_list_item_t*) slider_item;
 }
 
@@ -163,6 +179,7 @@ vision_ui_list_item_t* vision_ui_list_user_item_new(
     user_item->exit_function = exit_function;
     ((vision_ui_list_item_t*) user_item)->capacity = 0;
     ((vision_ui_list_item_t*) user_item)->child_list_item = NULL;
+    vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) user_item);
     return (vision_ui_list_item_t*) user_item;
 }
 
