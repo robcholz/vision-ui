@@ -65,6 +65,9 @@ while (!vision_ui_is_exited(&ui)) {
 
 ## 核心类型
 
+`vision_ui_types.h` 里的公开类型层包括 `vision_ui_t`、`vision_ui_font_t`、`vision_ui_action_t` 和
+`vision_ui_icon_t`。
+
 ### `vision_ui_t`
 
 `vision_ui_t` 保存一个 UI 实例的运行时状态：字体、根列表、选择器、相机、通知、警告、启动 Logo、
@@ -78,6 +81,8 @@ while (!vision_ui_is_exited(&ui)) {
 也会释放为同一个 `vision_ui_t` 实例创建的库自有列表项。
 
 ### `vision_ui_font_t`
+
+这是一个公开的配置类型，供字体 setter/getter API 使用。
 
 配置字体时使用这个结构体：
 
@@ -104,6 +109,17 @@ vision_ui_font_t font = {
 - `UiActionGoNext`
 - `UiActionEnter`
 - `UiActionExit`
+
+### `vision_ui_icon_t`
+
+这是一个公开的配置类型，供 `vision_ui_list_icon_set(...)` 使用。
+
+它包含列表 header/footer 使用的位图指针和共享尺寸：
+
+- `list_header`、`switch_header`、`slider_header`、`default_header`：不同列表项样式的 header 位图。
+- `switch_on_footer`、`switch_off_footer`、`slider_footer`：开关项和滑块项的 footer 位图。
+- `header_width`、`header_height`：header 位图共用尺寸。
+- `footer_width`、`footer_height`：footer 位图共用尺寸。
 
 ## 生命周期
 

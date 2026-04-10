@@ -66,6 +66,9 @@ while (!vision_ui_is_exited(&ui)) {
 
 ## Core Types
 
+The public type layer in `vision_ui_types.h` includes `vision_ui_t`, `vision_ui_font_t`, `vision_ui_action_t`, and
+`vision_ui_icon_t`.
+
 ### `vision_ui_t`
 
 `vision_ui_t` owns the runtime state for one UI instance: fonts, root list, selector, camera, notifications, alerts,
@@ -79,6 +82,8 @@ When you use the item-constructor helpers such as `vision_ui_list_item_new(...)`
 the library-owned list items created for that same `vision_ui_t` instance.
 
 ### `vision_ui_font_t`
+
+This is a public configuration type used by the font setter/getter APIs.
 
 Use this struct when you configure fonts:
 
@@ -105,6 +110,17 @@ This enum is returned by the driver input hook:
 - `UiActionGoNext`
 - `UiActionEnter`
 - `UiActionExit`
+
+### `vision_ui_icon_t`
+
+This is a public configuration type used by `vision_ui_list_icon_set(...)`.
+
+It contains the bitmap pointers and shared dimensions for list headers and footers:
+
+- `list_header`, `switch_header`, `slider_header`, `default_header`: header bitmaps for different list-item styles.
+- `switch_on_footer`, `switch_off_footer`, `slider_footer`: footer bitmaps for switch and slider items.
+- `header_width`, `header_height`: shared header bitmap dimensions.
+- `footer_width`, `footer_height`: shared footer bitmap dimensions.
 
 ## Lifecycle
 
@@ -274,14 +290,13 @@ To run Vision UI on a new platform, implement the functions in `vision_ui_draw_d
 backend supports Vision
 UI fully, this must point to a valid frame buffer.
 
-## List Icon Helpers
+## List Icon
 
 The renderer exposes a small icon-theme hook in `vision_ui_renderer.h`.
 
-| Function                                                          | What it does                            |
-|-------------------------------------------------------------------|-----------------------------------------|
-| `vision_ui_list_icon_set(vision_ui_t* ui, vision_ui_icon_t icon)` | Replaces the current list icon pack.    |
-| `vision_ui_list_icon_get_current(const vision_ui_t* ui)`          | Returns the currently active icon pack. |
-| `DEFAULT_LIST_ICON`                                               | Built-in icon pack used by the demo.    |
+| Function                                                          | What it does                         |
+|-------------------------------------------------------------------|--------------------------------------|
+| `vision_ui_list_icon_set(vision_ui_t* ui, vision_ui_icon_t icon)` | Replaces the current list icon pack. |
+| `DEFAULT_LIST_ICON`                                               | Built-in icon pack used by the demo. |
 
 `vision_ui_icon_t` contains bitmap pointers and dimensions for list headers and footers.
