@@ -4,6 +4,8 @@
 #include "vision_ui_core.h"
 
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 #include <tgmath.h>
 
 #include "vision_ui_animation.h"
@@ -11,6 +13,135 @@
 #include "vision_ui_draw_driver.h"
 #include "vision_ui_item.h"
 #include "vision_ui_renderer.h"
+
+void vision_ui_init(vision_ui_t* ui) {
+    assert(ui != NULL);
+
+    memset(ui, 0, sizeof(*ui));
+    ui->exit_animation_finished = true;
+    ui->enter_animation_finished = true;
+    ui->notification = (vision_ui_notification_t) {0,
+                                                   1,
+                                                   0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
+                                                   0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
+                                                   VISION_UI_NOTIFICATION_WIDTH,
+                                                   VISION_UI_NOTIFICATION_WIDTH,
+                                                   false,
+                                                   0,
+                                                   1,
+                                                   false,
+                                                   0,
+                                                   NULL,
+                                                   0,
+                                                   false};
+    ui->alert = (vision_ui_alert_t) {0,
+                                     1,
+                                     0 - 2 * VISION_UI_ALERT_HEIGHT,
+                                     0 - 2 * VISION_UI_ALERT_HEIGHT,
+                                     VISION_UI_ALERT_WIDTH,
+                                     VISION_UI_ALERT_WIDTH,
+                                     false,
+                                     0,
+                                     1};
+    ui->camera = (vision_ui_camera_t) {0, 0, 0, 0, 0, 0, NULL};
+    ui->list_icon = DEFAULT_LIST_ICON;
+}
+
+vision_ui_t* vision_ui_create() {
+    vision_ui_t* ui = malloc(sizeof(vision_ui_t));
+    if (ui == NULL) {
+        return NULL;
+    }
+    vision_ui_init(ui);
+    return ui;
+}
+
+void vision_ui_destroy(vision_ui_t* ui) {
+    free(ui);
+}
+
+void vision_ui_allocator_set(vision_ui_t* ui, const vision_ui_allocator_t allocator) {
+    assert(ui != NULL);
+    ui->allocator = allocator;
+}
+
+void vision_ui_minifont_set(vision_ui_t* ui, const vision_ui_font_t font) {
+    assert(ui != NULL);
+    if (memcmp(&font, &ui->minifont, sizeof(vision_ui_font_t)) != 0) {
+        ui->minifont = font;
+    }
+}
+
+void vision_ui_font_set(vision_ui_t* ui, const vision_ui_font_t font) {
+    assert(ui != NULL);
+    if (memcmp(&font, &ui->font, sizeof(vision_ui_font_t)) != 0) {
+        ui->font = font;
+    }
+}
+
+void vision_ui_font_set_title(vision_ui_t* ui, const vision_ui_font_t font) {
+    assert(ui != NULL);
+    if (memcmp(&font, &ui->title_font, sizeof(vision_ui_font_t)) != 0) {
+        ui->title_font = font;
+    }
+}
+
+void vision_ui_font_set_subtitle(vision_ui_t* ui, const vision_ui_font_t font) {
+    assert(ui != NULL);
+    if (memcmp(&font, &ui->subtitle_font, sizeof(vision_ui_font_t)) != 0) {
+        ui->subtitle_font = font;
+    }
+}
+
+vision_ui_font_t vision_ui_minifont_get(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return ui->minifont;
+}
+
+vision_ui_font_t vision_ui_font_get(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return ui->font;
+}
+
+vision_ui_font_t vision_ui_font_get_title(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return ui->title_font;
+}
+
+vision_ui_font_t vision_ui_font_get_subtitle(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return ui->subtitle_font;
+}
+
+bool vision_ui_exit_animation_is_finished(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return ui->exit_animation_finished;
+}
+
+void vision_ui_exit_animation_set_is_finished(vision_ui_t* ui) {
+    assert(ui != NULL);
+    ui->exit_animation_finished = true;
+}
+
+void vision_ui_exit_animation_start(vision_ui_t* ui) {
+    assert(ui != NULL);
+    ui->exit_animation_finished = false;
+}
+
+bool vision_ui_enter_animation_is_finished(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return ui->enter_animation_finished;
+}
+
+void vision_ui_enter_animation_set_is_finished(vision_ui_t* ui) {
+    assert(ui != NULL);
+    ui->enter_animation_finished = true;
+}
+
+void vision_ui_enter_animation_start(vision_ui_t* ui) {
+    assert(ui != NULL);
+    ui->enter_animation_finished = false;
+}
 
 void vision_ui_render_init(vision_ui_t* ui) {
     assert(ui != NULL);
@@ -490,11 +621,11 @@ void vision_ui_step_render(vision_ui_t* ui) {
     vision_ui_widget_core_step(ui, delta_ms); // Notification/alert update path.
 }
 
-extern bool vision_ui_is_exited(const vision_ui_t* ui) {
+bool vision_ui_is_exited(const vision_ui_t* ui) {
     return ui == NULL || !ui->is_in_vision_ui;
 }
 
-extern bool vision_ui_is_background_frozen(const vision_ui_t* ui) {
+bool vision_ui_is_background_frozen(const vision_ui_t* ui) {
     assert(ui != NULL);
     return ui->is_background_frozen;
 }

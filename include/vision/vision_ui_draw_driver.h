@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "vision_ui_core.h"
+#include "vision_ui_types.h"
 
 extern vision_ui_action_t vision_ui_driver_action_get(const vision_ui_t* ui);
 

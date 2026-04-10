@@ -6,63 +6,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 
 #include "vision_ui_config.h"
 #include "vision_ui_core.h"
-#include "vision_ui_draw_driver.h"
-#include "vision_ui_renderer.h"
-
-void vision_ui_init(vision_ui_t* ui) {
-    assert(ui != NULL);
-
-    memset(ui, 0, sizeof(*ui));
-    ui->exit_animation_finished = true;
-    ui->enter_animation_finished = true;
-    ui->notification = (vision_ui_notification_t) {0,
-                                                   1,
-                                                   0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
-                                                   0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
-                                                   VISION_UI_NOTIFICATION_WIDTH,
-                                                   VISION_UI_NOTIFICATION_WIDTH,
-                                                   false,
-                                                   0,
-                                                   1,
-                                                   false,
-                                                   0,
-                                                   NULL,
-                                                   0,
-                                                   false};
-    ui->alert = (vision_ui_alert_t) {0,
-                                     1,
-                                     0 - 2 * VISION_UI_ALERT_HEIGHT,
-                                     0 - 2 * VISION_UI_ALERT_HEIGHT,
-                                     VISION_UI_ALERT_WIDTH,
-                                     VISION_UI_ALERT_WIDTH,
-                                     false,
-                                     0,
-                                     1};
-    ui->camera = (vision_ui_camera_t) {0, 0, 0, 0, 0, 0, NULL};
-    ui->list_icon = DEFAULT_LIST_ICON;
-}
-
-vision_ui_t* vision_ui_create() {
-    vision_ui_t* ui = malloc(sizeof(vision_ui_t));
-    if (ui == NULL) {
-        return NULL;
-    }
-    vision_ui_init(ui);
-    return ui;
-}
-
-void vision_ui_destroy(vision_ui_t* ui) {
-    free(ui);
-}
-
-void vision_ui_allocator_set(vision_ui_t* ui, const vision_ui_allocator_t allocator) {
-    assert(ui != NULL);
-    ui->allocator = allocator;
-}
 
 static void* vision_ui_malloc(const vision_ui_t* ui, const size_t size) {
     assert(ui != NULL);
@@ -70,143 +16,6 @@ static void* vision_ui_malloc(const vision_ui_t* ui, const size_t size) {
         return malloc(size);
     }
     return ui->allocator(VisionAllocMalloc, size, 0, NULL);
-}
-
-static void* vision_ui_calloc(const vision_ui_t* ui, const size_t count, const size_t size) {
-    assert(ui != NULL);
-    if (ui->allocator == NULL) {
-        return calloc(count, size);
-    }
-    return ui->allocator(VisionAllocCalloc, size, count, NULL);
-}
-
-static void vision_ui_free(const vision_ui_t* ui, void* ptr) {
-    assert(ui != NULL);
-    if(ui->allocator == NULL) {
-        free(ptr);
-        return;
-    }
-    ui->allocator(VisionAllocFree, 0, 0, ptr);
-}
-
-void vision_ui_minifont_set(vision_ui_t* ui, const vision_ui_font_t font) {
-    assert(ui != NULL);
-    if (memcmp(&font, &ui->minifont, sizeof(vision_ui_font_t)) != 0) {
-        ui->minifont = font;
-    }
-}
-
-void vision_ui_font_set(vision_ui_t* ui, const vision_ui_font_t font) {
-    assert(ui != NULL);
-    if (memcmp(&font, &ui->font, sizeof(vision_ui_font_t)) != 0) {
-        ui->font = font;
-    }
-}
-
-void vision_ui_font_set_title(vision_ui_t* ui, const vision_ui_font_t font) {
-    assert(ui != NULL);
-    if (memcmp(&font, &ui->title_font, sizeof(vision_ui_font_t)) != 0) {
-        ui->title_font = font;
-    }
-}
-
-void vision_ui_font_set_subtitle(vision_ui_t* ui, const vision_ui_font_t font) {
-    assert(ui != NULL);
-    if (memcmp(&font, &ui->subtitle_font, sizeof(vision_ui_font_t)) != 0) {
-        ui->subtitle_font = font;
-    }
-}
-
-vision_ui_font_t vision_ui_minifont_get(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return ui->minifont;
-}
-
-vision_ui_font_t vision_ui_font_get(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return ui->font;
-}
-
-vision_ui_font_t vision_ui_font_get_title(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return ui->title_font;
-}
-
-vision_ui_font_t vision_ui_font_get_subtitle(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return ui->subtitle_font;
-}
-
-extern const vision_ui_notification_t* vision_ui_notification_instance_get(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return &ui->notification;
-}
-
-vision_ui_notification_t* vision_ui_notification_mutable_instance_get(vision_ui_t* ui) {
-    assert(ui != NULL);
-    return &ui->notification;
-}
-
-void vision_ui_notification_push(vision_ui_t* ui, const char* content, const uint16_t span) {
-    assert(ui != NULL);
-
-    vision_ui_notification_t* notification = &ui->notification;
-    const uint32_t now = vision_ui_driver_ticks_ms_get(ui);
-
-    if (!notification->is_running) {
-        notification->content = content;
-        notification->span = span;
-        notification->time_start = now;
-        notification->time = now;
-        notification->y_notification_trg = 0;
-        notification->is_running = true;
-        notification->is_dismissing = false;
-        notification->has_pending = false;
-        notification->pending_content = NULL;
-        notification->pending_span = 0;
-        notification->dismiss_start = 0;
-        vision_ui_font_set(ui, vision_ui_font_get(ui));
-        notification->w_notification_trg =
-                vision_ui_driver_str_utf8_width_get(ui, notification->content) + VISION_UI_NOTIFICATION_WIDTH;
-        return;
-    }
-
-    notification->pending_content = content;
-    notification->pending_span = span;
-    notification->has_pending = true;
-    notification->is_dismissing = true;
-    notification->dismiss_start = now;
-    notification->y_notification_trg = 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT;
-}
-
-const vision_ui_alert_t* vision_ui_alert_instance_get(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return &ui->alert;
-}
-
-vision_ui_alert_t* vision_ui_alert_mutable_instance_get(vision_ui_t* ui) {
-    assert(ui != NULL);
-    return &ui->alert;
-}
-
-void vision_ui_alert_push(vision_ui_t* ui, const char* content, const uint16_t span) {
-    assert(ui != NULL);
-
-    vision_ui_alert_t* alert = &ui->alert;
-    alert->time = vision_ui_driver_ticks_ms_get(ui);
-    alert->content = content;
-    alert->span = span;
-    alert->is_running = false;
-
-    // Show the alert.
-    if (!alert->is_running) {
-        alert->time_start = vision_ui_driver_ticks_ms_get(ui);
-        alert->y_alert_trg = (VISION_UI_SCREEN_HEIGHT - VISION_UI_ALERT_HEIGHT) / 2;
-        alert->is_running = true;
-    }
-
-    vision_ui_font_set(ui, vision_ui_font_get(ui));
-    alert->w_alert_trg = vision_ui_driver_str_utf8_width_get(ui, alert->content) + VISION_UI_ALERT_WIDTH;
 }
 
 // vision_ui_list_item_t vision_ui_list_item_root = {};
@@ -362,7 +171,7 @@ const vision_ui_selector_t* vision_ui_selector_instance_get(const vision_ui_t* u
     return &ui->selector;
 }
 
-extern vision_ui_selector_t* vision_ui_selector_mutable_instance_get(vision_ui_t* ui) {
+vision_ui_selector_t* vision_ui_selector_mutable_instance_get(vision_ui_t* ui) {
     assert(ui != NULL);
     return &ui->selector;
 }
@@ -476,36 +285,6 @@ void vision_ui_selector_go_prev_item(vision_ui_t* ui) {
     }
 
     selector->selected_item = selector->selected_item->parent->child_list_item[--selector->selected_index];
-}
-
-extern bool vision_ui_exit_animation_is_finished(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return ui->exit_animation_finished;
-}
-
-void vision_ui_exit_animation_set_is_finished(vision_ui_t* ui) {
-    assert(ui != NULL);
-    ui->exit_animation_finished = true;
-}
-
-void vision_ui_exit_animation_start(vision_ui_t* ui) {
-    assert(ui != NULL);
-    ui->exit_animation_finished = false;
-}
-
-extern bool vision_ui_enter_animation_is_finished(const vision_ui_t* ui) {
-    assert(ui != NULL);
-    return ui->enter_animation_finished;
-}
-
-extern void vision_ui_enter_animation_set_is_finished(vision_ui_t* ui) {
-    assert(ui != NULL);
-    ui->enter_animation_finished = true;
-}
-
-extern void vision_ui_enter_animation_start(vision_ui_t* ui) {
-    assert(ui != NULL);
-    ui->enter_animation_finished = false;
 }
 
 /** @brief Confirm the currently selected item.
@@ -723,7 +502,7 @@ const vision_ui_camera_t* vision_ui_camera_instance_get(const vision_ui_t* ui) {
     return &ui->camera;
 }
 
-extern vision_ui_camera_t* vision_ui_camera_mutable_instance_get(vision_ui_t* ui) {
+vision_ui_camera_t* vision_ui_camera_mutable_instance_get(vision_ui_t* ui) {
     assert(ui != NULL);
     return &ui->camera;
 }

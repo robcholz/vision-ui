@@ -26,7 +26,7 @@ if has_config("simulator") then
     target("vision_ui_simulator")
     set_kind("binary")
     add_files(
-            "main.cpp",
+            "main.c",
             "components/u8g2/sys/sdl/common/u8x8_sdl_key.c"
     )
     add_files("src/driver/*.c")

@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <tgmath.h>
 #include <u8g2.h>
 
@@ -57,6 +59,31 @@ void test_user_item_exit_function(vision_ui_t* ui) {
     Y_WIRE_2 = 200;
 }
 
+static void notify_test_1(vision_ui_t* ui, bool value) {
+    (void) value;
+    vision_ui_notification_push(ui, "Notification Test 1", 5000);
+}
+
+static void notify_test_2(vision_ui_t* ui, bool value) {
+    (void) value;
+    vision_ui_notification_push(ui, "Notification Test 2", 5000);
+}
+
+static void alert_test(vision_ui_t* ui, bool value) {
+    (void) value;
+    vision_ui_alert_push(ui, "Alert Test", 5000);
+}
+
+static void noop_switch_changed(vision_ui_t* ui, bool value) {
+    (void) ui;
+    (void) value;
+}
+
+static void noop_slider_changed(vision_ui_t* ui, int16_t value) {
+    (void) ui;
+    (void) value;
+}
+
 #include <stdint.h>
 
 const uint8_t BITMAP_30X30[30 * 4] = {
@@ -76,7 +103,7 @@ const uint8_t BITMAP_30X30[30 * 4] = {
         0b00000000, 0b00000000, 0b00000010,
 };
 
-constexpr uint8_t MY_FONT[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese") =
+static const uint8_t MY_FONT[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese") =
         "\222\0\3\2\4\4\4\4\5\13\15\0\376\10\376\12\377\1d\2\331\4$ \5\0\230\26!\7\221\212"
         "\26\247\0\42\7\64\371\26\221)#\16\226\210\67Q\313\260D\275\14K\324\2$\17\245xV\331RQ"
         "\62QK\224\312\26\1%\20\226x\66Q\322EK\302\64\211\222.Z\2&\16\205\210VY\22%Y"
@@ -160,18 +187,15 @@ void* allocator(const vision_alloc_op_t op, const size_t size, const size_t coun
             total += size;
             printf("malloc: size %lu, total: %lu \n", size, total);
             return malloc(size);
-            break;
         case VisionAllocCalloc:
             printf("calloc: size %lu, count %lu\n", size, count);
             return calloc(count, size);
-            break;
         case VisionAllocFree:
             printf("free: %p\n", ptr);
             free(ptr);
-            return nullptr;
-            break;
+            return NULL;
     }
-    return nullptr;
+    return NULL;
 }
 
 int main() {
@@ -189,16 +213,18 @@ int main() {
 
     vision_ui_font_set_title(
             &ui,
-            vision_ui_font_t{
+            (vision_ui_font_t) {
                     .font = (void*) u8g2_font_fub42_tf,
                     .top_compensation = -2,
                     .bottom_compensation = 18,
             }
     );
     vision_ui_font_set_subtitle(
-            &ui, vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 3}
+            &ui, (vision_ui_font_t) {.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 3}
     );
-    vision_ui_font_set(&ui, vision_ui_font_t{.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 0});
+    vision_ui_font_set(
+            &ui, (vision_ui_font_t) {.font = (void*) MY_FONT, .top_compensation = 0, .bottom_compensation = 0}
+    );
     vision_ui_list_icon_set(&ui, DEFAULT_LIST_ICON);
 
     vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 15, false, "VisionUI");
@@ -209,14 +235,14 @@ int main() {
     vision_ui_list_item_t* launcher_setting_list_item_2 = vision_ui_list_item_new(&ui, 3, true, "Board Settings 2");
 
     vision_ui_list_push_item(
-            &ui, launcher_setting_list_item_2, vision_ui_list_icon_item_new(&ui, 0, nullptr, "Icon 1", "Example Icon 1")
+            &ui, launcher_setting_list_item_2, vision_ui_list_icon_item_new(&ui, 0, NULL, "Icon 1", "Example Icon 1")
     );
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item_2,
             vision_ui_list_icon_item_new(&ui, 0, BITMAP_30X30, "Icon Super Looooooooong", "Example Icon 2")
     );
-    vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(&ui, 1, nullptr, "Icon Item 3", nullptr);
+    vision_ui_list_item_t* icon = vision_ui_list_icon_item_new(&ui, 1, NULL, "Icon Item 3", NULL);
     vision_ui_list_item_t* list3 = vision_ui_list_item_new(&ui, 0, false, "Board Settings3");
     vision_ui_list_push_item(&ui, icon, list3);
     vision_ui_list_push_item(&ui, launcher_setting_list_item_2, icon);
@@ -236,110 +262,69 @@ int main() {
             )
     );
     vision_ui_list_push_item(
-            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 1", false, [](vision_ui_t* ui, bool b) {
-                vision_ui_notification_push(ui, "Notification Test 1", 5000);
-            })
+            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 1", false, notify_test_1)
     );
     vision_ui_list_push_item(
-            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 2", false, [](vision_ui_t* ui, bool b) {
-                vision_ui_notification_push(ui, "Notification Test 2", 5000);
-            })
+            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 2", false, notify_test_2)
     );
-    vision_ui_list_push_item(
-            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Alert", false, [](vision_ui_t* ui, bool b) {
-                vision_ui_alert_push(ui, "Alert Test", 5000);
-            })
-    );
+    vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Test Alert", false, alert_test));
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui,
-                    "Test Notification 1 Notification Test 2 Notification Test 2",
-                    false,
-                    [](vision_ui_t* ui_ptr, bool b) {
-                        vision_ui_notification_push(ui_ptr, "Notification Test 1", 5000);
-                    }
+                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1
             )
     );
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui,
-                    "Test Notification 2 Notification Test 2 Notification Test 2",
-                    false,
-                    [](vision_ui_t* ui_ptr, bool b) {
-                        vision_ui_notification_push(ui_ptr, "Notification Test 2", 5000);
-                    }
+                    &ui, "Test Notification 2 Notification Test 2 Notification Test 2", false, notify_test_2
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(&ui, "Test Alert Notification Test 2 Notification Test 2", false, alert_test)
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1
             )
     );
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui, "Test Alert Notification Test 2 Notification Test 2", false, [](vision_ui_t* ui, bool b) {
-                        vision_ui_alert_push(ui, "Alert Test", 5000);
-                    }
+                    &ui, "Test Notification 2Notification Test 2 Notification Test 2", false, notify_test_2
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(&ui, "Test Alert Notification Test 2 Notification Test 2", false, alert_test)
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1
             )
     );
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui,
-                    "Test Notification 1 Notification Test 2 Notification Test 2",
-                    false,
-                    [](vision_ui_t* ui, bool b) { vision_ui_notification_push(ui, "Notification Test 1", 5000); }
+                    &ui, "Test Notification 2 Notification Test 2 Notification Test 2", false, notify_test_2
             )
     );
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui,
-                    "Test Notification 2Notification Test 2 Notification Test 2",
-                    false,
-                    [](vision_ui_t* ui, bool b) { vision_ui_notification_push(ui, "Notification Test 2", 5000); }
-            )
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(
-                    &ui, "Test Alert Notification Test 2 Notification Test 2", false, [](vision_ui_t* ui, bool b) {
-                        vision_ui_alert_push(ui, "Alert Test", 5000);
-                    }
-            )
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(
-                    &ui,
-                    "Test Notification 1 Notification Test 2 Notification Test 2",
-                    false,
-                    [](vision_ui_t* ui_ptr, bool) { vision_ui_notification_push(ui_ptr, "Notification Test 1", 5000); }
-            )
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(
-                    &ui,
-                    "Test Notification 2 Notification Test 2 Notification Test 2",
-                    false,
-                    [](vision_ui_t* ui_ptr, bool) { vision_ui_notification_push(ui_ptr, "Notification Test 2", 5000); }
-            )
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(
-                    &ui,
-                    "Test Alert Notification Test 2 Notification Test 2 Notification Test 2",
-                    false,
-                    [](vision_ui_t* ui_ptr, bool b) { vision_ui_alert_push(ui_ptr, "Alert Test", 5000); }
+                    &ui, "Test Alert Notification Test 2 Notification Test 2 Notification Test 2", false, alert_test
             )
     );
 
@@ -349,22 +334,22 @@ int main() {
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_switch_item_new(&ui, "Heartbeat LED", true, [](vision_ui_t*, bool) {})
+            vision_ui_list_switch_item_new(&ui, "Heartbeat LED", true, noop_switch_changed)
     );
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_switch_item_new(&ui, "Reverse Keys", false, [](vision_ui_t*, bool) {})
+            vision_ui_list_switch_item_new(&ui, "Reverse Keys", false, noop_switch_changed)
     );
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_slider_item_new(&ui, "Display Style", 1600, 5, 1, 9999, [](vision_ui_t*, int16_t) {})
+            vision_ui_list_slider_item_new(&ui, "Display Style", 1600, 5, 1, 9999, noop_slider_changed)
     );
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_switch_item_new(&ui, "Invert Display", false, [](vision_ui_t*, bool) {})
+            vision_ui_list_switch_item_new(&ui, "Invert Display", false, noop_switch_changed)
     );
 
     vision_ui_core_init(&ui);
@@ -376,7 +361,7 @@ int main() {
     float fps_timer = prev_ms;
     int frame_count = 0;
 
-    constexpr float target_ms = 1000.0f / 80.f;
+    const float target_ms = 1000.0f / 80.0f;
 
     while (!vision_ui_is_exited(&ui)) {
         const float frame_begin = vision_ui_driver_ticks_ms_get(&ui);
@@ -388,16 +373,18 @@ int main() {
 
         // pace to 120 fps (include render time)
         float now_ms = vision_ui_driver_ticks_ms_get(&ui);
-        if (const float elapsed_ms = now_ms - frame_begin; elapsed_ms < target_ms) {
-            // sleep the remainder (rounded; replace delay() with a microsecond sleep if you have one)
-            vision_ui_driver_delay(&ui, static_cast<uint32_t>(lrintf(target_ms - elapsed_ms)));
-            now_ms = vision_ui_driver_ticks_ms_get(&ui); // re-sample after sleep
+        {
+            const float elapsed_ms = now_ms - frame_begin;
+            if (elapsed_ms < target_ms) {
+                vision_ui_driver_delay(&ui, (uint32_t) lrintf(target_ms - elapsed_ms));
+                now_ms = vision_ui_driver_ticks_ms_get(&ui);
+            }
         }
 
         // fps
         frame_count++;
         if (now_ms - fps_timer >= 1000.0f) {
-            const float fps = static_cast<float>(frame_count) * 1000.0f / (now_ms - fps_timer);
+            const float fps = (float) frame_count * 1000.0f / (now_ms - fps_timer);
             printf("FPS: %.1f\n", fps);
             fps_timer = now_ms;
             frame_count = 0;

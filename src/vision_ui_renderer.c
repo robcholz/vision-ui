@@ -123,6 +123,77 @@ vision_ui_icon_t vision_ui_list_icon_get_current(const vision_ui_t* ui) {
     return ui->list_icon;
 }
 
+const vision_ui_notification_t* vision_ui_notification_instance_get(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return &ui->notification;
+}
+
+vision_ui_notification_t* vision_ui_notification_mutable_instance_get(vision_ui_t* ui) {
+    assert(ui != NULL);
+    return &ui->notification;
+}
+
+void vision_ui_notification_push(vision_ui_t* ui, const char* content, const uint16_t span) {
+    assert(ui != NULL);
+
+    vision_ui_notification_t* notification = &ui->notification;
+    const uint32_t now = vision_ui_driver_ticks_ms_get(ui);
+
+    if (!notification->is_running) {
+        notification->content = content;
+        notification->span = span;
+        notification->time_start = now;
+        notification->time = now;
+        notification->y_notification_trg = 0;
+        notification->is_running = true;
+        notification->is_dismissing = false;
+        notification->has_pending = false;
+        notification->pending_content = NULL;
+        notification->pending_span = 0;
+        notification->dismiss_start = 0;
+        vision_ui_font_set(ui, vision_ui_font_get(ui));
+        notification->w_notification_trg =
+                vision_ui_driver_str_utf8_width_get(ui, notification->content) + VISION_UI_NOTIFICATION_WIDTH;
+        return;
+    }
+
+    notification->pending_content = content;
+    notification->pending_span = span;
+    notification->has_pending = true;
+    notification->is_dismissing = true;
+    notification->dismiss_start = now;
+    notification->y_notification_trg = 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT;
+}
+
+const vision_ui_alert_t* vision_ui_alert_instance_get(const vision_ui_t* ui) {
+    assert(ui != NULL);
+    return &ui->alert;
+}
+
+vision_ui_alert_t* vision_ui_alert_mutable_instance_get(vision_ui_t* ui) {
+    assert(ui != NULL);
+    return &ui->alert;
+}
+
+void vision_ui_alert_push(vision_ui_t* ui, const char* content, const uint16_t span) {
+    assert(ui != NULL);
+
+    vision_ui_alert_t* alert = &ui->alert;
+    alert->time = vision_ui_driver_ticks_ms_get(ui);
+    alert->content = content;
+    alert->span = span;
+    alert->is_running = false;
+
+    if (!alert->is_running) {
+        alert->time_start = vision_ui_driver_ticks_ms_get(ui);
+        alert->y_alert_trg = (VISION_UI_SCREEN_HEIGHT - VISION_UI_ALERT_HEIGHT) / 2;
+        alert->is_running = true;
+    }
+
+    vision_ui_font_set(ui, vision_ui_font_get(ui));
+    alert->w_alert_trg = vision_ui_driver_str_utf8_width_get(ui, alert->content) + VISION_UI_ALERT_WIDTH;
+}
+
 typedef struct {
     uint8_t total;
     uint8_t col[3];
