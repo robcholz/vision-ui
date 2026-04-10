@@ -181,11 +181,11 @@ static const uint8_t MY_FONT[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese"
     "D\36\232q \273x\34C\64hQ\232DYR\222\222RR\31\222(M\242d\351\230Ha\22K"
     "\203\0\0";
 
-typedef union VisionAllocHeader {
+typedef union vision_alloc_header {
     size_t size;
-    long double _long_double_align;
-    void* _ptr_align;
-} VisionAllocHeader;
+    long double long_double_align;
+    void* ptr_align;
+} vision_alloc_header;
 
 static int vision_mul_overflow(size_t a, size_t b, size_t* out) {
     if (a != 0 && b > SIZE_MAX / a) {
@@ -209,7 +209,7 @@ void* allocator(const vision_alloc_op_t op, const size_t size, const size_t coun
     switch (op) {
         case VisionAllocMalloc: {
             size_t alloc_size = 0;
-            if (vision_add_overflow(sizeof(VisionAllocHeader), size, &alloc_size)) {
+            if (vision_add_overflow(sizeof(vision_alloc_header), size, &alloc_size)) {
                 fprintf(stderr, "malloc overflow: size=%zu\n", size);
                 return NULL;
             }
@@ -220,11 +220,11 @@ void* allocator(const vision_alloc_op_t op, const size_t size, const size_t coun
                 return NULL;
             }
 
-            ((VisionAllocHeader*) base)->size = size;
+            ((vision_alloc_header*) base)->size = size;
             total += size;
 
             printf("malloc: size=%zu, total=%zu\n", size, total);
-            return base + sizeof(VisionAllocHeader);
+            return base + sizeof(vision_alloc_header);
         }
 
         case VisionAllocCalloc: {
@@ -236,7 +236,7 @@ void* allocator(const vision_alloc_op_t op, const size_t size, const size_t coun
                 return NULL;
             }
 
-            if (vision_add_overflow(sizeof(VisionAllocHeader), payload_size, &alloc_size)) {
+            if (vision_add_overflow(sizeof(vision_alloc_header), payload_size, &alloc_size)) {
                 fprintf(stderr, "calloc overflow after header: payload=%zu\n", payload_size);
                 return NULL;
             }
@@ -247,11 +247,11 @@ void* allocator(const vision_alloc_op_t op, const size_t size, const size_t coun
                 return NULL;
             }
 
-            ((VisionAllocHeader*) base)->size = payload_size;
+            ((vision_alloc_header*) base)->size = payload_size;
             total += payload_size;
 
             printf("calloc: size=%zu, count=%zu, payload=%zu, total=%zu\n", size, count, payload_size, total);
-            return base + sizeof(VisionAllocHeader);
+            return base + sizeof(vision_alloc_header);
         }
 
         case VisionAllocFree: {
@@ -260,8 +260,8 @@ void* allocator(const vision_alloc_op_t op, const size_t size, const size_t coun
             }
 
             unsigned char* user_ptr = (unsigned char*) ptr;
-            unsigned char* base = user_ptr - sizeof(VisionAllocHeader);
-            size_t payload_size = ((VisionAllocHeader*) base)->size;
+            unsigned char* base = user_ptr - sizeof(vision_alloc_header);
+            size_t payload_size = ((vision_alloc_header*) base)->size;
 
             if (payload_size > total) {
                 /*
