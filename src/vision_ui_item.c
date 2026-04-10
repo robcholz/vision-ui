@@ -27,6 +27,22 @@ static void vision_ui_owned_item_register(const vision_ui_t* ui, vision_ui_list_
     ui_mut->owned_item_head = item;
 }
 
+static bool vision_ui_child_list_init(const vision_ui_t* ui, vision_ui_list_item_t* item, const size_t capacity) {
+    assert(ui != NULL);
+    assert(item != NULL);
+
+    item->capacity = capacity;
+    if (capacity == 0) {
+        item->owns_child_list = false;
+        item->child_list_item = NULL;
+        return true;
+    }
+
+    item->owns_child_list = true;
+    item->child_list_item = vision_ui_malloc(ui, capacity * sizeof(vision_ui_list_item_t*));
+    return item->child_list_item != NULL;
+}
+
 // vision_ui_list_item_t vision_ui_list_item_root = {};
 
 vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item) {
@@ -63,9 +79,10 @@ vision_ui_list_item_t* vision_ui_list_item_new(
     list_item->type = ListItem;
     list_item->icon_view_mode = icon_mode;
     list_item->content = content;
-    list_item->capacity = capacity;
-    list_item->owns_child_list = true;
-    list_item->child_list_item = vision_ui_malloc(ui, list_item->capacity * sizeof(vision_ui_list_item_t*));
+    if (!vision_ui_child_list_init(ui, list_item, capacity)) {
+        free(list_item);
+        return NULL;
+    }
     vision_ui_owned_item_register(ui, list_item);
     return list_item;
 }
@@ -78,8 +95,7 @@ vision_ui_list_item_t* vision_ui_list_title_item_new(const vision_ui_t* ui, cons
     memset(list_item, 0, sizeof(vision_ui_title_item_t));
     list_item->type = TitleItem;
     list_item->content = title;
-    list_item->capacity = 0;
-    list_item->child_list_item = NULL;
+    vision_ui_child_list_init(ui, list_item, 0);
     vision_ui_owned_item_register(ui, list_item);
     return list_item;
 }
@@ -98,9 +114,10 @@ vision_ui_list_item_t* vision_ui_list_icon_item_new(
     memset(list_item, 0, sizeof(vision_ui_icon_item_t));
     list_item->type = IconItem;
     list_item->content = title;
-    list_item->capacity = capacity;
-    list_item->owns_child_list = true;
-    list_item->child_list_item = vision_ui_malloc(ui, list_item->capacity * sizeof(vision_ui_list_item_t*));
+    if (!vision_ui_child_list_init(ui, list_item, capacity)) {
+        free(list_item);
+        return NULL;
+    }
 
     ((vision_ui_icon_item_t*) list_item)->icon = icon;
     ((vision_ui_icon_item_t*) list_item)->description = description;
@@ -127,8 +144,7 @@ vision_ui_list_item_t* vision_ui_list_switch_item_new(
     switch_item->base_item.content = content;
     switch_item->value = default_value;
     switch_item->on_changed = on_changed;
-    ((vision_ui_list_item_t*) switch_item)->capacity = 0;
-    ((vision_ui_list_item_t*) switch_item)->child_list_item = NULL;
+    vision_ui_child_list_init(ui, (vision_ui_list_item_t*) switch_item, 0);
     vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) switch_item);
     return (vision_ui_list_item_t*) switch_item;
 }
@@ -154,8 +170,7 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(
     slider_item->value_min = min;
     slider_item->value_max = max;
     slider_item->on_changed = on_changed;
-    ((vision_ui_list_item_t*) slider_item)->capacity = 0;
-    ((vision_ui_list_item_t*) slider_item)->child_list_item = NULL;
+    vision_ui_child_list_init(ui, (vision_ui_list_item_t*) slider_item, 0);
     vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) slider_item);
     return (vision_ui_list_item_t*) slider_item;
 }
@@ -177,8 +192,7 @@ vision_ui_list_item_t* vision_ui_list_user_item_new(
     user_item->init_function = init_function;
     user_item->loop_function = loop_function;
     user_item->exit_function = exit_function;
-    ((vision_ui_list_item_t*) user_item)->capacity = 0;
-    ((vision_ui_list_item_t*) user_item)->child_list_item = NULL;
+    vision_ui_child_list_init(ui, (vision_ui_list_item_t*) user_item, 0);
     vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) user_item);
     return (vision_ui_list_item_t*) user_item;
 }

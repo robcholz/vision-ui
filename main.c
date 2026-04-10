@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <tgmath.h>
@@ -182,7 +183,8 @@ static const uint8_t MY_FONT[2372] U8G2_FONT_SECTION("u8g2_font_my_chinese") =
 
 typedef union VisionAllocHeader {
     size_t size;
-    max_align_t _align;
+    long double _long_double_align;
+    void* _ptr_align;
 } VisionAllocHeader;
 
 static int vision_mul_overflow(size_t a, size_t b, size_t* out) {
