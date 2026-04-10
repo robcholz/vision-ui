@@ -199,6 +199,18 @@ impl From<NulError> for VisionUiError {
     fn from(value: NulError) -> Self { Self::NulByteInString(value) }
 }
 
+
+impl std::fmt::Display for VisionUiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::NulByteInString(err) => write!(f, "invalid string contains NUL: {err}"),
+            Self::BitmapTooLarge(size) => write!(f, "bitmap length {size} exceeds u32::MAX"),
+        }
+    }
+}
+
+impl std::error::Error for VisionUiError {}
+
 fn retained_strings() -> &'static Mutex<Vec<CString>> {
     static RETAINED_STRINGS: OnceLock<Mutex<Vec<CString>>> = OnceLock::new();
     RETAINED_STRINGS.get_or_init(|| Mutex::new(Vec::new()))

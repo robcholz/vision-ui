@@ -27,6 +27,11 @@ vui::vision_ui_core_init_safe();
 vui::vision_ui_notification_push_safe("Hello", 1200)?;
 ```
 
+## Examples
+
+- `examples/lifecycle.rs`: initialize/render loop basics + notifications.
+- `examples/menu_tree.rs`: create a root list, add a switch item, and bind selector.
+
 ## Notes
 
 - Wrapper functions are safe to call from Rust (no `unsafe` required at call sites).

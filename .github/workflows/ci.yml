@@ -52,3 +52,12 @@ jobs:
 
       - name: Build
         run: xmake
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust bindings check
+        run: |
+          cd bindings/rust
+          cargo check
+          cargo check --examples
