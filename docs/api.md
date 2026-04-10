@@ -12,6 +12,7 @@ If you are porting the backend driver, read [`migration.md`](migration.md) first
 
 Header locations:
 
+- [`include/vision/vision_ui.h`](../include/vision/vision_ui.h)
 - [`include/vision/vision_ui_core.h`](../include/vision/vision_ui_core.h)
 - [`include/vision/vision_ui_item.h`](../include/vision/vision_ui_item.h)
 - [`include/vision/vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h)
@@ -157,15 +158,6 @@ These show temporary UI messages on top of the current screen.
 | `vision_ui_notification_push(const char* content, uint16_t span)` | Shows a notification bar for `span` milliseconds. |
 | `vision_ui_alert_push(const char* content, uint16_t span)`        | Shows a centered alert for `span` milliseconds.   |
 
-There are also instance getter functions in `vision_ui_item.h`:
-
-- `vision_ui_notification_instance_get()`
-- `vision_ui_notification_mutable_instance_get()`
-- `vision_ui_alert_instance_get()`
-- `vision_ui_alert_mutable_instance_get()`
-
-Most applications do not need those getters. They are useful if you are extending renderer behavior.
-
 ## Fonts and Memory
 
 ### Font configuration
@@ -270,34 +262,3 @@ The renderer exposes a small icon-theme hook in `vision_ui_renderer.h`.
 | `DEFAULT_LIST_ICON`                              | Built-in icon pack used by the demo.    |
 
 `vision_ui_icon_t` contains bitmap pointers and dimensions for list headers and footers.
-
-## Exposed but Usually Not Called Directly
-
-Some symbols are public because they live in exported headers, but most applications should not call them manually:
-
-- `vision_ui_exit_animation_is_finished()`
-- `vision_ui_exit_animation_set_is_finished()`
-- `vision_ui_exit_animation_start()`
-- `vision_ui_enter_animation_is_finished()`
-- `vision_ui_enter_animation_set_is_finished()`
-- `vision_ui_enter_animation_start()`
-- `vision_ui_selector_instance_get()`
-- `vision_ui_selector_mutable_instance_get()`
-- `vision_ui_selector_t_selector_bind_item()`
-- `vision_ui_selector_go_next_item()`
-- `vision_ui_selector_go_prev_item()`
-- `vision_ui_selector_jump_to_selected_item()`
-- `vision_ui_selector_exit_current_item()`
-- `vision_ui_camera_instance_get()`
-- `vision_ui_camera_mutable_instance_get()`
-- `vision_ui_camera_instance_x_trg_set()`
-- `vision_ui_camera_instance_y_trg_set()`
-- `vision_ui_camera_bind_selector()`
-- `vision_ui_exit_animation_render()`
-- `vision_ui_enter_animation_render()`
-- `vision_ui_widget_render()`
-- `vision_ui_list_render()`
-
-These are useful if you are extending the framework itself, writing a custom shell around it, or debugging state
-transitions. For normal app integration, stick to the lifecycle, tree-building, notification, font, and driver APIs
-above.
