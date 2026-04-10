@@ -20,30 +20,32 @@ void vision_ui_init(vision_ui_t* ui) {
     memset(ui, 0, sizeof(*ui));
     ui->exit_animation_finished = true;
     ui->enter_animation_finished = true;
-    ui->notification = (vision_ui_notification_t) {0,
-                                                   1,
-                                                   0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
-                                                   0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
-                                                   VISION_UI_NOTIFICATION_WIDTH,
-                                                   VISION_UI_NOTIFICATION_WIDTH,
-                                                   false,
-                                                   0,
-                                                   1,
-                                                   false,
-                                                   0,
-                                                   NULL,
-                                                   0,
-                                                   false};
-    ui->alert = (vision_ui_alert_t) {0,
-                                     1,
-                                     0 - 2 * VISION_UI_ALERT_HEIGHT,
-                                     0 - 2 * VISION_UI_ALERT_HEIGHT,
-                                     VISION_UI_ALERT_WIDTH,
-                                     VISION_UI_ALERT_WIDTH,
-                                     false,
-                                     0,
-                                     1};
-    ui->camera = (vision_ui_camera_t) {0, 0, 0, 0, 0, 0, NULL};
+    ui->notification = (vision_ui_notification_t
+    ){0,
+      1,
+      0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
+      0 - 2 * VISION_UI_NOTIFICATION_HEIGHT,
+      VISION_UI_NOTIFICATION_WIDTH,
+      VISION_UI_NOTIFICATION_WIDTH,
+      false,
+      0,
+      1,
+      false,
+      0,
+      NULL,
+      0,
+      false};
+    ui->alert = (vision_ui_alert_t
+    ){0,
+      1,
+      0 - 2 * VISION_UI_ALERT_HEIGHT,
+      0 - 2 * VISION_UI_ALERT_HEIGHT,
+      VISION_UI_ALERT_WIDTH,
+      VISION_UI_ALERT_WIDTH,
+      false,
+      0,
+      1};
+    ui->camera = (vision_ui_camera_t){0, 0, 0, 0, 0, 0, NULL};
     ui->list_icon = DEFAULT_LIST_ICON;
 }
 

@@ -1138,9 +1138,8 @@ static void vision_ui_selector_render(const vision_ui_t* ui) {
     const int16_t x_selector =
             (int16_t) (lrintf(vision_ui_camera_instance_get(ui)->x_camera) +
                        VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING - VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING);
-    const int16_t y_selector = (int16_t) lrintf(
-            vision_ui_selector_instance_get(ui)->y_selector + vision_ui_camera_instance_get(ui)->y_camera
-    );
+    const int16_t y_selector = (int16_t
+    ) lrintf(vision_ui_selector_instance_get(ui)->y_selector + vision_ui_camera_instance_get(ui)->y_camera);
 
     vision_ui_driver_color_draw(ui, 1);
     const int16_t selector_w = (int16_t) lrintf(vision_ui_selector_instance_get(ui)->w_selector);
