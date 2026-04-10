@@ -11,6 +11,8 @@
 
 头文件位置：
 
+- [`include/vision/vision_ui.h`](../include/vision/vision_ui.h)
+- [`include/vision/vision_ui_types.h`](../include/vision/vision_ui_types.h)
 - [`include/vision/vision_ui_core.h`](../include/vision/vision_ui_core.h)
 - [`include/vision/vision_ui_item.h`](../include/vision/vision_ui_item.h)
 - [`include/vision/vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h)
@@ -20,13 +22,14 @@
 
 大多数应用会按下面的顺序使用 Vision UI：
 
-1. 通过 `vision_ui_driver_bind(...)` 绑定绘制驱动。
-2. 通过 `vision_ui_font_set...(...)` 配置字体。
-3. 创建根列表和子项。
-4. 调用 `vision_ui_root_item_set(root)`。
-5. 调用 `vision_ui_core_init()`。
-6. 调用 `vision_ui_render_init()`。
-7. 在主循环中清空缓冲区，调用 `vision_ui_step_render()`，然后发送缓冲区。
+1. 创建并初始化一个 `vision_ui_t` 实例。
+2. 通过 `vision_ui_driver_bind(...)` 绑定绘制驱动。
+3. 通过 `vision_ui_font_set...(...)` 配置字体。
+4. 创建根列表和子项。
+5. 调用 `vision_ui_root_item_set(&ui, root)`。
+6. 调用 `vision_ui_core_init(&ui)`。
+7. 调用 `vision_ui_render_init(&ui)`。
+8. 在主循环中清空缓冲区，调用 `vision_ui_step_render(&ui)`，然后发送缓冲区。
 
 示例：
 
@@ -35,29 +38,44 @@ vision_ui_font_t title_font = { .font = title_ptr, .top_compensation = 0, .botto
 vision_ui_font_t subtitle_font = { .font = subtitle_ptr, .top_compensation = 0, .bottom_compensation = 0 };
 vision_ui_font_t body_font = { .font = body_ptr, .top_compensation = 0, .bottom_compensation = 0 };
 
-vision_ui_driver_bind(&driver);
+vision_ui_t ui;
+vision_ui_init(&ui);
 
-vision_ui_font_set_title(title_font);
-vision_ui_font_set_subtitle(subtitle_font);
-vision_ui_font_set(body_font);
+vision_ui_driver_bind(&ui, &driver);
 
-vision_ui_list_item_t* root = vision_ui_list_item_new(8, false, "VisionUI");
-vision_ui_root_item_set(root);
+vision_ui_font_set_title(&ui, title_font);
+vision_ui_font_set_subtitle(&ui, subtitle_font);
+vision_ui_font_set(&ui, body_font);
 
-vision_ui_list_push_item(root, vision_ui_list_title_item_new("VisionUI"));
-vision_ui_list_push_item(root, vision_ui_list_switch_item_new("Invert Display", false, on_invert_changed));
+vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 8, false, "VisionUI");
+vision_ui_root_item_set(&ui, root);
 
-vision_ui_core_init();
-vision_ui_render_init();
+vision_ui_list_push_item(&ui, root, vision_ui_list_title_item_new(&ui, "VisionUI"));
+vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Invert Display", false, on_invert_changed));
 
-while (!vision_ui_is_exited()) {
-    vision_ui_driver_buffer_clear();
-    vision_ui_step_render();
-    vision_ui_driver_buffer_send();
+vision_ui_core_init(&ui);
+vision_ui_render_init(&ui);
+
+while (!vision_ui_is_exited(&ui)) {
+    vision_ui_driver_buffer_clear(&ui);
+    vision_ui_step_render(&ui);
+    vision_ui_driver_buffer_send(&ui);
 }
 ```
 
 ## 核心类型
+
+### `vision_ui_t`
+
+`vision_ui_t` 保存一个 UI 实例的运行时状态：字体、根列表、选择器、相机、通知、警告、启动 Logo、
+动画状态以及绑定的绘制驱动。凡是操作某个 UI 实例的公开 API，都把 `vision_ui_t*` 作为第一个参数。
+只读查询会尽量使用 `const vision_ui_t*`。
+
+如果实例由调用方保存，使用 `vision_ui_init(&ui)` 初始化；如果希望由库分配，使用
+`vision_ui_create()` / `vision_ui_destroy(ui)`。
+
+当你使用 `vision_ui_list_item_new(...)` 这一类 item 构造辅助函数时，`vision_ui_destroy(...)`
+也会释放为同一个 `vision_ui_t` 实例创建的库自有列表项。
 
 ### `vision_ui_font_t`
 
@@ -91,14 +109,16 @@ vision_ui_font_t font = {
 
 这些函数控制初始化和每帧执行。
 
-| 函数                                                          | 作用                         | 何时调用             |
-|---------------------------------------------------------------|------------------------------|----------------------|
-| `vision_ui_render_init()`                                     | 标记 UI 已激活并初始化渲染器。 | 主渲染循环开始前一次。 |
-| `vision_ui_core_init()`                                       | 初始化选择状态、相机状态和列表运行时状态。 | 根树构建完成后。 |
-| `vision_ui_start_logo_set(const uint8_t* bmp, uint32_t span)` | 显示一张固定时长的启动位图。 | 可选，渲染开始前。 |
-| `vision_ui_step_render()`                                     | 执行一帧 UI 逻辑与绘制。 | 每一帧都调用。 |
-| `vision_ui_is_exited()`                                       | 返回 UI 是否已经关闭。 | 常用作主循环条件。 |
-| `vision_ui_is_background_frozen()`                            | 返回后台交互是否应暂停。 | 可选，主要给自定义场景使用。 |
+| 函数                                                                             | 作用                    | 何时调用           |
+|--------------------------------------------------------------------------------|-----------------------|----------------|
+| `vision_ui_init(vision_ui_t* ui)`                                              | 初始化调用方持有的 UI 实例。      | 使用实例前。         |
+| `vision_ui_create()` / `vision_ui_destroy(vision_ui_t* ui)`                    | 分配或释放 UI 实例。          | 可选的堆分配生命周期。    |
+| `vision_ui_render_init(vision_ui_t* ui)`                                       | 标记 UI 已激活并初始化渲染器。     | 主渲染循环开始前一次。    |
+| `vision_ui_core_init(vision_ui_t* ui)`                                         | 初始化选择状态、相机状态和列表运行时状态。 | 根树构建完成后。       |
+| `vision_ui_start_logo_set(vision_ui_t* ui, const uint8_t* bmp, uint32_t span)` | 显示一张固定时长的启动位图。        | 可选，渲染开始前。      |
+| `vision_ui_step_render(vision_ui_t* ui)`                                       | 执行一帧 UI 逻辑与绘制。        | 每一帧都调用。        |
+| `vision_ui_is_exited(const vision_ui_t* ui)`                                   | 返回 UI 是否已经关闭。         | 常用作主循环条件。      |
+| `vision_ui_is_background_frozen(const vision_ui_t* ui)`                        | 返回后台交互是否应暂停。          | 可选，主要给自定义场景使用。 |
 
 ## 构建 UI 树
 
@@ -108,22 +128,22 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 
 ### 根节点与树辅助函数
 
-| 函数                                                                                    | 作用           |
-|-----------------------------------------------------------------------------------------|----------------|
-| `vision_ui_root_item_set(vision_ui_list_item_t* item)`                                  | 设置顶层列表。 |
-| `vision_ui_root_list_get()`                                                             | 返回当前根列表。 |
-| `vision_ui_list_push_item(vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | 向父列表添加一个子项。 |
+| 函数                                                                                                       | 作用          |
+|----------------------------------------------------------------------------------------------------------|-------------|
+| `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | 设置顶层列表。     |
+| `vision_ui_root_list_get(vision_ui_t* ui)`                                                               | 返回当前根列表。    |
+| `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | 向父列表添加一个子项。 |
 
 ### Item 构造函数
 
-| 函数                                                                                                                                          | 用途 |
-|---------------------------------------------------------------------------------------------------------------------------------------------------|------|
-| `vision_ui_list_item_new(size_t capacity, bool icon_mode, const char* content)`                                                                   | 创建普通列表容器，可持有子项。`icon_mode` 为 `true` 时表示图标视图列表。 |
-| `vision_ui_list_title_item_new(const char* title)`                                                                                                | 创建不可交互的标题行。 |
-| `vision_ui_list_icon_item_new(size_t capacity, const uint8_t* icon, const char* title, const char* description)`                                  | 创建可选中的图标卡片，也可以带子项。 |
-| `vision_ui_list_switch_item_new(const char* content, bool default_value, void (*on_changed)(bool))`                                               | 创建开关行，值变化时会调用回调。 |
-| `vision_ui_list_slider_item_new(const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max, void (*on_changed)(int16_t))` | 创建数值滑块行。 |
-| `vision_ui_list_user_item_new(const char* content, void (*init_function)(), void (*loop_function)(), void (*exit_function)())`                    | 创建完全自定义的全屏场景，选中后接管绘制流程。 |
+| 函数                                                                                                                                                                                        | 用途                                             |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| `vision_ui_list_item_new(const vision_ui_t* ui, size_t capacity, bool icon_mode, const char* content)`                                                                                    | 创建普通列表容器，可持有子项。`icon_mode` 为 `true` 时表示图标视图列表。 |
+| `vision_ui_list_title_item_new(const vision_ui_t* ui, const char* title)`                                                                                                                 | 创建不可交互的标题行。                                    |
+| `vision_ui_list_icon_item_new(const vision_ui_t* ui, size_t capacity, const uint8_t* icon, const char* title, const char* description)`                                                   | 创建可选中的图标卡片，也可以带子项。                             |
+| `vision_ui_list_switch_item_new(const vision_ui_t* ui, const char* content, bool default_value, void (*on_changed)(vision_ui_t*, bool))`                                                  | 创建开关行，值变化时会调用回调。                               |
+| `vision_ui_list_slider_item_new(const vision_ui_t* ui, const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max, void (*on_changed)(vision_ui_t*, int16_t))`    | 创建数值滑块行。                                       |
+| `vision_ui_list_user_item_new(const vision_ui_t* ui, const char* content, void (*init_function)(vision_ui_t*), void (*loop_function)(vision_ui_t*), void (*exit_function)(vision_ui_t*))` | 创建完全自定义的全屏场景，选中后接管绘制流程。                        |
 
 ### User Item
 
@@ -133,7 +153,8 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 - `loop_function`：用户项激活期间每帧调用。
 - `exit_function`：离开用户项时调用。
 
-在 user item 内部，你仍然使用普通渲染器所用的 `vision_ui_driver_*` 函数进行绘制。
+在 user item 内部，你仍然使用普通渲染器所用的 `vision_ui_driver_*` 函数进行绘制。当前
+`vision_ui_t*` 会传给每个 user item 回调。
 
 ### 类型辅助函数
 
@@ -150,17 +171,17 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 
 这些函数会在当前界面上方显示临时消息。
 
-| 函数                                                              | 作用 |
-|-------------------------------------------------------------------|------|
-| `vision_ui_notification_push(const char* content, uint16_t span)` | 显示一条持续 `span` 毫秒的通知条。 |
-| `vision_ui_alert_push(const char* content, uint16_t span)`        | 显示一条居中的警告，持续 `span` 毫秒。 |
+| 函数                                                                                 | 作用                      |
+|------------------------------------------------------------------------------------|-------------------------|
+| `vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span)` | 显示一条持续 `span` 毫秒的通知条。   |
+| `vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span)`        | 显示一条居中的警告，持续 `span` 毫秒。 |
 
 `vision_ui_item.h` 中还有一些实例 getter：
 
-- `vision_ui_notification_instance_get()`
-- `vision_ui_notification_mutable_instance_get()`
-- `vision_ui_alert_instance_get()`
-- `vision_ui_alert_mutable_instance_get()`
+- `vision_ui_notification_instance_get(const vision_ui_t* ui)`
+- `vision_ui_notification_mutable_instance_get(vision_ui_t* ui)`
+- `vision_ui_alert_instance_get(const vision_ui_t* ui)`
+- `vision_ui_alert_mutable_instance_get(vision_ui_t* ui)`
 
 大多数应用不需要直接使用这些 getter。只有在你要扩展渲染器行为时，它们才比较有用。
 
@@ -168,16 +189,16 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 
 ### 字体配置
 
-| 函数                                                 | 作用 |
-|------------------------------------------------------|------|
-| `vision_ui_minifont_set(vision_ui_font_t font)`      | 设置小号辅助字体。 |
-| `vision_ui_font_set(vision_ui_font_t font)`          | 设置主正文字体。 |
-| `vision_ui_font_set_title(vision_ui_font_t font)`    | 设置标题字体。 |
-| `vision_ui_font_set_subtitle(vision_ui_font_t font)` | 设置副标题字体。 |
-| `vision_ui_minifont_get()`                           | 返回当前小号辅助字体。 |
-| `vision_ui_font_get()`                               | 返回当前正文字体。 |
-| `vision_ui_font_get_title()`                         | 返回当前标题字体。 |
-| `vision_ui_font_get_subtitle()`                      | 返回当前副标题字体。 |
+| 函数                                                                    | 作用          |
+|-----------------------------------------------------------------------|-------------|
+| `vision_ui_minifont_set(vision_ui_t* ui, vision_ui_font_t font)`      | 设置小号辅助字体。   |
+| `vision_ui_font_set(vision_ui_t* ui, vision_ui_font_t font)`          | 设置主正文字体。    |
+| `vision_ui_font_set_title(vision_ui_t* ui, vision_ui_font_t font)`    | 设置标题字体。     |
+| `vision_ui_font_set_subtitle(vision_ui_t* ui, vision_ui_font_t font)` | 设置副标题字体。    |
+| `vision_ui_minifont_get(const vision_ui_t* ui)`                       | 返回当前小号辅助字体。 |
+| `vision_ui_font_get(const vision_ui_t* ui)`                           | 返回当前正文字体。   |
+| `vision_ui_font_get_title(const vision_ui_t* ui)`                     | 返回当前标题字体。   |
+| `vision_ui_font_get_subtitle(const vision_ui_t* ui)`                  | 返回当前副标题字体。  |
 
 ### 自定义分配器
 
@@ -185,6 +206,7 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 
 ```cpp
 void vision_ui_allocator_set(
+    vision_ui_t* ui,
     void* (*allocator)(vision_alloc_op_t op, size_t size, size_t count, void* ptr)
 );
 ```
@@ -196,6 +218,7 @@ void vision_ui_allocator_set(
 - `VisionAllocFree`
 
 除非你需要在嵌入式环境里精确控制内存，否则通常可以忽略这部分。
+安装自定义分配器后，Vision UI 会用它分配构造函数创建的列表项，并在随后销毁这些库自有 item 时继续使用它。
 
 ## 驱动契约
 
@@ -203,55 +226,68 @@ void vision_ui_allocator_set(
 
 ### 输入与时间
 
-| 函数                                  | 作用 |
-|---------------------------------------|------|
-| `vision_ui_driver_action_get()`       | 返回当前的高层用户动作。 |
-| `vision_ui_driver_ticks_ms_get()`     | 返回单调递增的毫秒时间。 |
-| `vision_ui_driver_delay(uint32_t ms)` | 休眠或让出约 `ms` 毫秒。 |
-| `vision_ui_driver_bind(void* driver)` | 保存后端驱动句柄。 |
+| 函数                                                           | 作用              |
+|--------------------------------------------------------------|-----------------|
+| `vision_ui_driver_action_get(const vision_ui_t* ui)`         | 返回当前的高层用户动作。    |
+| `vision_ui_driver_ticks_ms_get(const vision_ui_t* ui)`       | 返回单调递增的毫秒时间。    |
+| `vision_ui_driver_delay(const vision_ui_t* ui, uint32_t ms)` | 休眠或让出约 `ms` 毫秒。 |
+| `vision_ui_driver_bind(vision_ui_t* ui, void* driver)`       | 保存后端驱动句柄。       |
 
 ### 字体与文本
 
-| 函数                                               | 作用 |
-|----------------------------------------------------|------|
-| `vision_ui_driver_font_set(vision_ui_font_t font)` | 在后端中激活字体。 |
-| `vision_ui_driver_font_get()`                      | 返回当前激活的后端字体。 |
-| `vision_ui_driver_str_draw(...)`                   | 绘制普通文本。 |
-| `vision_ui_driver_str_utf8_draw(...)`              | 绘制 UTF-8 文本。 |
-| `vision_ui_driver_str_width_get(...)`              | 返回普通文本宽度。 |
-| `vision_ui_driver_str_utf8_width_get(...)`         | 返回 UTF-8 文本宽度。 |
-| `vision_ui_driver_str_height_get()`                | 返回当前文本高度。 |
-| `vision_ui_driver_font_mode_set(uint8_t mode)`     | 切换透明或实心文本绘制模式。 |
-| `vision_ui_driver_font_direction_set(uint8_t dir)` | 切换文本方向。 |
+| 函数                                                                        | 作用             |
+|---------------------------------------------------------------------------|----------------|
+| `vision_ui_driver_font_set(vision_ui_t* ui, vision_ui_font_t font)`       | 在后端中激活字体。      |
+| `vision_ui_driver_font_get(const vision_ui_t* ui)`                        | 返回当前激活的后端字体。   |
+| `vision_ui_driver_str_draw(...)`                                          | 绘制普通文本。        |
+| `vision_ui_driver_str_utf8_draw(...)`                                     | 绘制 UTF-8 文本。   |
+| `vision_ui_driver_str_width_get(...)`                                     | 返回普通文本宽度。      |
+| `vision_ui_driver_str_utf8_width_get(...)`                                | 返回 UTF-8 文本宽度。 |
+| `vision_ui_driver_str_height_get(const vision_ui_t* ui)`                  | 返回当前文本高度。      |
+| `vision_ui_driver_font_mode_set(const vision_ui_t* ui, uint8_t mode)`     | 切换透明或实心文本绘制模式。 |
+| `vision_ui_driver_font_direction_set(const vision_ui_t* ui, uint8_t dir)` | 切换文本方向。        |
 
 ### 基础图元
 
-| 函数                                         | 作用 |
-|----------------------------------------------|------|
-| `vision_ui_driver_pixel_draw(...)`           | 画一个像素。 |
-| `vision_ui_driver_circle_draw(...)`          | 画圆形轮廓。 |
-| `vision_ui_driver_disc_draw(...)`            | 画实心圆。 |
-| `vision_ui_driver_box_r_draw(...)`           | 画带圆角的实心矩形。 |
-| `vision_ui_driver_box_draw(...)`             | 画实心矩形。 |
-| `vision_ui_driver_frame_draw(...)`           | 画矩形边框。 |
-| `vision_ui_driver_frame_r_draw(...)`         | 画圆角矩形边框。 |
-| `vision_ui_driver_line_h_draw(...)`          | 画水平线。 |
-| `vision_ui_driver_line_v_draw(...)`          | 画垂直线。 |
-| `vision_ui_driver_line_draw(...)`            | 画任意直线。 |
-| `vision_ui_driver_line_h_dotted_draw(...)`   | 画水平虚线。 |
-| `vision_ui_driver_line_v_dotted_draw(...)`   | 画垂直虚线。 |
-| `vision_ui_driver_bmp_draw(...)`             | 绘制位图。 |
-| `vision_ui_driver_color_draw(uint8_t color)` | 修改当前绘制颜色。 |
+| 函数                                                                  | 作用         |
+|---------------------------------------------------------------------|------------|
+| `vision_ui_driver_pixel_draw(...)`                                  | 画一个像素。     |
+| `vision_ui_driver_circle_draw(...)`                                 | 画圆形轮廓。     |
+| `vision_ui_driver_disc_draw(...)`                                   | 画实心圆。      |
+| `vision_ui_driver_box_r_draw(...)`                                  | 画带圆角的实心矩形。 |
+| `vision_ui_driver_box_draw(...)`                                    | 画实心矩形。     |
+| `vision_ui_driver_frame_draw(...)`                                  | 画矩形边框。     |
+| `vision_ui_driver_frame_r_draw(...)`                                | 画圆角矩形边框。   |
+| `vision_ui_driver_line_h_draw(...)`                                 | 画水平线。      |
+| `vision_ui_driver_line_v_draw(...)`                                 | 画垂直线。      |
+| `vision_ui_driver_line_draw(...)`                                   | 画任意直线。     |
+| `vision_ui_driver_line_h_dotted_draw(...)`                          | 画水平虚线。     |
+| `vision_ui_driver_line_v_dotted_draw(...)`                          | 画垂直虚线。     |
+| `vision_ui_driver_bmp_draw(...)`                                    | 绘制位图。      |
+| `vision_ui_driver_color_draw(const vision_ui_t* ui, uint8_t color)` | 修改当前绘制颜色。  |
 
 ### 裁剪与缓冲区
 
-| 函数                                     | 作用 |
-|------------------------------------------|------|
-| `vision_ui_driver_clip_window_set(...)`  | 将绘制限制在一个矩形区域内。 |
-| `vision_ui_driver_clip_window_reset()`   | 取消裁剪窗口。 |
-| `vision_ui_driver_buffer_clear()`        | 清空帧缓冲区。 |
-| `vision_ui_driver_buffer_send()`         | 提交当前帧缓冲区。 |
-| `vision_ui_driver_buffer_area_send(...)` | 如果后端支持，只更新缓冲区的一部分。 |
-| `vision_ui_driver_buffer_pointer_get()`  | 返回原始完整缓冲区指针。 |
+| 函数                                                           | 作用                 |
+|--------------------------------------------------------------|--------------------|
+| `vision_ui_driver_clip_window_set(...)`                      | 将绘制限制在一个矩形区域内。     |
+| `vision_ui_driver_clip_window_reset(const vision_ui_t* ui)`  | 取消裁剪窗口。            |
+| `vision_ui_driver_buffer_clear(const vision_ui_t* ui)`       | 清空帧缓冲区。            |
+| `vision_ui_driver_buffer_send(const vision_ui_t* ui)`        | 提交当前帧缓冲区。          |
+| `vision_ui_driver_buffer_area_send(...)`                     | 如果后端支持，只更新缓冲区的一部分。 |
+| `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)` | 返回原始完整缓冲区指针。       |
 
-`vision_ui_driver_buffer_pointer_get()` 主要用于过渡和模糊效果。如果你的后端要完整支持 Vision UI，它必须返回一个有效的整帧缓冲区指针。
+`vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)` 主要用于过渡和模糊效果。如果你的后端要完整支持 Vision
+UI，它必须返回一个有效的整帧缓冲区指针。
+
+## 列表图标辅助函数
+
+渲染器在 `vision_ui_renderer.h` 中提供了一个小型图标主题入口。
+
+| 函数                                                                | 作用            |
+|-------------------------------------------------------------------|---------------|
+| `vision_ui_list_icon_set(vision_ui_t* ui, vision_ui_icon_t icon)` | 替换当前列表图标包。    |
+| `vision_ui_list_icon_get_current(const vision_ui_t* ui)`          | 返回当前激活的图标包。   |
+| `DEFAULT_LIST_ICON`                                               | 示例程序使用的内置图标包。 |
+
+`vision_ui_icon_t` 包含列表 header/footer 的位图指针和尺寸。

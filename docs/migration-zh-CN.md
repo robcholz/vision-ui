@@ -24,7 +24,8 @@
 
 参考后端在 [`../src/driver/u8g2.c`](../src/driver/u8g2.c)。
 
-当你把 Vision UI 迁移到别的平台时，核心工作就是用你自己的实现替换这个后端，并满足 [`vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h) 定义的契约。
+当你把 Vision UI 迁移到别的平台时，核心工作就是用你自己的实现替换这个后端，并满足 [
+`vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h) 定义的契约。
 
 也就是说，这里的迁移指的是：
 
@@ -73,8 +74,8 @@ simulator 里的映射是：
 
 你的后端必须提供：
 
-- `vision_ui_driver_ticks_ms_get()`
-- `vision_ui_driver_delay(uint32_t ms)`
+- `vision_ui_driver_ticks_ms_get(const vision_ui_t* ui)`
+- `vision_ui_driver_delay(const vision_ui_t* ui, uint32_t ms)`
 
 要求：
 
@@ -87,12 +88,12 @@ simulator 里的映射是：
 你的后端必须实现：
 
 - `vision_ui_driver_font_set(...)`
-- `vision_ui_driver_font_get()`
+- `vision_ui_driver_font_get(const vision_ui_t* ui)`
 - `vision_ui_driver_str_draw(...)`
 - `vision_ui_driver_str_utf8_draw(...)`
 - `vision_ui_driver_str_width_get(...)`
 - `vision_ui_driver_str_utf8_width_get(...)`
-- `vision_ui_driver_str_height_get()`
+- `vision_ui_driver_str_height_get(const vision_ui_t* ui)`
 - `vision_ui_driver_font_mode_set(...)`
 - `vision_ui_driver_font_direction_set(...)`
 
@@ -127,7 +128,7 @@ simulator 里的映射是：
 你的后端必须实现：
 
 - `vision_ui_driver_clip_window_set(...)`
-- `vision_ui_driver_clip_window_reset()`
+- `vision_ui_driver_clip_window_reset(const vision_ui_t* ui)`
 
 裁剪对以下场景是必需的：
 
@@ -145,12 +146,13 @@ simulator 里的映射是：
 
 你的后端必须实现：
 
-- `vision_ui_driver_buffer_clear()`
-- `vision_ui_driver_buffer_send()`
-- `vision_ui_driver_buffer_area_send(...)`
-- `vision_ui_driver_buffer_pointer_get()`
+- `vision_ui_driver_buffer_clear(const vision_ui_t* ui)`
+- `vision_ui_driver_buffer_send(const vision_ui_t* ui)`
+- `vision_ui_driver_buffer_area_send(const vision_ui_t* ui, ...)`
+- `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)`
 
-其中最关键的是 `vision_ui_driver_buffer_pointer_get()`。
+所有驱动入口现在都把当前 `vision_ui_t` 实例作为第一个参数。其中最关键的是
+`vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)`。
 
 渲染器要求它返回一个可读的完整显示缓冲区指针。视觉效果，例如模糊和过渡逻辑，会依赖它。
 
@@ -158,7 +160,7 @@ simulator 里的映射是：
 
 ## 7. 后端句柄绑定
 
-`vision_ui_driver_bind(void* driver)` 用来把平台相关的后端句柄传进 Vision UI。
+`vision_ui_driver_bind(vision_ui_t* ui, void* driver)` 用来把平台相关的后端句柄传进 Vision UI。
 
 在 simulator 里，这个句柄是 `u8g2_t*`。
 
@@ -177,13 +179,13 @@ simulator 里的映射是：
 
 1. 复制参考后端 [`../src/driver/u8g2.c`](../src/driver/u8g2.c) 的整体结构。
 2. 用你平台上的等价类型和调用替换后端相关部分。
-3. 先让 `vision_ui_driver_bind(...)` 正确保存后端句柄。
+3. 先让 `vision_ui_driver_bind(...)` 把后端句柄正确保存到 `vision_ui_t` 实例上。
 4. 让输入映射工作起来。
 5. 让文本宽度和高度报告正确。
 6. 让基础图元正确绘制。
 7. 让裁剪工作起来。
 8. 让整帧缓冲区的清空与发送工作起来。
-9. 确认 `vision_ui_driver_buffer_pointer_get()` 返回有效的完整缓冲区。
+9. 确认 `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)` 返回有效的完整缓冲区。
 
 不要一开始就去改 UI 树或布局常量，那样只会让后端问题更难隔离。
 
@@ -203,7 +205,7 @@ simulator 里的映射是：
 - footer 渲染
 - 裁剪
 
-参考行为可以直接看 [`../main.cpp`](../main.cpp)。
+参考行为可以直接看 [`../main.c`](../main.c)。
 
 ## 常见驱动问题
 
@@ -234,7 +236,7 @@ simulator 里的映射是：
 
 检查：
 
-- `vision_ui_driver_buffer_pointer_get()`
+- `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)`
 - 返回的指针是否真的是整帧缓冲区，而不是局部 tile buffer
 
 ### 动画感觉不稳定
@@ -255,3 +257,11 @@ simulator 里的映射是：
 - 布局常量
 
 如果后端契约本身是错的，这些修改只会掩盖真正的问题。
+
+## 相关文件
+
+- [`../include/vision/vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h)：必须满足的驱动契约
+- [`../src/driver/u8g2.c`](../src/driver/u8g2.c)：参考后端实现
+- [`../main.c`](../main.c)：可运行的 simulator 示例
+- [`api-zh-CN.md`](api-zh-CN.md)：公开 API 参考
+- [`config-zh-CN.md`](config-zh-CN.md)：布局和时序配置

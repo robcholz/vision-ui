@@ -74,8 +74,8 @@ On real hardware, this is usually backed by:
 
 Your backend must provide:
 
-- `vision_ui_driver_ticks_ms_get()`
-- `vision_ui_driver_delay(uint32_t ms)`
+- `vision_ui_driver_ticks_ms_get(const vision_ui_t* ui)`
+- `vision_ui_driver_delay(const vision_ui_t* ui, uint32_t ms)`
 
 Requirements:
 
@@ -88,12 +88,12 @@ Requirements:
 Your backend must implement:
 
 - `vision_ui_driver_font_set(...)`
-- `vision_ui_driver_font_get()`
+- `vision_ui_driver_font_get(const vision_ui_t* ui)`
 - `vision_ui_driver_str_draw(...)`
 - `vision_ui_driver_str_utf8_draw(...)`
 - `vision_ui_driver_str_width_get(...)`
 - `vision_ui_driver_str_utf8_width_get(...)`
-- `vision_ui_driver_str_height_get()`
+- `vision_ui_driver_str_height_get(const vision_ui_t* ui)`
 - `vision_ui_driver_font_mode_set(...)`
 - `vision_ui_driver_font_direction_set(...)`
 
@@ -129,7 +129,7 @@ the Vision UI core.
 Your backend must implement:
 
 - `vision_ui_driver_clip_window_set(...)`
-- `vision_ui_driver_clip_window_reset()`
+- `vision_ui_driver_clip_window_reset(const vision_ui_t* ui)`
 
 Clipping is required for:
 
@@ -147,12 +147,13 @@ Common clipping bugs:
 
 Your backend must implement:
 
-- `vision_ui_driver_buffer_clear()`
-- `vision_ui_driver_buffer_send()`
-- `vision_ui_driver_buffer_area_send(...)`
-- `vision_ui_driver_buffer_pointer_get()`
+- `vision_ui_driver_buffer_clear(const vision_ui_t* ui)`
+- `vision_ui_driver_buffer_send(const vision_ui_t* ui)`
+- `vision_ui_driver_buffer_area_send(const vision_ui_t* ui, ...)`
+- `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)`
 
-The important detail is `vision_ui_driver_buffer_pointer_get()`.
+All driver entry points now receive the active `vision_ui_t` instance as their first parameter. The important detail is
+`vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)`.
 
 The renderer expects this to return a readable pointer to the full display buffer. It is used by visual effects such as
 blur and transition logic.
@@ -161,7 +162,8 @@ If the target platform cannot provide a full readable buffer, that is a driver l
 
 ## 7. Backend Handle Binding
 
-`vision_ui_driver_bind(void* driver)` is how the platform-specific backend handle is passed into Vision UI.
+`vision_ui_driver_bind(vision_ui_t* ui, void* driver)` is how the platform-specific backend handle is passed into
+Vision UI.
 
 In the simulator, that handle is a `u8g2_t*`.
 
@@ -180,13 +182,13 @@ Use this order when bringing up a new backend:
 
 1. Copy the reference backend structure from [`../src/driver/u8g2.c`](../src/driver/u8g2.c).
 2. Replace the backend-specific types and calls with your platform equivalents.
-3. Make `vision_ui_driver_bind(...)` store the backend handle.
+3. Make `vision_ui_driver_bind(...)` store the backend handle on the `vision_ui_t` instance.
 4. Get input mapping working.
 5. Get text width and height reporting working.
 6. Get the basic primitives drawing correctly.
 7. Get clipping working.
 8. Get full buffer clear/send working.
-9. Verify `vision_ui_driver_buffer_pointer_get()` returns a valid full buffer.
+9. Verify `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)` returns a valid full buffer.
 
 Do not start by changing the UI tree or layout constants. That makes backend bugs harder to isolate.
 
@@ -206,7 +208,7 @@ That gives you a quick way to verify:
 - footer rendering
 - clipping
 
-Use [`../main.cpp`](../main.cpp) as the reference behavior.
+Use [`../main.c`](../main.c) as the reference behavior.
 
 ## Common Driver Bugs
 
@@ -237,7 +239,7 @@ Check:
 
 Check:
 
-- `vision_ui_driver_buffer_pointer_get()`
+- `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)`
 - whether the returned pointer is a full frame buffer rather than a partial tile buffer
 
 ### Animation feels unstable
@@ -263,6 +265,6 @@ If the backend contract is wrong, those changes only hide the actual problem.
 
 - [`../include/vision/vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h): required driver contract
 - [`../src/driver/u8g2.c`](../src/driver/u8g2.c): reference backend implementation
-- [`../main.cpp`](../main.cpp): working simulator example
+- [`../main.c`](../main.c): working simulator example
 - [`api.md`](api.md): public API reference
 - [`config.md`](config.md): layout and timing configuration
