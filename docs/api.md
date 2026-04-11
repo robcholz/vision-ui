@@ -24,7 +24,7 @@ Header locations:
 Most applications use Vision UI in this order:
 
 1. Create and initialize a `vision_ui_t` instance.
-2. Bind a draw driver with `vision_ui_driver_bind(...)`.
+2. Install a draw driver with `vision_ui_init_driver(...)`.
 3. Configure fonts with `vision_ui_font_set...(...)`.
 4. Create the root list and child items.
 5. Call `vision_ui_root_item_set(&ui, root)`.
@@ -42,7 +42,11 @@ vision_ui_font_t body_font = { .font = body_ptr, .top_compensation = 0, .bottom_
 vision_ui_t ui;
 vision_ui_init(&ui);
 
-vision_ui_driver_bind(&ui, &driver);
+vision_ui_driver_t driver = {
+    .context = &backend_state,
+    .ops = &backend_ops,
+};
+vision_ui_init_driver(&ui, &driver);
 
 vision_ui_font_set_title(&ui, title_font);
 vision_ui_font_set_subtitle(&ui, subtitle_font);
@@ -224,16 +228,17 @@ installed, Vision UI uses it for constructor-created list items and for destroyi
 
 ## Driver Contract
 
-To run Vision UI on a new platform, implement the functions in `vision_ui_draw_driver.h`.
+To run Vision UI on a new platform, provide a `vision_ui_driver_t` descriptor and a
+`vision_ui_driver_ops_t` table matching the contract in `vision_ui_draw_driver.h`.
 
 ### Input and timing
 
-| Function                                                     | What it does                                    |
-|--------------------------------------------------------------|-------------------------------------------------|
-| `vision_ui_driver_action_get(const vision_ui_t* ui)`         | Returns the current high-level user action.     |
-| `vision_ui_driver_ticks_ms_get(const vision_ui_t* ui)`       | Returns a monotonic time in milliseconds.       |
-| `vision_ui_driver_delay(const vision_ui_t* ui, uint32_t ms)` | Sleeps or yields for roughly `ms` milliseconds. |
-| `vision_ui_driver_bind(vision_ui_t* ui, void* driver)`       | Stores the backend driver handle.               |
+| Function                                                                   | What it does                                    |
+|----------------------------------------------------------------------------|-------------------------------------------------|
+| `vision_ui_driver_action_get(const vision_ui_t* ui)`                       | Returns the current high-level user action.     |
+| `vision_ui_driver_ticks_ms_get(const vision_ui_t* ui)`                     | Returns a monotonic time in milliseconds.       |
+| `vision_ui_driver_delay(const vision_ui_t* ui, uint32_t ms)`               | Sleeps or yields for roughly `ms` milliseconds. |
+| `vision_ui_init_driver(vision_ui_t* ui, const vision_ui_driver_t* driver)` | Installs the backend driver descriptor.         |
 
 ### Font and text
 

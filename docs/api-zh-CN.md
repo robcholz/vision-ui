@@ -23,7 +23,7 @@
 大多数应用会按下面的顺序使用 Vision UI：
 
 1. 创建并初始化一个 `vision_ui_t` 实例。
-2. 通过 `vision_ui_driver_bind(...)` 绑定绘制驱动。
+2. 通过 `vision_ui_init_driver(...)` 安装绘制驱动。
 3. 通过 `vision_ui_font_set...(...)` 配置字体。
 4. 创建根列表和子项。
 5. 调用 `vision_ui_root_item_set(&ui, root)`。
@@ -41,7 +41,11 @@ vision_ui_font_t body_font = { .font = body_ptr, .top_compensation = 0, .bottom_
 vision_ui_t ui;
 vision_ui_init(&ui);
 
-vision_ui_driver_bind(&ui, &driver);
+vision_ui_driver_t driver = {
+    .context = &backend_state,
+    .ops = &backend_ops,
+};
+vision_ui_init_driver(&ui, &driver);
 
 vision_ui_font_set_title(&ui, title_font);
 vision_ui_font_set_subtitle(&ui, subtitle_font);
@@ -219,16 +223,17 @@ void vision_ui_allocator_set(
 
 ## 驱动契约
 
-要让 Vision UI 运行在新的平台上，你需要实现 `vision_ui_draw_driver.h` 中定义的函数。
+要让 Vision UI 运行在新的平台上，你需要提供一个 `vision_ui_driver_t` 描述符，以及一张满足
+`vision_ui_draw_driver.h` 约定的 `vision_ui_driver_ops_t` 回调表。
 
 ### 输入与时间
 
-| 函数                                                           | 作用              |
-|--------------------------------------------------------------|-----------------|
-| `vision_ui_driver_action_get(const vision_ui_t* ui)`         | 返回当前的高层用户动作。    |
-| `vision_ui_driver_ticks_ms_get(const vision_ui_t* ui)`       | 返回单调递增的毫秒时间。    |
-| `vision_ui_driver_delay(const vision_ui_t* ui, uint32_t ms)` | 休眠或让出约 `ms` 毫秒。 |
-| `vision_ui_driver_bind(vision_ui_t* ui, void* driver)`       | 保存后端驱动句柄。       |
+| 函数                                                                         | 作用              |
+|----------------------------------------------------------------------------|-----------------|
+| `vision_ui_driver_action_get(const vision_ui_t* ui)`                       | 返回当前的高层用户动作。    |
+| `vision_ui_driver_ticks_ms_get(const vision_ui_t* ui)`                     | 返回单调递增的毫秒时间。    |
+| `vision_ui_driver_delay(const vision_ui_t* ui, uint32_t ms)`               | 休眠或让出约 `ms` 毫秒。 |
+| `vision_ui_init_driver(vision_ui_t* ui, const vision_ui_driver_t* driver)` | 安装后端驱动描述符。      |
 
 ### 字体与文本
 

@@ -106,7 +106,8 @@ static void register_allocator_state(callback_state_t* state) {
 static void init_ui_with_driver(vision_ui_t* ui, mock_driver_t* driver) {
     vision_ui_init(ui);
     mock_driver_init(driver);
-    vision_ui_driver_bind(ui, driver);
+    vision_ui_driver_t binding = mock_driver_descriptor(driver);
+    vision_ui_init_driver(ui, &binding);
     vision_ui_font_set(ui, test_font(1u, 1, 0));
     vision_ui_font_set_title(ui, test_font(2u, 2, 0));
     vision_ui_font_set_subtitle(ui, test_font(3u, 0, 1));

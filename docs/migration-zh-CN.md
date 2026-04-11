@@ -24,15 +24,16 @@
 
 参考后端在 [`../src/driver/u8g2.c`](../src/driver/u8g2.c)。
 
-当你把 Vision UI 迁移到别的平台时，核心工作就是用你自己的实现替换这个后端，并满足 [
-`vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h) 定义的契约。
+当你把 Vision UI 迁移到别的平台时，核心工作就是用你自己的 `vision_ui_driver_t` 描述符和
+`vision_ui_driver_ops_t` 回调实现替换这个后端，并满足
+[`vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h) 定义的契约。
 
 也就是说，这里的迁移指的是：
 
 - 保留 Vision UI core
 - 保留 renderer
 - 保留你的菜单树
-- 只替换驱动函数
+- 只替换驱动描述符和它的回调
 
 ## 参考文件
 
@@ -160,9 +161,10 @@ simulator 里的映射是：
 
 ## 7. 后端句柄绑定
 
-`vision_ui_driver_bind(vision_ui_t* ui, void* driver)` 用来把平台相关的后端句柄传进 Vision UI。
+`vision_ui_init_driver(vision_ui_t* ui, const vision_ui_driver_t* driver)` 用来把平台相关的后端状态和回调表传进
+Vision UI。
 
-在 simulator 里，这个句柄是 `u8g2_t*`。
+在 simulator 里，安装进去的是一个 `vision_ui_u8g2_driver_t` 上下文，它内部再持有 `u8g2_t*`。
 
 在别的平台上，它可能是：
 
@@ -171,7 +173,7 @@ simulator 里的映射是：
 - device handle
 - renderer 状态结构体
 
-这个指针具体代表什么，由驱动实现自己决定。
+上下文指针具体代表什么，由驱动实现自己决定；Vision UI 调什么，由 ops 表决定。
 
 ## 迁移检查清单
 
@@ -179,7 +181,7 @@ simulator 里的映射是：
 
 1. 复制参考后端 [`../src/driver/u8g2.c`](../src/driver/u8g2.c) 的整体结构。
 2. 用你平台上的等价类型和调用替换后端相关部分。
-3. 先让 `vision_ui_driver_bind(...)` 把后端句柄正确保存到 `vision_ui_t` 实例上。
+3. 先准备好后端上下文结构体，再通过 `vision_ui_init_driver(...)` 正确安装进去。
 4. 让输入映射工作起来。
 5. 让文本宽度和高度报告正确。
 6. 让基础图元正确绘制。

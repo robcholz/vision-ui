@@ -55,6 +55,13 @@ typedef struct vision_ui_list_icon_t {
     size_t footer_height;
 } vision_ui_icon_t;
 
+struct vision_ui_driver_ops_t;
+
+typedef struct vision_ui_driver_t {
+    void* context;
+    const struct vision_ui_driver_ops_t* ops;
+} vision_ui_driver_t;
+
 /// High-level input actions consumed by Vision UI.
 typedef enum vision_ui_action_t {
     UiActionNone,
@@ -274,10 +281,7 @@ struct vision_ui_t {
     vision_ui_list_item_t* owned_item_head;
     vision_ui_icon_t list_icon;
 
-    void* driver;
-    vision_ui_font_t driver_current_font;
-    int8_t driver_str_top;
-    int8_t driver_str_bottom;
+    vision_ui_driver_t driver;
 };
 
 #endif // VISION_UI_VISION_UI_TYPES_H

@@ -65,6 +65,7 @@ typedef struct mock_driver_t {
 } mock_driver_t;
 
 extern void mock_driver_init(mock_driver_t* driver);
+extern vision_ui_driver_t mock_driver_descriptor(mock_driver_t* driver);
 extern void mock_driver_set_action(mock_driver_t* driver, vision_ui_action_t action);
 extern void mock_driver_advance_time(mock_driver_t* driver, uint32_t delta_ms);
 extern void mock_driver_seed_checkerboard(mock_driver_t* driver);

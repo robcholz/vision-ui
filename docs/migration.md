@@ -24,7 +24,8 @@ Those live in:
 
 The reference backend is [`../src/driver/u8g2.c`](../src/driver/u8g2.c).
 
-When you migrate Vision UI to another platform, the main job is to replace that backend with your own implementation of
+When you migrate Vision UI to another platform, the main job is to replace that backend with your own
+`vision_ui_driver_t` descriptor and `vision_ui_driver_ops_t` implementation from
 [`vision_ui_draw_driver.h`](../include/vision/vision_ui_draw_driver.h).
 
 In other words, migration here means:
@@ -32,7 +33,7 @@ In other words, migration here means:
 - keep the Vision UI core
 - keep the renderer
 - keep your menu tree
-- replace only the driver functions
+- replace only the driver descriptor and its callbacks
 
 ## Reference Files
 
@@ -162,10 +163,10 @@ If the target platform cannot provide a full readable buffer, that is a driver l
 
 ## 7. Backend Handle Binding
 
-`vision_ui_driver_bind(vision_ui_t* ui, void* driver)` is how the platform-specific backend handle is passed into
-Vision UI.
+`vision_ui_init_driver(vision_ui_t* ui, const vision_ui_driver_t* driver)` is how the platform-specific backend state
+and callback table are passed into Vision UI.
 
-In the simulator, that handle is a `u8g2_t*`.
+In the simulator, the installed driver points at a `vision_ui_u8g2_driver_t` context that itself owns a `u8g2_t*`.
 
 On another platform it might be:
 
@@ -174,7 +175,7 @@ On another platform it might be:
 - a device handle
 - a renderer state struct
 
-The driver implementation decides what the pointer means.
+The driver implementation decides what the context pointer means; the ops table decides how Vision UI calls it.
 
 ## Migration Checklist
 
@@ -182,7 +183,7 @@ Use this order when bringing up a new backend:
 
 1. Copy the reference backend structure from [`../src/driver/u8g2.c`](../src/driver/u8g2.c).
 2. Replace the backend-specific types and calls with your platform equivalents.
-3. Make `vision_ui_driver_bind(...)` store the backend handle on the `vision_ui_t` instance.
+3. Build a backend context struct and install it with `vision_ui_init_driver(...)`.
 4. Get input mapping working.
 5. Get text width and height reporting working.
 6. Get the basic primitives drawing correctly.
