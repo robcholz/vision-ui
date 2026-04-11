@@ -74,8 +74,8 @@ while (!vision_ui_is_exited(&ui)) {
 动画状态以及绑定的绘制驱动。凡是操作某个 UI 实例的公开 API，都把 `vision_ui_t*` 作为第一个参数。
 只读查询会尽量使用 `const vision_ui_t*`。
 
-如果实例由调用方保存，使用 `vision_ui_init(&ui)` 初始化；如果希望由库分配，使用
-`vision_ui_create()` / `vision_ui_destroy(ui)`。
+使用 `vision_ui_init(&ui)` 初始化调用方持有的存储。`vision_ui_t` 本身的存储始终由调用方负责，
+可以放在栈上、静态区，或者调用方自己管理的堆内存中。
 
 当你使用 `vision_ui_list_item_new(...)` 这一类 item 构造辅助函数时，`vision_ui_destroy(...)`
 也会释放为同一个 `vision_ui_t` 实例创建的库自有列表项。
@@ -125,16 +125,16 @@ vision_ui_font_t font = {
 
 这些函数控制初始化和每帧执行。
 
-| 函数                                                                             | 作用                    | 何时调用           |
-|--------------------------------------------------------------------------------|-----------------------|----------------|
-| `vision_ui_init(vision_ui_t* ui)`                                              | 初始化调用方持有的 UI 实例。      | 使用实例前。         |
-| `vision_ui_create()` / `vision_ui_destroy(vision_ui_t* ui)`                    | 分配或释放 UI 实例。          | 可选的堆分配生命周期。    |
-| `vision_ui_render_init(vision_ui_t* ui)`                                       | 标记 UI 已激活并初始化渲染器。     | 主渲染循环开始前一次。    |
+| 函数                                                                             | 作用                                                                     | 何时调用           |
+|--------------------------------------------------------------------------------|------------------------------------------------------------------------|----------------|
+| `vision_ui_init(vision_ui_t* ui)`                                              | 初始化调用方持有的 UI 实例。                                                       | 使用实例前。         |
+| `vision_ui_destroy(vision_ui_t* ui)`                                           | 释放与该 UI 实例关联的库自有列表项。                                                   | 销毁 UI 前。       |
+| `vision_ui_render_init(vision_ui_t* ui)`                                       | 标记 UI 已激活并初始化渲染器。                                                      | 主渲染循环开始前一次。    |
 | `vision_ui_core_init(vision_ui_t* ui)`                                         | 初始化选择状态、相机状态和列表运行时状态。若还没有挂上 root，则返回 `VisionUiCoreInitRootItemNotSet`。 | 根树构建完成后。       |
-| `vision_ui_start_logo_set(vision_ui_t* ui, const uint8_t* bmp, uint32_t span)` | 显示一张固定时长的启动位图。        | 可选，渲染开始前。      |
-| `vision_ui_step_render(vision_ui_t* ui)`                                       | 执行一帧 UI 逻辑与绘制。        | 每一帧都调用。        |
-| `vision_ui_is_exited(const vision_ui_t* ui)`                                   | 返回 UI 是否已经关闭。         | 常用作主循环条件。      |
-| `vision_ui_is_background_frozen(const vision_ui_t* ui)`                        | 返回后台交互是否应暂停。          | 可选，主要给自定义场景使用。 |
+| `vision_ui_start_logo_set(vision_ui_t* ui, const uint8_t* bmp, uint32_t span)` | 显示一张固定时长的启动位图。                                                         | 可选，渲染开始前。      |
+| `vision_ui_step_render(vision_ui_t* ui)`                                       | 执行一帧 UI 逻辑与绘制。                                                         | 每一帧都调用。        |
+| `vision_ui_is_exited(const vision_ui_t* ui)`                                   | 返回 UI 是否已经关闭。                                                          | 常用作主循环条件。      |
+| `vision_ui_is_background_frozen(const vision_ui_t* ui)`                        | 返回后台交互是否应暂停。                                                           | 可选，主要给自定义场景使用。 |
 
 ## 构建 UI 树
 
@@ -144,11 +144,11 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 
 ### 根节点与树辅助函数
 
-| 函数                                                                                                       | 作用          |
-|----------------------------------------------------------------------------------------------------------|-------------|
-| `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | 设置顶层列表。     |
+| 函数                                                                                                       | 作用                                |
+|----------------------------------------------------------------------------------------------------------|-----------------------------------|
+| `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | 设置顶层列表。                           |
 | `vision_ui_root_list_get(const vision_ui_t* ui)`                                                         | 返回当前顶层列表；如果还没有设置 root，则返回 `NULL`。 |
-| `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | 向父列表添加一个子项。 |
+| `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | 向父列表添加一个子项。                       |
 
 ### Item 构造函数
 
@@ -177,10 +177,10 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 
 这些函数会在当前界面上方显示临时消息。
 
-| 函数                                                                                 | 作用                      |
-|------------------------------------------------------------------------------------|-------------------------|
-| `vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span)` | 显示一条持续 `span` 毫秒的通知条。若 `content` 为 `NULL`，则返回 `VisionUiNotificationPushContentInvalid`。   |
-| `vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span)`        | 显示一条居中的警告，持续 `span` 毫秒。 |
+| 函数                                                                                 | 作用                                                                                      |
+|------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| `vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span)` | 显示一条持续 `span` 毫秒的通知条。若 `content` 为 `NULL`，则返回 `VisionUiNotificationPushContentInvalid`。 |
+| `vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span)`        | 显示一条居中的警告，持续 `span` 毫秒。                                                                 |
 
 ## 字体与内存
 

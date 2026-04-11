@@ -75,8 +75,8 @@ The public type layer in `vision_ui_types.h` includes `vision_ui_t`, `vision_ui_
 startup logo state, animation state, and the bound draw driver. Public APIs that operate on a UI instance take
 `vision_ui_t*` as their first parameter. Read-only queries use `const vision_ui_t*` where possible.
 
-Use `vision_ui_init(&ui)` for stack/static storage, or `vision_ui_create()` / `vision_ui_destroy(ui)` when you want the
-library to allocate the instance.
+Use `vision_ui_init(&ui)` to initialize caller-owned storage. The `vision_ui_t` storage itself remains owned by the
+caller and may live on the stack, in static storage, or in caller-managed heap memory.
 
 When you use the item-constructor helpers such as `vision_ui_list_item_new(...)`, `vision_ui_destroy(...)` also releases
 the library-owned list items created for that same `vision_ui_t` instance.
@@ -126,16 +126,16 @@ It contains the bitmap pointers and shared dimensions for list headers and foote
 
 These functions control startup and per-frame execution.
 
-| Function                                                                       | What it does                                                 | When to call it                     |
-|--------------------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------|
-| `vision_ui_init(vision_ui_t* ui)`                                              | Initializes a caller-owned UI instance.                      | Before using the instance.          |
-| `vision_ui_create()` / `vision_ui_destroy(vision_ui_t* ui)`                    | Allocates or frees a UI instance.                            | Optional heap-owned lifecycle.      |
-| `vision_ui_render_init(vision_ui_t* ui)`                                       | Marks the UI as active and prepares the renderer to draw.    | Once before the main render loop.   |
+| Function                                                                       | What it does                                                                                                                  | When to call it                     |
+|--------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| `vision_ui_init(vision_ui_t* ui)`                                              | Initializes a caller-owned UI instance.                                                                                       | Before using the instance.          |
+| `vision_ui_destroy(vision_ui_t* ui)`                                           | Releases library-owned items associated with the UI instance.                                                                 | When tearing the UI down.           |
+| `vision_ui_render_init(vision_ui_t* ui)`                                       | Marks the UI as active and prepares the renderer to draw.                                                                     | Once before the main render loop.   |
 | `vision_ui_core_init(vision_ui_t* ui)`                                         | Initializes selection, camera state, and list runtime state. Returns `VisionUiCoreInitRootItemNotSet` if no root is attached. | After the root tree is built.       |
-| `vision_ui_start_logo_set(vision_ui_t* ui, const uint8_t* bmp, uint32_t span)` | Shows a startup bitmap for a fixed amount of time.           | Optional, before rendering starts.  |
-| `vision_ui_step_render(vision_ui_t* ui)`                                       | Runs one frame of UI logic and rendering.                    | Every frame.                        |
-| `vision_ui_is_exited(const vision_ui_t* ui)`                                   | Reports whether the UI has been closed.                      | Usually as the main loop condition. |
-| `vision_ui_is_background_frozen(const vision_ui_t* ui)`                        | Reports whether background interaction should pause.         | Optional, mainly for custom scenes. |
+| `vision_ui_start_logo_set(vision_ui_t* ui, const uint8_t* bmp, uint32_t span)` | Shows a startup bitmap for a fixed amount of time.                                                                            | Optional, before rendering starts.  |
+| `vision_ui_step_render(vision_ui_t* ui)`                                       | Runs one frame of UI logic and rendering.                                                                                     | Every frame.                        |
+| `vision_ui_is_exited(const vision_ui_t* ui)`                                   | Reports whether the UI has been closed.                                                                                       | Usually as the main loop condition. |
+| `vision_ui_is_background_frozen(const vision_ui_t* ui)`                        | Reports whether background interaction should pause.                                                                          | Optional, mainly for custom scenes. |
 
 ## Build the UI Tree
 
@@ -146,11 +146,11 @@ For container items, `capacity` means "how many direct children this item can ho
 
 ### Root and tree helpers
 
-| Function                                                                                                 | What it does                        |
-|----------------------------------------------------------------------------------------------------------|-------------------------------------|
-| `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | Sets the top-level list.            |
+| Function                                                                                                 | What it does                                                              |
+|----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | Sets the top-level list.                                                  |
 | `vision_ui_root_list_get(const vision_ui_t* ui)`                                                         | Returns the current top-level list, or `NULL` if no root is attached yet. |
-| `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | Adds a child item to a parent list. |
+| `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | Adds a child item to a parent list.                                       |
 
 ### Item constructors
 
@@ -182,10 +182,10 @@ You usually only need these if you are doing custom logic outside the default ca
 
 These show temporary UI messages on top of the current screen.
 
-| Function                                                                           | What it does                                      |
-|------------------------------------------------------------------------------------|---------------------------------------------------|
+| Function                                                                           | What it does                                                                                                               |
+|------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | `vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span)` | Shows a notification bar for `span` milliseconds. Returns `VisionUiNotificationPushContentInvalid` if `content` is `NULL`. |
-| `vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span)`        | Shows a centered alert for `span` milliseconds.   |
+| `vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span)`        | Shows a centered alert for `span` milliseconds.                                                                            |
 
 ## Fonts and Memory
 

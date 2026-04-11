@@ -49,16 +49,6 @@ void vision_ui_init(vision_ui_t* ui) {
     ui->list_icon = DEFAULT_LIST_ICON;
 }
 
-vision_ui_t* vision_ui_create() {
-    vision_ui_t* ui = malloc(sizeof(vision_ui_t));
-    if (ui == NULL) {
-        return NULL;
-    }
-    vision_ui_init(ui);
-    ui->owns_self = true;
-    return ui;
-}
-
 static void vision_ui_allocator_free(const vision_ui_t* ui, void* ptr) {
     assert(ui != NULL);
     if (ptr == NULL) {
@@ -91,9 +81,6 @@ void vision_ui_destroy(vision_ui_t* ui) {
         return;
     }
     vision_ui_owned_items_destroy(ui);
-    if (ui->owns_self) {
-        free(ui);
-    }
 }
 
 void vision_ui_allocator_set(vision_ui_t* ui, const vision_ui_allocator_t allocator) {

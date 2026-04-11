@@ -93,15 +93,15 @@ static BACKLIGHT_STATE: BacklightState = BacklightState;
 static BACKLIGHT_BINDING: vui::ToggleBinding<BacklightState> =
     vui::ToggleBinding::new(&BACKLIGHT_STATE, on_backlight_changed);
 
-let mut ui = vui::VisionUi::new()?;
-let root = ui.list(vui::text!("VisionUI"), 8)?;
-let toggle = ui.switch_with(vui::text!("Backlight"), true, &BACKLIGHT_BINDING)?;
+let mut ui = vui::VisionUi::new();
+let root = ui.list(vui::text!("VisionUI"), 8) ?;
+let toggle = ui.switch_with(vui::text!("Backlight"), true, & BACKLIGHT_BINDING) ?;
 
 ui.push(root, toggle);
 ui.set_root(root);
 ui.initialize_runtime();
 ui.initialize_rendering();
-ui.notify(vui::text!("Hello"), Duration::from_millis(1200))?;
+ui.notify(vui::text!("Hello"), Duration::from_millis(1200)) ?;
 # Ok::<(), vui::Error>(())
 ```
 
@@ -119,5 +119,6 @@ ui.notify(vui::text!("Hello"), Duration::from_millis(1200))?;
 - Enable the `alloc` feature for closure-based convenience helpers.
 - Long-lived text and bitmap assets are passed as static borrowed data instead of being copied into hidden heap storage.
 - Advanced or unsupported operations are still available through `vision_ui::raw`.
-- `native/` is the packaged copy of the core C sources. Refresh it from the repo root with `bindings/rust/scripts/sync-native.sh`.
+- `native/` is the packaged copy of the core C sources. Refresh it from the repo root with
+  `bindings/rust/scripts/sync-native.sh`.
 - The crate links the bundled Vision UI core automatically, but driver implementations remain outside this crate.

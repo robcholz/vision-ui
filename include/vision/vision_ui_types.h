@@ -245,7 +245,6 @@ typedef void* (*vision_ui_allocator_t)(vision_alloc_op_t op, size_t size, size_t
 struct vision_ui_t {
     bool is_in_vision_ui;
     bool is_background_frozen;
-    bool owns_self;
 
     const uint8_t* logo;
     uint32_t logo_span;

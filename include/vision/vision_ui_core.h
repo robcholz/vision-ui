@@ -22,17 +22,7 @@ typedef enum vision_ui_core_init_result_t {
 extern void vision_ui_init(vision_ui_t* ui);
 
 /**
- * Allocates and initializes a heap-owned UI instance.
- *
- * @return A non-`NULL` UI instance on success, or `NULL` when heap allocation fails.
- */
-extern vision_ui_t* vision_ui_create();
-
-/**
  * Destroys a UI instance and any library-owned items created for it.
- *
- * If `ui` was created by `vision_ui_create()`, this also frees the UI object itself. If `ui` was initialized with
- * `vision_ui_init()`, the caller still owns the storage for the struct.
  *
  * @param ui UI instance to destroy, or `NULL` to do nothing.
  */

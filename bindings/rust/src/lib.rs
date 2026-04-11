@@ -8,6 +8,7 @@ use alloc::boxed::Box;
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 use core::ffi::{c_char, c_void, CStr};
+use core::mem::MaybeUninit;
 use core::ops::RangeInclusive;
 use core::ptr::{self, NonNull};
 use core::time::Duration;
@@ -438,7 +439,7 @@ impl UiRef {
 }
 
 pub struct VisionUi {
-    raw: NonNull<raw::vision_ui_t>,
+    raw: raw::vision_ui_t,
     #[cfg(feature = "alloc")]
     toggle_closures: Vec<Box<ToggleClosure>>,
     #[cfg(feature = "alloc")]
@@ -448,30 +449,32 @@ pub struct VisionUi {
 }
 
 impl VisionUi {
-    pub fn new() -> Result<Self, Error> {
-        let raw = NonNull::new(unsafe { raw::vision_ui_create() })
-            .ok_or(Error::AllocationFailed("vision_ui_t"))?;
-        Ok(Self {
-            raw,
+    pub fn new() -> Self {
+        let mut raw = MaybeUninit::<raw::vision_ui_t>::uninit();
+        unsafe { raw::vision_ui_init(raw.as_mut_ptr()) };
+        Self {
+            raw: unsafe { raw.assume_init() },
             #[cfg(feature = "alloc")]
             toggle_closures: Vec::new(),
             #[cfg(feature = "alloc")]
             slide_closures: Vec::new(),
             #[cfg(feature = "alloc")]
             scene_closures: Vec::new(),
-        })
+        }
     }
 
     pub fn ui(&self) -> UiRef {
-        UiRef { raw: self.raw }
+        UiRef {
+            raw: NonNull::from(&self.raw),
+        }
     }
 
     pub fn raw_ptr(&self) -> *const raw::vision_ui_t {
-        self.raw.as_ptr()
+        &self.raw as *const raw::vision_ui_t
     }
 
     pub fn raw_mut_ptr(&mut self) -> *mut raw::vision_ui_t {
-        self.raw.as_ptr()
+        &mut self.raw as *mut raw::vision_ui_t
     }
 
     pub fn initialize_runtime(&mut self) -> Result<(), InitError> {
@@ -496,7 +499,7 @@ impl VisionUi {
         let bitmap = bitmap.bitmap();
         let span = u32::try_from(bitmap.bytes().len())
             .map_err(|_| Error::BitmapTooLarge(bitmap.bytes().len()))?;
-        unsafe { raw::vision_ui_start_logo_set(self.raw.as_ptr(), bitmap.bytes().as_ptr(), span) };
+        unsafe { raw::vision_ui_start_logo_set(self.raw_mut_ptr(), bitmap.bytes().as_ptr(), span) };
         Ok(())
     }
 
@@ -535,15 +538,15 @@ impl VisionUi {
     }
 
     pub fn set_allocator<A: Allocator>(&mut self) {
-        unsafe { raw::vision_ui_allocator_set(self.raw.as_ptr(), Some(allocator_trampoline::<A>)) }
+        unsafe { raw::vision_ui_allocator_set(self.raw_mut_ptr(), Some(allocator_trampoline::<A>)) }
     }
 
     pub unsafe fn set_allocator_raw(&mut self, allocator: raw::vision_ui_allocator_t) {
-        unsafe { raw::vision_ui_allocator_set(self.raw.as_ptr(), allocator) }
+        unsafe { raw::vision_ui_allocator_set(self.raw_mut_ptr(), allocator) }
     }
 
     pub fn clear_allocator(&mut self) {
-        unsafe { raw::vision_ui_allocator_set(self.raw.as_ptr(), None) }
+        unsafe { raw::vision_ui_allocator_set(self.raw_mut_ptr(), None) }
     }
 
     pub fn set_body_font(&mut self, font: Font) {
@@ -584,18 +587,18 @@ impl VisionUi {
 
     pub fn list(&mut self, title: Text, capacity: usize) -> Result<Item, Error> {
         wrap_item(unsafe {
-            raw::vision_ui_list_item_new(self.raw.as_ptr(), capacity, false, title.as_ptr())
+            raw::vision_ui_list_item_new(self.raw_ptr(), capacity, false, title.as_ptr())
         })
     }
 
     pub fn icon_list(&mut self, title: Text, capacity: usize) -> Result<Item, Error> {
         wrap_item(unsafe {
-            raw::vision_ui_list_item_new(self.raw.as_ptr(), capacity, true, title.as_ptr())
+            raw::vision_ui_list_item_new(self.raw_ptr(), capacity, true, title.as_ptr())
         })
     }
 
     pub fn title(&mut self, text: Text) -> Result<Item, Error> {
-        wrap_item(unsafe { raw::vision_ui_list_title_item_new(self.raw.as_ptr(), text.as_ptr()) })
+        wrap_item(unsafe { raw::vision_ui_list_title_item_new(self.raw_ptr(), text.as_ptr()) })
     }
 
     pub fn icon(
@@ -619,7 +622,7 @@ impl VisionUi {
         };
         let raw = unsafe {
             raw::vision_ui_list_icon_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 capacity,
                 icon_ptr,
                 title_ptr,
@@ -632,7 +635,7 @@ impl VisionUi {
     pub fn switch(&mut self, label: Text, initial: bool) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_switch_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 initial,
                 None,
@@ -650,7 +653,7 @@ impl VisionUi {
     ) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_switch_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 initial,
                 Some(toggle_trampoline::<T>),
@@ -680,7 +683,7 @@ impl VisionUi {
             .cast::<c_void>();
         let raw = unsafe {
             raw::vision_ui_list_switch_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 initial,
                 Some(toggle_closure_trampoline),
@@ -703,7 +706,7 @@ impl VisionUi {
         let max = *range.end();
         let raw = unsafe {
             raw::vision_ui_list_slider_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 initial,
                 step,
@@ -728,7 +731,7 @@ impl VisionUi {
         let max = *range.end();
         let raw = unsafe {
             raw::vision_ui_list_slider_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 initial,
                 step,
@@ -765,7 +768,7 @@ impl VisionUi {
         let max = *range.end();
         let raw = unsafe {
             raw::vision_ui_list_slider_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 initial,
                 step,
@@ -783,7 +786,7 @@ impl VisionUi {
     pub fn scene(&mut self, label: Text) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_user_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 None,
                 None,
@@ -801,7 +804,7 @@ impl VisionUi {
     ) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_user_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 bindings.init.map(|_| scene_init_trampoline::<T> as _),
                 bindings.render.map(|_| scene_render_trampoline::<T> as _),
@@ -837,7 +840,7 @@ impl VisionUi {
             .cast::<c_void>();
         let raw = unsafe {
             raw::vision_ui_list_user_item_new(
-                self.raw.as_ptr(),
+                self.raw_ptr(),
                 label.as_ptr(),
                 bindings
                     .init
