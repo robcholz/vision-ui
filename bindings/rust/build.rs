@@ -63,7 +63,7 @@ fn main() {
     let manifest_dir =
         PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("missing CARGO_MANIFEST_DIR"));
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("missing OUT_DIR"));
-    let source_dir = manifest_dir.join("../..");
+    let source_dir = locate_source_dir(&manifest_dir);
     let selected = load_selected_config();
     let clang_args = selected_clang_args(&selected);
 
@@ -77,6 +77,33 @@ fn main() {
     generate_selected_config(&out_dir, &selected, debug_enabled());
     generate_raw_bindings(&source_dir, &out_dir, &clang_args);
     compile_native(&source_dir, &clang_args);
+}
+
+fn locate_source_dir(manifest_dir: &Path) -> PathBuf {
+    let vendored = manifest_dir.join("native");
+    if is_valid_source_dir(&vendored) {
+        return vendored;
+    }
+
+    let workspace_root = manifest_dir.join("../..");
+    if is_valid_source_dir(&workspace_root) {
+        return workspace_root;
+    }
+
+    panic!(
+        "failed to locate Vision UI native sources: expected either {vendored} or {workspace}; run `scripts/sync-native.sh` to vendor them into this crate",
+        vendored = vendored.display(),
+        workspace = workspace_root.display()
+    );
+}
+
+fn is_valid_source_dir(root: &Path) -> bool {
+    root.join("include/vision/vision_ui.h").exists()
+        && root.join("include/vision_ui_config.h").exists()
+        && root.join("src/vision_ui_animation.c").exists()
+        && root.join("src/vision_ui_core.c").exists()
+        && root.join("src/vision_ui_item.c").exists()
+        && root.join("src/vision_ui_renderer.c").exists()
 }
 
 fn load_selected_config() -> Vec<(&'static str, u32)> {

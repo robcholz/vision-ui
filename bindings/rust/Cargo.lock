@@ -675,16 +675,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1cf6437eb19a8f4a6cc0f7dca544973b0b78843adbfeb3683d1a94a0024a294"
 
 [[package]]
-name = "sdl-u8g2-240x240"
-version = "0.1.0"
-dependencies = [
- "bindgen",
- "cc",
- "thiserror",
- "vision-ui",
-]
-
-[[package]]
 name = "sdl2"
 version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -844,7 +834,6 @@ dependencies = [
  "cc",
  "embedded-graphics",
  "minifb",
- "sdl-u8g2-240x240",
  "thiserror",
 ]
 
