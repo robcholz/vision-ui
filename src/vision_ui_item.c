@@ -488,34 +488,40 @@ void vision_ui_selector_exit_current_item(vision_ui_t* ui) {
     vision_ui_selector_schedule_selection(ui, selector->selected_item->parent, temp_index);
 }
 
-bool vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item) {
+vision_ui_root_item_set_result_t vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item) {
     assert(ui != NULL);
     if (item == NULL) {
-        return false;
+        return VisionUiRootItemSetItemInvalid;
     }
     ui->root_item = item;
-    return true;
+    return VisionUiRootItemSetOk;
 }
 
 vision_ui_list_item_t* vision_ui_root_list_get(const vision_ui_t* ui) {
     assert(ui != NULL);
-    assert(ui->root_item != NULL);
     return ui->root_item;
 }
 
-bool vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child) {
+vision_ui_list_push_item_result_t vision_ui_list_push_item(
+        vision_ui_t* ui,
+        vision_ui_list_item_t* parent,
+        vision_ui_list_item_t* child
+) {
     assert(ui != NULL);
     if (parent == NULL || child == NULL) {
-        return false;
+        return VisionUiListPushItemItemInvalid;
+    }
+    if (ui->root_item == NULL) {
+        return VisionUiListPushItemRootItemNotSet;
     }
     if (parent->child_num >= parent->capacity) {
-        return false;
+        return VisionUiListPushItemParentFull;
     }
     if (parent->layer >= VISION_UI_MAX_LIST_LAYER) {
-        return false;
+        return VisionUiListPushItemMaxLayerExceeded;
     }
     if (parent->icon_view_mode && child->type != IconItem) {
-        return false;
+        return VisionUiListPushItemIconViewChildMismatch;
     }
 
     child->layer = parent->layer + 1;
@@ -543,7 +549,7 @@ bool vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vi
     parent->child_list_item[parent->child_num++] = child;
     child->parent = parent;
 
-    return true;
+    return VisionUiListPushItemOk;
 }
 
 const vision_ui_camera_t* vision_ui_camera_instance_get(const vision_ui_t* ui) {

@@ -131,7 +131,7 @@ These functions control startup and per-frame execution.
 | `vision_ui_init(vision_ui_t* ui)`                                              | Initializes a caller-owned UI instance.                      | Before using the instance.          |
 | `vision_ui_create()` / `vision_ui_destroy(vision_ui_t* ui)`                    | Allocates or frees a UI instance.                            | Optional heap-owned lifecycle.      |
 | `vision_ui_render_init(vision_ui_t* ui)`                                       | Marks the UI as active and prepares the renderer to draw.    | Once before the main render loop.   |
-| `vision_ui_core_init(vision_ui_t* ui)`                                         | Initializes selection, camera state, and list runtime state. | After the root tree is built.       |
+| `vision_ui_core_init(vision_ui_t* ui)`                                         | Initializes selection, camera state, and list runtime state. Returns `VisionUiCoreInitRootItemNotSet` if no root is attached. | After the root tree is built.       |
 | `vision_ui_start_logo_set(vision_ui_t* ui, const uint8_t* bmp, uint32_t span)` | Shows a startup bitmap for a fixed amount of time.           | Optional, before rendering starts.  |
 | `vision_ui_step_render(vision_ui_t* ui)`                                       | Runs one frame of UI logic and rendering.                    | Every frame.                        |
 | `vision_ui_is_exited(const vision_ui_t* ui)`                                   | Reports whether the UI has been closed.                      | Usually as the main loop condition. |
@@ -149,6 +149,7 @@ For container items, `capacity` means "how many direct children this item can ho
 | Function                                                                                                 | What it does                        |
 |----------------------------------------------------------------------------------------------------------|-------------------------------------|
 | `vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item)`                                  | Sets the top-level list.            |
+| `vision_ui_root_list_get(const vision_ui_t* ui)`                                                         | Returns the current top-level list, or `NULL` if no root is attached yet. |
 | `vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child)` | Adds a child item to a parent list. |
 
 ### Item constructors
@@ -183,7 +184,7 @@ These show temporary UI messages on top of the current screen.
 
 | Function                                                                           | What it does                                      |
 |------------------------------------------------------------------------------------|---------------------------------------------------|
-| `vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span)` | Shows a notification bar for `span` milliseconds. |
+| `vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span)` | Shows a notification bar for `span` milliseconds. Returns `VisionUiNotificationPushContentInvalid` if `content` is `NULL`. |
 | `vision_ui_alert_push(vision_ui_t* ui, const char* content, uint16_t span)`        | Shows a centered alert for `span` milliseconds.   |
 
 ## Fonts and Memory
