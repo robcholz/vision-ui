@@ -191,6 +191,7 @@ fn generate_raw_bindings(native_dir: &Path, out_dir: &Path, clang_args: &[String
             "IS_IN_VISION_UI|DEFAULT_LIST_ICON|UiAction.*|ListItem|TitleItem|IconItem|SwitchItem|SliderItem|UserItem|VisionAlloc.*",
         )
         .merge_extern_blocks(true)
+        .use_core()
         .clang_arg(format!("-I{}", native_dir.join("include").display()))
         .clang_args(clang_args.iter().map(String::as_str))
         .generate()

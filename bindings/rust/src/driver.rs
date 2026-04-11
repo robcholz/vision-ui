@@ -1,6 +1,6 @@
 use crate::{Action, Font};
-use std::ffi::{c_void, CStr};
-use std::time::Duration;
+use core::ffi::{c_void, CStr};
+use core::time::Duration;
 
 pub trait Input {
     fn action(&mut self) -> Action;

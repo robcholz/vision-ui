@@ -1,4 +1,4 @@
-use std::time::Duration;
+use core::time::Duration;
 
 mod selected {
     include!(concat!(env!("OUT_DIR"), "/selected_config.rs"));
