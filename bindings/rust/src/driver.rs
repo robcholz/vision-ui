@@ -215,8 +215,9 @@ impl<T> Driver for T where T: Input + Timing + Text + Draw + Buffer {}
 
 /// Adapter trait for passing an existing backend object into the native C runtime.
 ///
-/// This is used by [`crate::VisionUi::bind_driver`]. Implementations should return
-/// a stable opaque handle understood by the underlying C driver functions.
+/// This is used by [`crate::VisionUi`] to refresh the native backend handle before
+/// runtime calls. Implementations should return an opaque handle understood by the
+/// underlying C driver functions.
 pub trait RawHandle {
     /// Returns the opaque native driver handle.
     ///
@@ -224,6 +225,7 @@ pub trait RawHandle {
     /// - a backend-specific pointer stored by the native UI instance.
     ///
     /// Behavior:
-    /// - The returned pointer must remain valid for as long as the UI may invoke driver hooks.
+    /// - The returned pointer must remain valid for the duration of the native call that uses it.
+    /// - Implementations may return the same pointer on every call.
     fn as_raw_handle(&mut self) -> *mut c_void;
 }

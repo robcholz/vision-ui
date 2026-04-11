@@ -706,12 +706,13 @@ impl UiRef {
     }
 }
 
-/// Safe inline-owned Vision UI instance.
+/// Safe inline-owned Vision UI instance paired with a backend driver.
 ///
 /// This is the main Rust entry point. It owns the native `vision_ui_t` value
-/// inline and initializes it with `vision_ui_init(...)`.
-pub struct VisionUi {
+/// inline and also owns the driver used by the C runtime.
+pub struct VisionUi<D> {
     raw: raw::vision_ui_t,
+    driver: D,
     #[cfg(feature = "alloc")]
     toggle_closures: Vec<Box<ToggleClosure>>,
     #[cfg(feature = "alloc")]
@@ -720,25 +721,35 @@ pub struct VisionUi {
     scene_closures: Vec<Box<SceneClosureBindings>>,
 }
 
-impl VisionUi {
-    /// Creates a new inline-owned UI instance.
+impl<D: driver::RawHandle> VisionUi<D> {
+    /// Creates a new inline-owned UI instance with an attached driver.
+    ///
+    /// Parameters:
+    /// - `driver`: backend driver owned by the UI wrapper.
+    ///
+    /// Returns:
+    /// - a new `VisionUi` value containing both the native UI state and the driver.
     ///
     /// Behavior:
     /// - Storage for the native `vision_ui_t` lives inline inside this Rust value.
     /// - Initialization uses `vision_ui_init(...)`.
+    /// - The driver is rebound into the native UI automatically before runtime calls.
     /// - Dropping the wrapper later calls `vision_ui_destroy(...)` to release library-owned items.
-    pub fn new() -> Self {
+    pub fn new(driver: D) -> Self {
         let mut raw = MaybeUninit::<raw::vision_ui_t>::uninit();
         unsafe { raw::vision_ui_init(raw.as_mut_ptr()) };
-        Self {
+        let mut ui = Self {
             raw: unsafe { raw.assume_init() },
+            driver,
             #[cfg(feature = "alloc")]
             toggle_closures: Vec::new(),
             #[cfg(feature = "alloc")]
             slide_closures: Vec::new(),
             #[cfg(feature = "alloc")]
             scene_closures: Vec::new(),
-        }
+        };
+        ui.sync_driver_binding();
+        ui
     }
 
     /// Returns a callback-safe borrowed handle to the same UI instance.
@@ -767,6 +778,26 @@ impl VisionUi {
         &mut self.raw as *mut raw::vision_ui_t
     }
 
+    /// Returns a shared reference to the owned driver.
+    pub fn driver(&self) -> &D {
+        &self.driver
+    }
+
+    /// Returns a mutable reference to the owned driver.
+    ///
+    /// Behavior:
+    /// - The native driver binding is refreshed before the mutable reference is returned.
+    pub fn driver_mut(&mut self) -> &mut D {
+        self.sync_driver_binding();
+        &mut self.driver
+    }
+
+    fn sync_driver_binding(&mut self) {
+        unsafe {
+            raw::vision_ui_driver_bind(self.raw_mut_ptr(), self.driver.as_raw_handle());
+        }
+    }
+
     /// Initializes selector, camera, and list runtime state after the tree is built.
     ///
     /// Returns:
@@ -777,6 +808,7 @@ impl VisionUi {
     /// - Call this after the tree is built and the root has been attached.
     /// - This prepares selector, camera, and list runtime state before rendering begins.
     pub fn initialize_runtime(&mut self) -> Result<(), InitError> {
+        self.sync_driver_binding();
         match unsafe { raw::vision_ui_core_init(self.raw_mut_ptr()) } {
             raw::vision_ui_core_init_result_t_VisionUiCoreInitOk => Ok(()),
             raw::vision_ui_core_init_result_t_VisionUiCoreInitRootItemNotSet => {
@@ -792,6 +824,7 @@ impl VisionUi {
     /// - This forwards to `vision_ui_render_init(...)`.
     /// - Call this after [`VisionUi::initialize_runtime`] and before the main render loop.
     pub fn initialize_rendering(&mut self) {
+        self.sync_driver_binding();
         unsafe { raw::vision_ui_render_init(self.raw_mut_ptr()) }
     }
 
@@ -802,6 +835,7 @@ impl VisionUi {
     ///   scene transitions, and drawing.
     /// - It forwards directly to `vision_ui_step_render(...)`.
     pub fn render_frame(&mut self) {
+        self.sync_driver_binding();
         unsafe { raw::vision_ui_step_render(self.raw_mut_ptr()) }
     }
 
@@ -825,41 +859,13 @@ impl VisionUi {
         Ok(())
     }
 
-    /// Binds a raw backend driver handle.
-    ///
-    /// Prefer [`VisionUi::bind_driver`] when you already have a type that
-    /// implements [`driver::RawHandle`].
-    ///
-    /// Parameters:
-    /// - `handle`: backend-specific opaque driver pointer expected by the C runtime.
-    ///
-    /// Behavior:
-    /// - The pointer is stored by the native UI and later passed into driver hooks.
-    /// - The caller must guarantee that the handle remains valid for the UI's lifetime.
-    pub unsafe fn bind_driver_raw(&mut self, handle: NonNull<c_void>) {
-        raw::vision_ui_driver_bind(self.raw_mut_ptr(), handle.as_ptr());
-    }
-
-    /// Binds a backend driver handle through the Rust driver adapter trait.
-    ///
-    /// Parameters:
-    /// - `driver`: backend object that can expose a stable raw driver handle.
-    ///
-    /// Behavior:
-    /// - The native UI stores the backend handle by pointer.
-    /// - The handle must remain valid for as long as the UI may call driver hooks.
-    pub fn bind_driver<D: driver::RawHandle>(&mut self, driver: &mut D) {
-        unsafe {
-            raw::vision_ui_driver_bind(self.raw_mut_ptr(), driver.as_raw_handle());
-        }
-    }
-
     /// Reads the current high-level input action from the bound driver.
     ///
     /// Returns:
     /// - `Ok(Action)` when the driver reports a valid Vision UI action.
     /// - `Err(ActionError::Invalid(_))` when the reported action code is unknown.
-    pub fn action(&self) -> Result<Action, ActionError> {
+    pub fn action(&mut self) -> Result<Action, ActionError> {
+        self.sync_driver_binding();
         self.ui().action()
     }
 
@@ -867,7 +873,8 @@ impl VisionUi {
     ///
     /// Returns:
     /// - the current driver tick value interpreted as milliseconds.
-    pub fn ticks(&self) -> Duration {
+    pub fn ticks(&mut self) -> Duration {
+        self.sync_driver_binding();
         self.ui().ticks()
     }
 
@@ -879,7 +886,8 @@ impl VisionUi {
     /// Returns:
     /// - `Ok(())` when the duration fits in Vision UI's integer range.
     /// - `Err(Error::DurationOverflow(_))` when the duration is too large.
-    pub fn delay(&self, duration: Duration) -> Result<(), Error> {
+    pub fn delay(&mut self, duration: Duration) -> Result<(), Error> {
+        self.sync_driver_binding();
         self.ui().delay(duration)
     }
 
@@ -1495,9 +1503,9 @@ impl VisionUi {
     }
 }
 
-impl Drop for VisionUi {
+impl<D> Drop for VisionUi<D> {
     fn drop(&mut self) {
-        unsafe { raw::vision_ui_destroy(self.raw_mut_ptr()) }
+        unsafe { raw::vision_ui_destroy(&mut self.raw as *mut raw::vision_ui_t) }
     }
 }
 
