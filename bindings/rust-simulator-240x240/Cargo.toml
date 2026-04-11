@@ -1,0 +1,28 @@
+[package]
+name = "vision-ui-simulator-240x240"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-only"
+description = "SDL + u8g2 simulator backend for vision-ui"
+repository = "https://github.com/robcholz/vision-ui"
+build = "build.rs"
+include = [
+    "Cargo.toml",
+    "README.md",
+    "build.rs",
+    "src/**",
+    "examples/**",
+    "native/**",
+]
+
+[lib]
+name = "vision_ui_simulator_240x240"
+path = "src/lib.rs"
+
+[dependencies]
+thiserror = "2"
+vision-ui = { path = "../rust" }
+
+[build-dependencies]
+bindgen = "0.72"
+cc = "1"
