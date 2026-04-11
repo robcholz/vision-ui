@@ -122,14 +122,14 @@ impl Item {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct MonoBitmap<'a> {
-    bytes: &'a [u8],
+pub struct MonoBitmap {
+    bytes: &'static [u8],
     width: u16,
     height: u16,
 }
 
-impl<'a> MonoBitmap<'a> {
-    pub fn new(bytes: &'a [u8], width: u16, height: u16) -> Result<Self, Error> {
+impl MonoBitmap {
+    pub fn new(bytes: &'static [u8], width: u16, height: u16) -> Result<Self, Error> {
         let expected = bitmap_len(width, height);
         if bytes.len() != expected {
             return Err(Error::InvalidBitmapLength {
@@ -146,7 +146,7 @@ impl<'a> MonoBitmap<'a> {
         })
     }
 
-    pub fn bytes(self) -> &'a [u8] {
+    pub fn bytes(self) -> &'static [u8] {
         self.bytes
     }
 
@@ -160,14 +160,14 @@ impl<'a> MonoBitmap<'a> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct StartupLogo<'a>(MonoBitmap<'a>);
+pub struct StartupLogo(MonoBitmap);
 
-impl<'a> StartupLogo<'a> {
-    pub fn new(bytes: &'a [u8]) -> Result<Self, Error> {
+impl StartupLogo {
+    pub fn new(bytes: &'static [u8]) -> Result<Self, Error> {
         Ok(Self(MonoBitmap::new(bytes, SCREEN_WIDTH, SCREEN_HEIGHT)?))
     }
 
-    pub fn bitmap(self) -> MonoBitmap<'a> {
+    pub fn bitmap(self) -> MonoBitmap {
         self.0
     }
 }
@@ -196,7 +196,6 @@ struct SceneCallbackSet {
 struct State {
     raw: NonNull<raw::vision_ui_t>,
     retained_strings: Vec<CString>,
-    retained_bitmaps: Vec<Box<[u8]>>,
     toggle_callbacks: Vec<Box<ToggleCallback>>,
     slide_callbacks: Vec<Box<SlideCallback>>,
     scene_callbacks: Vec<Box<SceneCallbackSet>>,
@@ -208,14 +207,6 @@ impl State {
         let ptr = string.as_ptr();
         self.retained_strings.push(string);
         Ok(ptr)
-    }
-
-    fn retain_bitmap(&mut self, bitmap: &[u8]) -> &Box<[u8]> {
-        self.retained_bitmaps
-            .push(bitmap.to_vec().into_boxed_slice());
-        self.retained_bitmaps
-            .last()
-            .expect("retained_bitmaps should contain the bitmap that was just pushed")
     }
 
     fn wrap_item(&self, ptr: *mut raw::vision_ui_list_item_t) -> Result<Item, Error> {
@@ -367,7 +358,6 @@ impl VisionUi {
             state: Rc::new(RefCell::new(State {
                 raw,
                 retained_strings: Vec::new(),
-                retained_bitmaps: Vec::new(),
                 toggle_callbacks: Vec::new(),
                 slide_callbacks: Vec::new(),
                 scene_callbacks: Vec::new(),
@@ -407,15 +397,12 @@ impl VisionUi {
         unsafe { raw::vision_ui_step_render(self.raw_mut_ptr()) }
     }
 
-    pub fn set_startup_logo(&mut self, bitmap: StartupLogo<'_>) -> Result<(), Error> {
+    pub fn set_startup_logo(&mut self, bitmap: StartupLogo) -> Result<(), Error> {
         let bitmap = bitmap.bitmap();
         let span = u32::try_from(bitmap.bytes().len())
             .map_err(|_| Error::BitmapTooLarge(bitmap.bytes().len()))?;
-        let mut state = self.state.borrow_mut();
-        let owned = bitmap.bytes().to_vec().into_boxed_slice();
-        let ptr = owned.as_ptr();
-        state.retained_bitmaps.push(owned);
-        unsafe { raw::vision_ui_start_logo_set(state.raw.as_ptr(), ptr, span) };
+        let raw = self.state.borrow().raw;
+        unsafe { raw::vision_ui_start_logo_set(raw.as_ptr(), bitmap.bytes().as_ptr(), span) };
         Ok(())
     }
 
@@ -513,7 +500,7 @@ impl VisionUi {
         &mut self,
         title: impl AsRef<str>,
         description: Option<impl AsRef<str>>,
-        icon: Option<MonoBitmap<'_>>,
+        icon: Option<MonoBitmap>,
         capacity: usize,
     ) -> Result<Item, Error> {
         let mut state = self.state.borrow_mut();
@@ -525,7 +512,7 @@ impl VisionUi {
         let icon_ptr = match icon {
             Some(bitmap) => {
                 ensure_icon_bitmap(bitmap)?;
-                state.retain_bitmap(bitmap.bytes()).as_ptr()
+                bitmap.bytes().as_ptr()
             }
             None => std::ptr::null(),
         };
@@ -808,7 +795,7 @@ fn bitmap_len(width: u16, height: u16) -> usize {
     usize::from(width).div_ceil(8) * usize::from(height)
 }
 
-fn ensure_icon_bitmap(bitmap: MonoBitmap<'_>) -> Result<(), Error> {
+fn ensure_icon_bitmap(bitmap: MonoBitmap) -> Result<(), Error> {
     if bitmap.width() == ICON_SIZE && bitmap.height() == ICON_SIZE {
         return Ok(());
     }
