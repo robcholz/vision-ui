@@ -31,11 +31,13 @@ void animation(int16_t* pos, const int16_t pos_trg, const int16_t speed) {
     }
 }
 
-void test_user_item_init_function(vision_ui_t* ui) {
+void test_user_item_init_function(vision_ui_t* ui, void* user_data) {
+    (void) user_data;
     TIME_START = vision_ui_driver_ticks_ms_get(ui);
 }
 
-void test_user_item_loop_function(vision_ui_t* ui) {
+void test_user_item_loop_function(vision_ui_t* ui, void* user_data) {
+    (void) user_data;
     vision_ui_driver_color_draw(ui, 1);
     vision_ui_driver_box_r_draw(
             ui,
@@ -47,8 +49,9 @@ void test_user_item_loop_function(vision_ui_t* ui) {
     );
 }
 
-void test_user_item_exit_function(vision_ui_t* ui) {
+void test_user_item_exit_function(vision_ui_t* ui, void* user_data) {
     (void) ui;
+    (void) user_data;
     TIME_START = 0;
     Y_LOGO = 200;
     Y_VERSION = 200;
@@ -60,29 +63,34 @@ void test_user_item_exit_function(vision_ui_t* ui) {
     Y_WIRE_2 = 200;
 }
 
-static void notify_test_1(vision_ui_t* ui, bool value) {
+static void notify_test_1(vision_ui_t* ui, bool value, void* user_data) {
     (void) value;
+    (void) user_data;
     vision_ui_notification_push(ui, "Notification Test 1", 5000);
 }
 
-static void notify_test_2(vision_ui_t* ui, bool value) {
+static void notify_test_2(vision_ui_t* ui, bool value, void* user_data) {
     (void) value;
+    (void) user_data;
     vision_ui_notification_push(ui, "Notification Test 2", 5000);
 }
 
-static void alert_test(vision_ui_t* ui, bool value) {
+static void alert_test(vision_ui_t* ui, bool value, void* user_data) {
     (void) value;
+    (void) user_data;
     vision_ui_alert_push(ui, "Alert Test", 5000);
 }
 
-static void noop_switch_changed(vision_ui_t* ui, bool value) {
+static void noop_switch_changed(vision_ui_t* ui, bool value, void* user_data) {
     (void) ui;
     (void) value;
+    (void) user_data;
 }
 
-static void noop_slider_changed(vision_ui_t* ui, int16_t value) {
+static void noop_slider_changed(vision_ui_t* ui, int16_t value, void* user_data) {
     (void) ui;
     (void) value;
+    (void) user_data;
 }
 
 #include <stdint.h>
@@ -346,73 +354,79 @@ int main() {
                     "About the Board...",
                     test_user_item_init_function,
                     test_user_item_loop_function,
-                    test_user_item_exit_function
+                    test_user_item_exit_function,
+                    NULL
             )
     );
     vision_ui_list_push_item(
-            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 1", false, notify_test_1)
+            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 1", false, notify_test_1, NULL)
     );
     vision_ui_list_push_item(
-            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 2", false, notify_test_2)
+            &ui, root, vision_ui_list_switch_item_new(&ui, "Test Notification 2", false, notify_test_2, NULL)
     );
-    vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Test Alert", false, alert_test));
+    vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Test Alert", false, alert_test, NULL));
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1
-            )
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(
-                    &ui, "Test Notification 2 Notification Test 2 Notification Test 2", false, notify_test_2
-            )
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(&ui, "Test Alert Notification Test 2 Notification Test 2", false, alert_test)
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(
-                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1
+                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1, NULL
             )
     );
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui, "Test Notification 2Notification Test 2 Notification Test 2", false, notify_test_2
-            )
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(&ui, "Test Alert Notification Test 2 Notification Test 2", false, alert_test)
-    );
-    vision_ui_list_push_item(
-            &ui,
-            root,
-            vision_ui_list_switch_item_new(
-                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1
+                    &ui, "Test Notification 2 Notification Test 2 Notification Test 2", false, notify_test_2, NULL
             )
     );
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui, "Test Notification 2 Notification Test 2 Notification Test 2", false, notify_test_2
+                    &ui, "Test Alert Notification Test 2 Notification Test 2", false, alert_test, NULL
             )
     );
     vision_ui_list_push_item(
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui, "Test Alert Notification Test 2 Notification Test 2 Notification Test 2", false, alert_test
+                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1, NULL
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Notification 2Notification Test 2 Notification Test 2", false, notify_test_2, NULL
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Alert Notification Test 2 Notification Test 2", false, alert_test, NULL
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Notification 1 Notification Test 2 Notification Test 2", false, notify_test_1, NULL
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Notification 2 Notification Test 2 Notification Test 2", false, notify_test_2, NULL
+            )
+    );
+    vision_ui_list_push_item(
+            &ui,
+            root,
+            vision_ui_list_switch_item_new(
+                    &ui, "Test Alert Notification Test 2 Notification Test 2 Notification Test 2", false, alert_test,
+                    NULL
             )
     );
 
@@ -422,22 +436,22 @@ int main() {
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_switch_item_new(&ui, "Heartbeat LED", true, noop_switch_changed)
+            vision_ui_list_switch_item_new(&ui, "Heartbeat LED", true, noop_switch_changed, NULL)
     );
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_switch_item_new(&ui, "Reverse Keys", false, noop_switch_changed)
+            vision_ui_list_switch_item_new(&ui, "Reverse Keys", false, noop_switch_changed, NULL)
     );
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_slider_item_new(&ui, "Display Style", 1600, 5, 1, 9999, noop_slider_changed)
+            vision_ui_list_slider_item_new(&ui, "Display Style", 1600, 5, 1, 9999, noop_slider_changed, NULL)
     );
     vision_ui_list_push_item(
             &ui,
             launcher_setting_list_item,
-            vision_ui_list_switch_item_new(&ui, "Invert Display", false, noop_switch_changed)
+            vision_ui_list_switch_item_new(&ui, "Invert Display", false, noop_switch_changed, NULL)
     );
 
     vision_ui_core_init(&ui);

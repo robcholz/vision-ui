@@ -145,7 +145,8 @@ vision_ui_list_item_t* vision_ui_list_switch_item_new(
         const vision_ui_t* ui,
         const char* content,
         const bool default_value,
-        void (*on_changed)(vision_ui_t* ui, bool value)
+        vision_ui_switch_changed_cb on_changed,
+        void* user_data
 ) {
     vision_ui_switch_item_t* switch_item = vision_ui_malloc(ui, sizeof(vision_ui_switch_item_t));
     if (switch_item == NULL) {
@@ -156,6 +157,7 @@ vision_ui_list_item_t* vision_ui_list_switch_item_new(
     switch_item->base_item.content = content;
     switch_item->value = default_value;
     switch_item->on_changed = on_changed;
+    switch_item->on_changed_user_data = user_data;
     vision_ui_child_list_init(ui, (vision_ui_list_item_t*) switch_item, 0);
     vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) switch_item);
     return (vision_ui_list_item_t*) switch_item;
@@ -168,7 +170,8 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(
         const uint8_t step,
         const int16_t min,
         const int16_t max,
-        void (*on_changed)(vision_ui_t* ui, int16_t value)
+        vision_ui_slider_changed_cb on_changed,
+        void* user_data
 ) {
     vision_ui_slider_item_t* slider_item = vision_ui_malloc(ui, sizeof(vision_ui_slider_item_t));
     if (slider_item == NULL) {
@@ -182,6 +185,7 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(
     slider_item->value_min = min;
     slider_item->value_max = max;
     slider_item->on_changed = on_changed;
+    slider_item->on_changed_user_data = user_data;
     vision_ui_child_list_init(ui, (vision_ui_list_item_t*) slider_item, 0);
     vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) slider_item);
     return (vision_ui_list_item_t*) slider_item;
@@ -190,9 +194,10 @@ vision_ui_list_item_t* vision_ui_list_slider_item_new(
 vision_ui_list_item_t* vision_ui_list_user_item_new(
         const vision_ui_t* ui,
         const char* content,
-        void (*init_function)(vision_ui_t* ui),
-        void (*loop_function)(vision_ui_t* ui),
-        void (*exit_function)(vision_ui_t* ui)
+        vision_ui_scene_cb init_function,
+        vision_ui_scene_cb loop_function,
+        vision_ui_scene_cb exit_function,
+        void* user_data
 ) {
     vision_ui_user_item_t* user_item = vision_ui_malloc(ui, sizeof(vision_ui_user_item_t));
     if (user_item == NULL) {
@@ -204,6 +209,7 @@ vision_ui_list_item_t* vision_ui_list_user_item_new(
     user_item->init_function = init_function;
     user_item->loop_function = loop_function;
     user_item->exit_function = exit_function;
+    user_item->user_data = user_data;
     vision_ui_child_list_init(ui, (vision_ui_list_item_t*) user_item, 0);
     vision_ui_owned_item_register(ui, (vision_ui_list_item_t*) user_item);
     return (vision_ui_list_item_t*) user_item;
@@ -274,7 +280,7 @@ void vision_ui_selector_go_next_item(vision_ui_t* ui) {
             selected_slider_item->value = selected_slider_item->value_max;
         }
         if (selected_slider_item->on_changed != NULL) {
-            selected_slider_item->on_changed(ui, selected_slider_item->value);
+            selected_slider_item->on_changed(ui, selected_slider_item->value, selected_slider_item->on_changed_user_data);
         }
         return;
     }
@@ -309,7 +315,7 @@ void vision_ui_selector_go_prev_item(vision_ui_t* ui) {
             selected_slider_item->value = selected_slider_item->value_min;
         }
         if (selected_slider_item->on_changed != NULL) {
-            selected_slider_item->on_changed(ui, selected_slider_item->value);
+            selected_slider_item->on_changed(ui, selected_slider_item->value, selected_slider_item->on_changed_user_data);
         }
         return;
     }
@@ -368,7 +374,7 @@ void vision_ui_selector_jump_to_selected_item(vision_ui_t* ui) {
         vision_ui_switch_item_t* selected_switch_item = vision_ui_to_list_switch_item(selector->selected_item);
         selected_switch_item->value = !selected_switch_item->value;
         if (selected_switch_item->on_changed != NULL) {
-            selected_switch_item->on_changed(ui, selected_switch_item->value);
+            selected_switch_item->on_changed(ui, selected_switch_item->value, selected_switch_item->on_changed_user_data);
         }
         return;
     }

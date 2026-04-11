@@ -51,7 +51,7 @@ vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 8, false, "VisionUI")
 vision_ui_root_item_set(&ui, root);
 
 vision_ui_list_push_item(&ui, root, vision_ui_list_title_item_new(&ui, "VisionUI"));
-vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Invert Display", false, on_invert_changed));
+vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Invert Display", false, on_invert_changed, NULL));
 
 vision_ui_core_init(&ui);
 vision_ui_render_init(&ui);
@@ -151,14 +151,14 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 
 ### Item 构造函数
 
-| 函数                                                                                                                                                                                        | 用途                                             |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
-| `vision_ui_list_item_new(const vision_ui_t* ui, size_t capacity, bool icon_mode, const char* content)`                                                                                    | 创建普通列表容器，可持有子项。`icon_mode` 为 `true` 时表示图标视图列表。 |
-| `vision_ui_list_title_item_new(const vision_ui_t* ui, const char* title)`                                                                                                                 | 创建不可交互的标题行。                                    |
-| `vision_ui_list_icon_item_new(const vision_ui_t* ui, size_t capacity, const uint8_t* icon, const char* title, const char* description)`                                                   | 创建可选中的图标卡片，也可以带子项。                             |
-| `vision_ui_list_switch_item_new(const vision_ui_t* ui, const char* content, bool default_value, void (*on_changed)(vision_ui_t*, bool))`                                                  | 创建开关行，值变化时会调用回调。                               |
-| `vision_ui_list_slider_item_new(const vision_ui_t* ui, const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max, void (*on_changed)(vision_ui_t*, int16_t))`    | 创建数值滑块行。                                       |
-| `vision_ui_list_user_item_new(const vision_ui_t* ui, const char* content, void (*init_function)(vision_ui_t*), void (*loop_function)(vision_ui_t*), void (*exit_function)(vision_ui_t*))` | 创建完全自定义的全屏场景，选中后接管绘制流程。                        |
+| 函数                                                                                                                                                                                                                              | 用途                                             |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| `vision_ui_list_item_new(const vision_ui_t* ui, size_t capacity, bool icon_mode, const char* content)`                                                                                                                          | 创建普通列表容器，可持有子项。`icon_mode` 为 `true` 时表示图标视图列表。 |
+| `vision_ui_list_title_item_new(const vision_ui_t* ui, const char* title)`                                                                                                                                                       | 创建不可交互的标题行。                                    |
+| `vision_ui_list_icon_item_new(const vision_ui_t* ui, size_t capacity, const uint8_t* icon, const char* title, const char* description)`                                                                                         | 创建可选中的图标卡片，也可以带子项。                             |
+| `vision_ui_list_switch_item_new(const vision_ui_t* ui, const char* content, bool default_value, void (*on_changed)(vision_ui_t*, bool, void*), void* user_data)`                                                                | 创建开关行，值变化时会调用回调。                               |
+| `vision_ui_list_slider_item_new(const vision_ui_t* ui, const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max, void (*on_changed)(vision_ui_t*, int16_t, void*), void* user_data)`                  | 创建数值滑块行。                                       |
+| `vision_ui_list_user_item_new(const vision_ui_t* ui, const char* content, void (*init_function)(vision_ui_t*, void*), void (*loop_function)(vision_ui_t*, void*), void (*exit_function)(vision_ui_t*, void*), void* user_data)` | 创建完全自定义的全屏场景，选中后接管绘制流程。                        |
 
 ### User Item
 
@@ -167,9 +167,10 @@ Vision UI 使用 `vision_ui_list_item_t` 节点树组织界面。每一个页面
 - `init_function`：用户项第一次激活时调用。
 - `loop_function`：用户项激活期间每帧调用。
 - `exit_function`：离开用户项时调用。
+- `user_data`：由调用方拥有的上下文指针。Vision UI 会保存这个指针，并在回调触发时原样传回。只要该 item 还可能触发回调，这块数据就必须保持有效。
 
 在 user item 内部，你仍然使用普通渲染器所用的 `vision_ui_driver_*` 函数进行绘制。当前
-`vision_ui_t*` 会传给每个 user item 回调。
+`vision_ui_t*` 和保存下来的 `user_data` 指针都会传给每个 user item 回调。
 
 ## 通知与警告
 

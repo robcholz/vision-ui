@@ -71,13 +71,16 @@ extern vision_ui_list_item_t* vision_ui_list_icon_item_new(
  * while the item is in use.
  * @param default_value Initial switch value.
  * @param on_changed Optional callback invoked after the switch value changes.
+ * @param user_data Borrowed callback context pointer stored on the item. The pointed-to data should remain valid while
+ * the item is in use.
  * @return A non-`NULL` item on success, or `NULL` when allocating the item fails.
  */
 extern vision_ui_list_item_t* vision_ui_list_switch_item_new(
         const vision_ui_t* ui,
         const char* content,
         bool default_value,
-        void (*on_changed)(vision_ui_t* ui, bool value)
+        vision_ui_switch_changed_cb on_changed,
+        void* user_data
 );
 
 /**
@@ -91,6 +94,8 @@ extern vision_ui_list_item_t* vision_ui_list_switch_item_new(
  * @param min Minimum slider value.
  * @param max Maximum slider value.
  * @param on_changed Optional callback invoked after the slider value changes.
+ * @param user_data Borrowed callback context pointer stored on the item. The pointed-to data should remain valid while
+ * the item is in use.
  * @return A non-`NULL` item on success, or `NULL` when allocating the item fails.
  */
 extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
@@ -100,7 +105,8 @@ extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
         uint8_t step,
         int16_t min,
         int16_t max,
-        void (*on_changed)(vision_ui_t* ui, int16_t value)
+        vision_ui_slider_changed_cb on_changed,
+        void* user_data
 );
 
 /**
@@ -112,14 +118,17 @@ extern vision_ui_list_item_t* vision_ui_list_slider_item_new(
  * @param init_function Optional callback run the first time the user item becomes active.
  * @param loop_function Optional callback run every frame while the user item is active.
  * @param exit_function Optional callback run when leaving the user item.
+ * @param user_data Borrowed callback context pointer shared by the scene callbacks. The pointed-to data should remain
+ * valid while the item is in use.
  * @return A non-`NULL` item on success, or `NULL` when allocating the item fails.
  */
 extern vision_ui_list_item_t* vision_ui_list_user_item_new(
         const vision_ui_t* ui,
         const char* content,
-        void (*init_function)(vision_ui_t* ui),
-        void (*loop_function)(vision_ui_t* ui),
-        void (*exit_function)(vision_ui_t* ui)
+        vision_ui_scene_cb init_function,
+        vision_ui_scene_cb loop_function,
+        vision_ui_scene_cb exit_function,
+        void* user_data
 );
 
 /**

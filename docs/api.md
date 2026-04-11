@@ -52,7 +52,7 @@ vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 8, false, "VisionUI")
 vision_ui_root_item_set(&ui, root);
 
 vision_ui_list_push_item(&ui, root, vision_ui_list_title_item_new(&ui, "VisionUI"));
-vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Invert Display", false, on_invert_changed));
+vision_ui_list_push_item(&ui, root, vision_ui_list_switch_item_new(&ui, "Invert Display", false, on_invert_changed, NULL));
 
 vision_ui_core_init(&ui);
 vision_ui_render_init(&ui);
@@ -153,14 +153,14 @@ For container items, `capacity` means "how many direct children this item can ho
 
 ### Item constructors
 
-| Function                                                                                                                                                                                  | Use it for                                                                                        |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `vision_ui_list_item_new(const vision_ui_t* ui, size_t capacity, bool icon_mode, const char* content)`                                                                                    | A normal list container that can hold child items. Set `icon_mode` to `true` for icon-view lists. |
-| `vision_ui_list_title_item_new(const vision_ui_t* ui, const char* title)`                                                                                                                 | A non-interactive title row.                                                                      |
-| `vision_ui_list_icon_item_new(const vision_ui_t* ui, size_t capacity, const uint8_t* icon, const char* title, const char* description)`                                                   | A selectable icon card, optionally with child items.                                              |
-| `vision_ui_list_switch_item_new(const vision_ui_t* ui, const char* content, bool default_value, void (*on_changed)(vision_ui_t*, bool))`                                                  | A toggle row. The callback runs when the value changes.                                           |
-| `vision_ui_list_slider_item_new(const vision_ui_t* ui, const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max, void (*on_changed)(vision_ui_t*, int16_t))`    | A numeric slider row.                                                                             |
-| `vision_ui_list_user_item_new(const vision_ui_t* ui, const char* content, void (*init_function)(vision_ui_t*), void (*loop_function)(vision_ui_t*), void (*exit_function)(vision_ui_t*))` | A custom full-screen scene that takes over drawing while selected.                                |
+| Function                                                                                                                                                                                                                        | Use it for                                                                                        |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| `vision_ui_list_item_new(const vision_ui_t* ui, size_t capacity, bool icon_mode, const char* content)`                                                                                                                          | A normal list container that can hold child items. Set `icon_mode` to `true` for icon-view lists. |
+| `vision_ui_list_title_item_new(const vision_ui_t* ui, const char* title)`                                                                                                                                                       | A non-interactive title row.                                                                      |
+| `vision_ui_list_icon_item_new(const vision_ui_t* ui, size_t capacity, const uint8_t* icon, const char* title, const char* description)`                                                                                         | A selectable icon card, optionally with child items.                                              |
+| `vision_ui_list_switch_item_new(const vision_ui_t* ui, const char* content, bool default_value, void (*on_changed)(vision_ui_t*, bool, void*), void* user_data)`                                                                | A toggle row. The callback runs when the value changes.                                           |
+| `vision_ui_list_slider_item_new(const vision_ui_t* ui, const char* content, int16_t default_value, uint8_t step, int16_t min, int16_t max, void (*on_changed)(vision_ui_t*, int16_t, void*), void* user_data)`                  | A numeric slider row.                                                                             |
+| `vision_ui_list_user_item_new(const vision_ui_t* ui, const char* content, void (*init_function)(vision_ui_t*, void*), void (*loop_function)(vision_ui_t*, void*), void (*exit_function)(vision_ui_t*, void*), void* user_data)` | A custom full-screen scene that takes over drawing while selected.                                |
 
 ### User items
 
@@ -169,9 +169,11 @@ For container items, `capacity` means "how many direct children this item can ho
 - `init_function`: runs the first time the user item becomes active.
 - `loop_function`: runs every frame while the user item is active.
 - `exit_function`: runs when leaving the user item.
+- `user_data`: caller-owned context pointer shared by the callbacks. Vision UI stores this pointer and passes it back
+  unchanged. The pointed-to data must stay valid while the item may invoke its callbacks.
 
 Inside a user item, you draw using the same `vision_ui_driver_*` functions that the normal renderer uses. The active
-`vision_ui_t*` is passed into each user-item callback.
+`vision_ui_t*` and the stored `user_data` pointer are passed into each user-item callback.
 
 You usually only need these if you are doing custom logic outside the default callbacks.
 

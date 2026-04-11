@@ -12,6 +12,10 @@ typedef struct vision_ui_t vision_ui_t;
 typedef struct vision_ui_list_item_t vision_ui_list_item_t;
 typedef struct vision_ui_selector_t vision_ui_selector_t;
 
+typedef void (*vision_ui_switch_changed_cb)(vision_ui_t* ui, bool value, void* user_data);
+typedef void (*vision_ui_slider_changed_cb)(vision_ui_t* ui, int16_t value, void* user_data);
+typedef void (*vision_ui_scene_cb)(vision_ui_t* ui, void* user_data);
+
 /// Font configuration passed to the public font setter and driver APIs.
 typedef struct vision_ui_font_t {
     /// Backend font object, such as a u8g2 font pointer.
@@ -143,7 +147,8 @@ typedef struct vision_ui_switch_item_t {
 
     bool value;
 
-    void (*on_changed)(vision_ui_t* ui, bool value);
+    vision_ui_switch_changed_cb on_changed;
+    void* on_changed_user_data;
 } vision_ui_switch_item_t;
 
 typedef struct vision_ui_slider_item_t {
@@ -157,7 +162,8 @@ typedef struct vision_ui_slider_item_t {
 
     uint32_t text_scroll_anchor;
 
-    void (*on_changed)(vision_ui_t* ui, int16_t value);
+    vision_ui_slider_changed_cb on_changed;
+    void* on_changed_user_data;
 } vision_ui_slider_item_t;
 
 typedef struct vision_ui_title_item_t {
@@ -184,9 +190,10 @@ typedef struct vision_ui_user_item_t {
     bool entering_user_item;
     bool exiting_user_item;
 
-    void (*init_function)(vision_ui_t* ui);
-    void (*loop_function)(vision_ui_t* ui);
-    void (*exit_function)(vision_ui_t* ui);
+    vision_ui_scene_cb init_function;
+    vision_ui_scene_cb loop_function;
+    vision_ui_scene_cb exit_function;
+    void* user_data;
 
     bool user_item_inited;
     bool user_item_looping;

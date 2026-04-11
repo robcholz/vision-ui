@@ -532,7 +532,7 @@ static void vision_ui_main_core_step(vision_ui_t* ui, const float delta_ms) {
             } else if (selected_user_item->exiting_user_item) {
                 if (selected_user_item->user_item_inited && selected_user_item->user_item_looping) {
                     if (selected_user_item->exit_function != NULL) {
-                        selected_user_item->exit_function(ui);
+                        selected_user_item->exit_function(ui, selected_user_item->user_data);
                     }
                 }
                 selected_user_item->in_user_item = 0;
@@ -569,14 +569,14 @@ static void vision_ui_main_core_step(vision_ui_t* ui, const float delta_ms) {
         // Initialize on first entry.
         if (!selected_user_item->user_item_inited) {
             if (selected_user_item->init_function != NULL) {
-                selected_user_item->init_function(ui);
+                selected_user_item->init_function(ui, selected_user_item->user_data);
             }
             selected_user_item->user_item_inited = true;
         }
 
         if (selected_user_item->loop_function != NULL) {
             selected_user_item->user_item_looping = true;
-            selected_user_item->loop_function(ui);
+            selected_user_item->loop_function(ui, selected_user_item->user_data);
         }
     } else {
         vision_ui_main_core_position_update(ui, delta_ms);
