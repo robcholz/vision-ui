@@ -1,13 +1,13 @@
 use core::ffi::c_void;
 use core::mem::{align_of, size_of};
 use core::ptr::{self, NonNull};
-use std::alloc::{alloc, alloc_zeroed, dealloc, Layout};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::alloc::{Layout, alloc, alloc_zeroed, dealloc};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use vision_ui::{
-    text, AllocRequest, Allocator, MonoBitmap, SceneBindings, SlideBinding, StartupLogo,
-    ToggleBinding, UiRef, VisionUi,
+    AllocRequest, Allocator, MonoBitmap, SceneBindings, SlideBinding, StartupLogo, ToggleBinding,
+    UiRef, VisionUi, text,
 };
 
 #[repr(C, align(16))]

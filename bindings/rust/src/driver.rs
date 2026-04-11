@@ -1,5 +1,5 @@
 use crate::{Action, Font};
-use core::ffi::{c_void, CStr};
+use core::ffi::{CStr, c_void};
 use core::time::Duration;
 
 /// Input callbacks required by the Vision UI runtime.

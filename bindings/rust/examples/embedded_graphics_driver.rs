@@ -2,30 +2,29 @@
 mod support;
 
 use core::convert::Infallible;
-use core::ffi::{c_void, CStr};
+use core::ffi::{CStr, c_void};
 use core::ptr;
 use std::thread;
 use std::time::{Duration, Instant};
 
 use embedded_graphics::{
+    Pixel,
     draw_target::DrawTarget,
     geometry::{OriginDimensions, Point, Size},
     image::{Image, ImageRaw},
     mono_font::{
-        ascii::{FONT_10X20, FONT_6X10, FONT_8X13_BOLD},
         MonoFont, MonoTextStyle, MonoTextStyleBuilder,
+        ascii::{FONT_6X10, FONT_8X13_BOLD, FONT_10X20},
     },
     pixelcolor::BinaryColor,
     prelude::*,
     primitives::{Circle, Line, PrimitiveStyle, Rectangle},
     text::{Baseline, Text},
-    Pixel,
 };
 use minifb::{Key, KeyRepeat, Scale, Window, WindowOptions};
 use vision_ui::{
-    default_icon_pack,
+    Action, Font, SCREEN_HEIGHT, SCREEN_WIDTH, default_icon_pack,
     driver::{Buffer, Draw, Input, Text as DriverText, Timing},
-    Action, Font, SCREEN_HEIGHT, SCREEN_WIDTH,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -150,9 +149,8 @@ impl WindowDisplay {
     }
 
     fn poll_action(&self) -> Action {
-        if !self.window.is_open() {
-            Action::Exit
-        } else if self.window.is_key_pressed(Key::Escape, KeyRepeat::No)
+        if !self.window.is_open()
+            || self.window.is_key_pressed(Key::Escape, KeyRepeat::No)
             || self.window.is_key_pressed(Key::Q, KeyRepeat::No)
         {
             Action::Exit
@@ -386,8 +384,8 @@ impl Draw for EmbeddedGraphicsDriver {
             i32::from(x) - i32::from(radius),
             i32::from(y) - i32::from(radius),
         );
-        let circle =
-            Circle::new(top_left, diameter).into_styled(PrimitiveStyle::with_fill(self.draw_color()));
+        let circle = Circle::new(top_left, diameter)
+            .into_styled(PrimitiveStyle::with_fill(self.draw_color()));
         let _ = circle.draw(&mut self.display);
     }
 

@@ -7,7 +7,7 @@ extern crate alloc;
 use alloc::boxed::Box;
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-use core::ffi::{c_char, c_void, CStr};
+use core::ffi::{CStr, c_char, c_void};
 use core::mem::MaybeUninit;
 use core::ops::RangeInclusive;
 use core::ptr::{self, NonNull};
@@ -105,7 +105,20 @@ impl TryFrom<raw::vision_alloc_op_t> for AllocOp {
 ///
 /// This trait is `unsafe` to implement because incorrect behavior can violate the
 /// native library's allocation contract and lead to memory corruption.
+///
+/// # Safety
+///
+/// Implementors must satisfy the allocation ABI expected by the native Vision UI
+/// runtime for every requested operation.
 pub unsafe trait Allocator {
+    /// # Safety
+    ///
+    /// Implementations must follow the allocation semantics expected by the native
+    /// Vision UI runtime:
+    /// - returned pointers must be valid for the requested operation,
+    /// - `Malloc` and `Calloc` results must be suitably aligned and writable,
+    /// - `Free` must only release pointers previously returned by the same allocator path,
+    /// - allocation failures must return null instead of panicking or returning dangling pointers.
     fn allocate(request: AllocRequest) -> *mut c_void;
 }
 
@@ -156,7 +169,9 @@ pub enum Error {
         expected: usize,
         actual: usize,
     },
-    #[error("bitmap dimensions {actual_width}x{actual_height} do not match expected {expected_width}x{expected_height}")]
+    #[error(
+        "bitmap dimensions {actual_width}x{actual_height} do not match expected {expected_width}x{expected_height}"
+    )]
     BitmapDimensionsMismatch {
         expected_width: u16,
         expected_height: u16,
@@ -677,10 +692,15 @@ pub struct VisionUi<D> {
     driver: D,
     driver_desc: raw::vision_ui_driver_t,
     driver_ops: raw::vision_ui_driver_ops_t,
+    // Native callbacks keep raw pointers to these heap allocations, so the pointees
+    // must stay at stable addresses even if the surrounding Vec reallocates.
+    #[allow(clippy::vec_box)]
     #[cfg(feature = "alloc")]
     toggle_closures: Vec<Box<ToggleClosure>>,
+    #[allow(clippy::vec_box)]
     #[cfg(feature = "alloc")]
     slide_closures: Vec<Box<SlideClosure>>,
+    #[allow(clippy::vec_box)]
     #[cfg(feature = "alloc")]
     scene_closures: Vec<Box<SceneClosureBindings>>,
 }
@@ -877,6 +897,11 @@ impl<D: driver::Driver> VisionUi<D> {
     ///
     /// Behavior:
     /// - This replaces the current allocator hook used for subsequent library-managed allocations.
+    ///
+    /// # Safety
+    ///
+    /// The callback must obey the same contract as [`Allocator::allocate`]. Passing
+    /// an ABI-incompatible or state-invalid allocator can corrupt native memory.
     pub unsafe fn set_allocator_raw(&mut self, allocator: raw::vision_ui_allocator_t) {
         unsafe { raw::vision_ui_allocator_set(self.raw_mut_ptr(), allocator) }
     }
@@ -1781,7 +1806,7 @@ unsafe extern "C" fn toggle_trampoline<T: 'static>(
     let binding = unsafe { &*user_data.cast::<ToggleBinding<T>>() };
     (binding.handler)(
         UiRef {
-            raw: NonNull::new_unchecked(ui),
+            raw: unsafe { NonNull::new_unchecked(ui) },
         },
         value,
         binding.context,
@@ -1796,7 +1821,7 @@ unsafe extern "C" fn slide_trampoline<T: 'static>(
     let binding = unsafe { &*user_data.cast::<SlideBinding<T>>() };
     (binding.handler)(
         UiRef {
-            raw: NonNull::new_unchecked(ui),
+            raw: unsafe { NonNull::new_unchecked(ui) },
         },
         value,
         binding.context,
@@ -1811,7 +1836,7 @@ unsafe extern "C" fn scene_init_trampoline<T: 'static>(
     if let Some(handler) = bindings.init {
         handler(
             UiRef {
-                raw: NonNull::new_unchecked(ui),
+                raw: unsafe { NonNull::new_unchecked(ui) },
             },
             bindings.context,
         );
@@ -1826,7 +1851,7 @@ unsafe extern "C" fn scene_render_trampoline<T: 'static>(
     if let Some(handler) = bindings.render {
         handler(
             UiRef {
-                raw: NonNull::new_unchecked(ui),
+                raw: unsafe { NonNull::new_unchecked(ui) },
             },
             bindings.context,
         );
@@ -1841,7 +1866,7 @@ unsafe extern "C" fn scene_exit_trampoline<T: 'static>(
     if let Some(handler) = bindings.exit {
         handler(
             UiRef {
-                raw: NonNull::new_unchecked(_ui),
+                raw: unsafe { NonNull::new_unchecked(_ui) },
             },
             bindings.context,
         );
@@ -1857,7 +1882,7 @@ unsafe extern "C" fn toggle_closure_trampoline(
     let callback = unsafe { &mut *user_data.cast::<ToggleClosure>() };
     (callback.handler)(
         UiRef {
-            raw: NonNull::new_unchecked(ui),
+            raw: unsafe { NonNull::new_unchecked(ui) },
         },
         value,
     );
@@ -1872,7 +1897,7 @@ unsafe extern "C" fn slide_closure_trampoline(
     let callback = unsafe { &mut *user_data.cast::<SlideClosure>() };
     (callback.handler)(
         UiRef {
-            raw: NonNull::new_unchecked(ui),
+            raw: unsafe { NonNull::new_unchecked(ui) },
         },
         value,
     );
@@ -1886,7 +1911,7 @@ unsafe extern "C" fn scene_init_closure_trampoline(
     let bindings = unsafe { &mut *user_data.cast::<SceneClosureBindings>() };
     if let Some(handler) = bindings.init.as_mut() {
         handler(UiRef {
-            raw: NonNull::new_unchecked(ui),
+            raw: unsafe { NonNull::new_unchecked(ui) },
         });
     }
 }
@@ -1899,7 +1924,7 @@ unsafe extern "C" fn scene_render_closure_trampoline(
     let bindings = unsafe { &mut *user_data.cast::<SceneClosureBindings>() };
     if let Some(handler) = bindings.render.as_mut() {
         handler(UiRef {
-            raw: NonNull::new_unchecked(ui),
+            raw: unsafe { NonNull::new_unchecked(ui) },
         });
     }
 }
@@ -1912,7 +1937,7 @@ unsafe extern "C" fn scene_exit_closure_trampoline(
     let bindings = unsafe { &mut *user_data.cast::<SceneClosureBindings>() };
     if let Some(handler) = bindings.exit.as_mut() {
         handler(UiRef {
-            raw: NonNull::new_unchecked(ui),
+            raw: unsafe { NonNull::new_unchecked(ui) },
         });
     }
 }
