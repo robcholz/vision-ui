@@ -22,9 +22,12 @@ pub use config::{
     ALERT, ALLOW_EXIT_BY_USER, DEBUG_OVERLAY, DISPLAY, ICON_SIZE, ICON_VIEW, LIST_VIEW,
     NOTIFICATION, SCREEN_HEIGHT, SCREEN_WIDTH, SYSTEM,
 };
+/// Font configuration used by Vision UI and backend drivers.
 pub use raw::vision_ui_font_t as Font;
+/// Shared list icon pack used by the renderer.
 pub use raw::vision_ui_icon_t as IconPack;
 
+/// High-level input action returned by the bound driver.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
     None,
@@ -34,6 +37,7 @@ pub enum Action {
     Exit,
 }
 
+/// Error returned when a backend reports an invalid action code.
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
 pub enum ActionError {
     #[error("unexpected action code {0}")]
@@ -55,12 +59,14 @@ impl TryFrom<raw::vision_ui_action_t> for Action {
     }
 }
 
+/// Allocation operation requested by the native C core.
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
 pub enum AllocOpError {
     #[error("unexpected allocation op code {0}")]
     Invalid(u32),
 }
 
+/// Allocation operation kind used by the native allocator callback.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AllocOp {
     Malloc,
@@ -68,6 +74,7 @@ pub enum AllocOp {
     Free,
 }
 
+/// Allocation request forwarded from the C core into a Rust allocator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AllocRequest {
     Malloc { size: usize },
@@ -88,10 +95,15 @@ impl TryFrom<raw::vision_alloc_op_t> for AllocOp {
     }
 }
 
+/// Stateless allocator hook used for subsequent library-managed allocations.
+///
+/// This trait is `unsafe` to implement because incorrect behavior can violate the
+/// native library's allocation contract and lead to memory corruption.
 pub unsafe trait Allocator {
     fn allocate(request: AllocRequest) -> *mut c_void;
 }
 
+/// Error returned by [`VisionUi::initialize_runtime`].
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
 pub enum InitError {
     #[error("a root item must be attached before initializing the runtime")]
@@ -100,6 +112,7 @@ pub enum InitError {
     Unknown(u32),
 }
 
+/// Error returned by [`UiRef::set_root`] and [`VisionUi::set_root`].
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
 pub enum SetRootError {
     #[error("the root item pointer was invalid")]
@@ -108,6 +121,7 @@ pub enum SetRootError {
     Unknown(u32),
 }
 
+/// Error returned by [`UiRef::push`] and [`VisionUi::push`].
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
 pub enum PushItemError {
     #[error("the parent item or child item pointer was invalid")]
@@ -122,6 +136,7 @@ pub enum PushItemError {
     Unknown(u32),
 }
 
+/// General-purpose error used by the safe Rust wrapper.
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("allocation failed for {0}")]
@@ -146,31 +161,60 @@ pub enum Error {
     DurationOverflow(Duration),
 }
 
+/// Opaque handle to a list item stored inside the native UI tree.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Item(NonNull<raw::vision_ui_list_item_t>);
 
 impl Item {
+    /// Returns the raw native pointer for advanced interop.
+    ///
+    /// Returns:
+    /// - the borrowed `vision_ui_list_item_t*` managed by the native UI tree.
+    ///
+    /// Behavior:
+    /// - The pointer remains owned by the native Vision UI runtime.
+    /// - This is mainly intended for FFI interop or bridging to [`raw`].
     pub fn as_ptr(self) -> *mut raw::vision_ui_list_item_t {
         self.0.as_ptr()
     }
 
+    /// Returns the raw native pointer as [`NonNull`].
+    ///
+    /// Returns:
+    /// - the same native item pointer wrapped in [`NonNull`].
     pub fn as_non_null(self) -> NonNull<raw::vision_ui_list_item_t> {
         self.0
     }
 }
 
+/// Static NUL-terminated text borrowed by the native C API.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Text(&'static CStr);
 
 impl Text {
+    /// Creates a text value from a static C string.
+    ///
+    /// Parameters:
+    /// - `value`: static NUL-terminated text borrowed by the C API.
+    ///
+    /// Returns:
+    /// - a lightweight `Text` wrapper borrowing `value`.
     pub const fn new(value: &'static CStr) -> Self {
         Self(value)
     }
 
+    /// Returns the raw native pointer.
+    ///
+    /// Returns:
+    /// - the underlying `const char*` borrowed by the C API.
     pub fn as_ptr(self) -> *const c_char {
         self.0.as_ptr()
     }
 
+    /// Returns the underlying [`CStr`].
+    ///
+    /// Returns:
+    /// - the original static [`CStr`] backing this text value.
     pub fn as_c_str(self) -> &'static CStr {
         self.0
     }
@@ -182,6 +226,17 @@ impl From<&'static CStr> for Text {
     }
 }
 
+/// Creates a static [`Text`] value from a string literal without heap allocation.
+///
+/// Parameters:
+/// - a Rust string literal without interior NUL bytes.
+///
+/// Returns:
+/// - a [`Text`] value backed by static NUL-terminated storage.
+///
+/// Behavior:
+/// - The macro appends the trailing NUL at compile time.
+/// - It panics if the literal contains an interior NUL byte.
 #[macro_export]
 macro_rules! text {
     ($lit:literal) => {{
@@ -192,6 +247,7 @@ macro_rules! text {
     }};
 }
 
+/// Borrowed monochrome bitmap in the XBM-compatible format used by Vision UI.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct MonoBitmap {
     bytes: &'static [u8],
@@ -200,6 +256,16 @@ pub struct MonoBitmap {
 }
 
 impl MonoBitmap {
+    /// Validates the bitmap payload against the supplied dimensions.
+    ///
+    /// Parameters:
+    /// - `bytes`: static XBM-compatible 1-bit bitmap payload.
+    /// - `width`: bitmap width in pixels.
+    /// - `height`: bitmap height in pixels.
+    ///
+    /// Returns:
+    /// - `Ok(MonoBitmap)` when `bytes.len()` matches the expected packed payload size.
+    /// - `Err(Error::InvalidBitmapLength { .. })` when the payload size is inconsistent with the dimensions.
     pub fn new(bytes: &'static [u8], width: u16, height: u16) -> Result<Self, Error> {
         let expected = bitmap_len(width, height);
         if bytes.len() != expected {
@@ -217,54 +283,98 @@ impl MonoBitmap {
         })
     }
 
+    /// Returns the raw bitmap bytes.
+    ///
+    /// Returns:
+    /// - the borrowed static bitmap payload.
     pub fn bytes(self) -> &'static [u8] {
         self.bytes
     }
 
+    /// Returns the bitmap width.
+    ///
+    /// Returns:
+    /// - the validated width in pixels.
     pub fn width(self) -> u16 {
         self.width
     }
 
+    /// Returns the bitmap height.
+    ///
+    /// Returns:
+    /// - the validated height in pixels.
     pub fn height(self) -> u16 {
         self.height
     }
 }
 
+/// Startup logo bitmap validated against the configured screen size.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct StartupLogo(MonoBitmap);
 
 impl StartupLogo {
+    /// Creates a startup logo for the configured display dimensions.
+    ///
+    /// Parameters:
+    /// - `bytes`: static XBM-compatible bitmap payload for the full screen.
+    ///
+    /// Returns:
+    /// - `Ok(StartupLogo)` when the payload matches the configured `SCREEN_WIDTH x SCREEN_HEIGHT`.
+    /// - `Err(Error::InvalidBitmapLength { .. })` when the payload size is inconsistent with the configured screen size.
     pub fn new(bytes: &'static [u8]) -> Result<Self, Error> {
         Ok(Self(MonoBitmap::new(bytes, SCREEN_WIDTH, SCREEN_HEIGHT)?))
     }
 
+    /// Returns the validated startup bitmap.
+    ///
+    /// Returns:
+    /// - the underlying full-screen [`MonoBitmap`].
     pub fn bitmap(self) -> MonoBitmap {
         self.0
     }
 }
 
+/// Static callback binding for switch items.
 pub struct ToggleBinding<T: 'static> {
     context: &'static T,
     handler: fn(UiRef, bool, &'static T),
 }
 
 impl<T: 'static> ToggleBinding<T> {
+    /// Creates a switch callback binding with static context.
+    ///
+    /// Parameters:
+    /// - `context`: static user context passed back into the handler.
+    /// - `handler`: function invoked when the switch value changes.
+    ///
+    /// Returns:
+    /// - a zero-allocation callback binding suitable for [`VisionUi::switch_with`].
     pub const fn new(context: &'static T, handler: fn(UiRef, bool, &'static T)) -> Self {
         Self { context, handler }
     }
 }
 
+/// Static callback binding for slider items.
 pub struct SlideBinding<T: 'static> {
     context: &'static T,
     handler: fn(UiRef, i16, &'static T),
 }
 
 impl<T: 'static> SlideBinding<T> {
+    /// Creates a slider callback binding with static context.
+    ///
+    /// Parameters:
+    /// - `context`: static user context passed back into the handler.
+    /// - `handler`: function invoked when the slider value changes.
+    ///
+    /// Returns:
+    /// - a zero-allocation callback binding suitable for [`VisionUi::slider_with`].
     pub const fn new(context: &'static T, handler: fn(UiRef, i16, &'static T)) -> Self {
         Self { context, handler }
     }
 }
 
+/// Static callback set for custom scene items.
 pub struct SceneBindings<T: 'static> {
     context: &'static T,
     init: Option<fn(UiRef, &'static T)>,
@@ -273,6 +383,16 @@ pub struct SceneBindings<T: 'static> {
 }
 
 impl<T: 'static> SceneBindings<T> {
+    /// Creates a scene callback set with optional init, render, and exit hooks.
+    ///
+    /// Parameters:
+    /// - `context`: static user context passed into every hook.
+    /// - `init`: optional hook called when the scene is first entered.
+    /// - `render`: optional hook called while the scene remains active.
+    /// - `exit`: optional hook called when leaving the scene.
+    ///
+    /// Returns:
+    /// - a zero-allocation callback set suitable for [`VisionUi::scene_with`].
     pub const fn new(
         context: &'static T,
         init: Option<fn(UiRef, &'static T)>,
@@ -312,88 +432,207 @@ struct SceneClosureBindings {
     exit: Option<Box<SceneClosureFn>>,
 }
 
+/// Borrowed handle back into the active UI instance.
+///
+/// This is passed into item callbacks so they can interact with the running UI
+/// without exposing low-level callback ABI details.
 #[derive(Clone)]
 pub struct UiRef {
     raw: NonNull<raw::vision_ui_t>,
 }
 
 impl UiRef {
+    /// Returns the raw native pointer for advanced interop.
+    ///
+    /// Returns:
+    /// - a shared pointer to the active native `vision_ui_t`.
     pub fn raw_ptr(&self) -> *const raw::vision_ui_t {
         self.raw.as_ptr()
     }
 
+    /// Returns the raw mutable native pointer for advanced interop.
+    ///
+    /// Returns:
+    /// - a mutable pointer to the active native `vision_ui_t`.
     pub fn raw_mut_ptr(&self) -> *mut raw::vision_ui_t {
         self.raw.as_ptr()
     }
 
+    /// Reads the current high-level input action from the bound driver.
+    ///
+    /// Returns:
+    /// - `Ok(Action)` when the driver reports a valid Vision UI action.
+    /// - `Err(ActionError::Invalid(_))` when the driver reports an unknown action code.
+    ///
+    /// Behavior:
+    /// - This is a thin safe wrapper over `vision_ui_driver_action_get(...)`.
+    /// - The result reflects the driver's current input state at the time of the call.
     pub fn action(&self) -> Result<Action, ActionError> {
         unsafe { raw::vision_ui_driver_action_get(self.raw_ptr()).try_into() }
     }
 
+    /// Returns the driver's monotonic tick counter as a [`Duration`].
+    ///
+    /// Returns:
+    /// - the current driver tick value interpreted as milliseconds.
+    ///
+    /// Behavior:
+    /// - This is a thin safe wrapper over `vision_ui_driver_ticks_ms_get(...)`.
     pub fn ticks(&self) -> Duration {
         Duration::from_millis(u64::from(unsafe {
             raw::vision_ui_driver_ticks_ms_get(self.raw_ptr())
         }))
     }
 
+    /// Delays for roughly the requested duration through the bound driver.
+    ///
+    /// Parameters:
+    /// - `duration`: target delay forwarded to the bound driver in milliseconds.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the duration fits in Vision UI's `u32` millisecond range.
+    /// - `Err(Error::DurationOverflow(_))` when the duration is too large to represent.
+    ///
+    /// Behavior:
+    /// - This forwards to `vision_ui_driver_delay(...)`.
+    /// - The exact sleep or yield behavior depends on the bound backend.
     pub fn delay(&self, duration: Duration) -> Result<(), Error> {
         let ms = duration_millis_u32(duration)?;
         unsafe { raw::vision_ui_driver_delay(self.raw_ptr(), ms) }
         Ok(())
     }
 
+    /// Returns whether the UI has completed its exit flow.
+    ///
+    /// Returns:
+    /// - `true` when the native UI reports that it has exited.
     pub fn is_closed(&self) -> bool {
         unsafe { raw::vision_ui_is_exited(self.raw_ptr()) }
     }
 
+    /// Returns whether background interaction should be paused behind the UI.
+    ///
+    /// Returns:
+    /// - `true` when Vision UI wants background activity to remain frozen.
     pub fn freezes_background(&self) -> bool {
         unsafe { raw::vision_ui_is_background_frozen(self.raw_ptr()) }
     }
 
+    /// Sets the small utility font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor forwarded to the native UI state.
     pub fn set_mini_font(&self, font: Font) {
         unsafe { raw::vision_ui_minifont_set(self.raw_mut_ptr(), font) }
     }
 
+    /// Sets the main body font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor used for standard content rows.
     pub fn set_body_font(&self, font: Font) {
         unsafe { raw::vision_ui_font_set(self.raw_mut_ptr(), font) }
     }
 
+    /// Sets the title font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor used for primary titles.
     pub fn set_title_font(&self, font: Font) {
         unsafe { raw::vision_ui_font_set_title(self.raw_mut_ptr(), font) }
     }
 
+    /// Sets the subtitle font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor used for subtitle text.
     pub fn set_subtitle_font(&self, font: Font) {
         unsafe { raw::vision_ui_font_set_subtitle(self.raw_mut_ptr(), font) }
     }
 
+    /// Returns the current small utility font.
+    ///
+    /// Returns:
+    /// - the font currently used for compact utility text.
     pub fn mini_font(&self) -> Font {
         unsafe { raw::vision_ui_minifont_get(self.raw_ptr()) }
     }
 
+    /// Returns the current main body font.
+    ///
+    /// Returns:
+    /// - the font currently used for normal content rows.
     pub fn body_font(&self) -> Font {
         unsafe { raw::vision_ui_font_get(self.raw_ptr()) }
     }
 
+    /// Returns the current title font.
+    ///
+    /// Returns:
+    /// - the font currently used for primary titles.
     pub fn title_font(&self) -> Font {
         unsafe { raw::vision_ui_font_get_title(self.raw_ptr()) }
     }
 
+    /// Returns the current subtitle font.
+    ///
+    /// Returns:
+    /// - the font currently used for subtitle text.
     pub fn subtitle_font(&self) -> Font {
         unsafe { raw::vision_ui_font_get_subtitle(self.raw_ptr()) }
     }
 
+    /// Shows a temporary notification overlay for the requested duration.
+    ///
+    /// Parameters:
+    /// - `message`: static text borrowed by the native notification system.
+    /// - `duration`: how long the notification should remain visible.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the duration fits in Vision UI's `u16` millisecond range.
+    /// - `Err(Error::DurationOverflow(_))` when the duration is too large to represent.
+    ///
+    /// Behavior:
+    /// - The notification is queued immediately on the native UI instance.
+    /// - Existing notification state is handled by the C runtime.
     pub fn notify(&self, message: Text, duration: Duration) -> Result<(), Error> {
         let span = duration_millis_u16(duration)?;
         unsafe { raw::vision_ui_notification_push(self.raw.as_ptr(), message.as_ptr(), span) };
         Ok(())
     }
 
+    /// Shows a centered alert overlay for the requested duration.
+    ///
+    /// Parameters:
+    /// - `message`: static text borrowed by the native alert system.
+    /// - `duration`: how long the alert should remain visible.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the duration fits in Vision UI's `u16` millisecond range.
+    /// - `Err(Error::DurationOverflow(_))` when the duration is too large to represent.
+    ///
+    /// Behavior:
+    /// - The alert is activated immediately on the native UI instance.
+    /// - Alert presentation and dismissal timing are handled by the C runtime.
     pub fn alert(&self, message: Text, duration: Duration) -> Result<(), Error> {
         let span = duration_millis_u16(duration)?;
         unsafe { raw::vision_ui_alert_push(self.raw.as_ptr(), message.as_ptr(), span) };
         Ok(())
     }
 
+    /// Attaches the root list shown by the UI.
+    ///
+    /// Parameters:
+    /// - `item`: list container to use as the top-level root.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the root was accepted.
+    /// - `Err(SetRootError::ItemInvalid)` when the supplied handle is invalid.
+    ///
+    /// Behavior:
+    /// - The root pointer is stored by the native UI instance.
+    /// - The tree should usually be fully constructed before [`UiRef::set_root`] or
+    ///   [`VisionUi::set_root`] is followed by [`VisionUi::initialize_runtime`].
     pub fn set_root(&self, item: Item) -> Result<(), SetRootError> {
         match unsafe { raw::vision_ui_root_item_set(self.raw_mut_ptr(), item.as_ptr()) } {
             raw::vision_ui_root_item_set_result_t_VisionUiRootItemSetOk => Ok(()),
@@ -404,10 +643,31 @@ impl UiRef {
         }
     }
 
+    /// Returns the current root item, if one has been attached.
+    ///
+    /// Returns:
+    /// - `Some(Item)` when a root item is attached.
+    /// - `None` when no root item has been set yet.
     pub fn root(&self) -> Option<Item> {
         NonNull::new(unsafe { raw::vision_ui_root_list_get(self.raw_ptr()) }).map(Item)
     }
 
+    /// Appends a child item to a parent list or icon-view container.
+    ///
+    /// Parameters:
+    /// - `parent`: destination list or icon-view item.
+    /// - `child`: child item appended directly under `parent`.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the child was appended successfully.
+    /// - `Err(PushItemError::ItemInvalid)` when either handle is invalid.
+    /// - `Err(PushItemError::ParentFull)` when the parent is already at capacity.
+    /// - `Err(PushItemError::MaxLayerExceeded)` when the maximum nesting depth would be exceeded.
+    /// - `Err(PushItemError::IconViewChildMismatch)` when an icon-view parent receives a non-icon child.
+    ///
+    /// Behavior:
+    /// - The child is stored by pointer; it is not copied.
+    /// - Child layout metadata is initialized by the native runtime during the push.
     pub fn push(&self, parent: Item, child: Item) -> Result<(), PushItemError> {
         match unsafe {
             raw::vision_ui_list_push_item(self.raw_mut_ptr(), parent.as_ptr(), child.as_ptr())
@@ -429,15 +689,27 @@ impl UiRef {
         }
     }
 
+    /// Replaces the renderer's current list icon pack.
+    ///
+    /// Parameters:
+    /// - `icon_pack`: icon pack descriptor used by list rendering.
     pub fn set_icon_pack(&self, icon_pack: IconPack) {
         unsafe { raw::vision_ui_list_icon_set(self.raw_mut_ptr(), icon_pack) }
     }
 
+    /// Returns the current list icon pack.
+    ///
+    /// Returns:
+    /// - the icon pack currently active in the native renderer.
     pub fn icon_pack(&self) -> IconPack {
         unsafe { raw::vision_ui_list_icon_get_current(self.raw_ptr()) }
     }
 }
 
+/// Safe inline-owned Vision UI instance.
+///
+/// This is the main Rust entry point. It owns the native `vision_ui_t` value
+/// inline and initializes it with `vision_ui_init(...)`.
 pub struct VisionUi {
     raw: raw::vision_ui_t,
     #[cfg(feature = "alloc")]
@@ -449,6 +721,12 @@ pub struct VisionUi {
 }
 
 impl VisionUi {
+    /// Creates a new inline-owned UI instance.
+    ///
+    /// Behavior:
+    /// - Storage for the native `vision_ui_t` lives inline inside this Rust value.
+    /// - Initialization uses `vision_ui_init(...)`.
+    /// - Dropping the wrapper later calls `vision_ui_destroy(...)` to release library-owned items.
     pub fn new() -> Self {
         let mut raw = MaybeUninit::<raw::vision_ui_t>::uninit();
         unsafe { raw::vision_ui_init(raw.as_mut_ptr()) };
@@ -463,20 +741,41 @@ impl VisionUi {
         }
     }
 
+    /// Returns a callback-safe borrowed handle to the same UI instance.
+    ///
+    /// Returns:
+    /// - a lightweight [`UiRef`] pointing at this inline-owned UI.
     pub fn ui(&self) -> UiRef {
         UiRef {
             raw: NonNull::from(&self.raw),
         }
     }
 
+    /// Returns the raw native pointer for advanced interop.
+    ///
+    /// Returns:
+    /// - a shared pointer to the inline `vision_ui_t`.
     pub fn raw_ptr(&self) -> *const raw::vision_ui_t {
         &self.raw as *const raw::vision_ui_t
     }
 
+    /// Returns the raw mutable native pointer for advanced interop.
+    ///
+    /// Returns:
+    /// - a mutable pointer to the inline `vision_ui_t`.
     pub fn raw_mut_ptr(&mut self) -> *mut raw::vision_ui_t {
         &mut self.raw as *mut raw::vision_ui_t
     }
 
+    /// Initializes selector, camera, and list runtime state after the tree is built.
+    ///
+    /// Returns:
+    /// - `Ok(())` when runtime state was initialized successfully.
+    /// - `Err(InitError::RootItemNotSet)` when no root item has been attached yet.
+    ///
+    /// Behavior:
+    /// - Call this after the tree is built and the root has been attached.
+    /// - This prepares selector, camera, and list runtime state before rendering begins.
     pub fn initialize_runtime(&mut self) -> Result<(), InitError> {
         match unsafe { raw::vision_ui_core_init(self.raw_mut_ptr()) } {
             raw::vision_ui_core_init_result_t_VisionUiCoreInitOk => Ok(()),
@@ -487,14 +786,37 @@ impl VisionUi {
         }
     }
 
+    /// Marks the UI as active and prepares the renderer to draw.
+    ///
+    /// Behavior:
+    /// - This forwards to `vision_ui_render_init(...)`.
+    /// - Call this after [`VisionUi::initialize_runtime`] and before the main render loop.
     pub fn initialize_rendering(&mut self) {
         unsafe { raw::vision_ui_render_init(self.raw_mut_ptr()) }
     }
 
+    /// Runs one frame of UI logic and rendering.
+    ///
+    /// Behavior:
+    /// - This executes one iteration of the native UI loop, including input handling,
+    ///   scene transitions, and drawing.
+    /// - It forwards directly to `vision_ui_step_render(...)`.
     pub fn render_frame(&mut self) {
         unsafe { raw::vision_ui_step_render(self.raw_mut_ptr()) }
     }
 
+    /// Configures the optional startup logo shown before the main UI loop.
+    ///
+    /// Parameters:
+    /// - `bitmap`: startup logo validated against the configured screen size.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the logo length fits in Vision UI's `u32` byte-count range.
+    /// - `Err(Error::BitmapTooLarge(_))` when the bitmap length exceeds that range.
+    ///
+    /// Behavior:
+    /// - The bitmap bytes are borrowed, not copied.
+    /// - The logo is shown by the native runtime before normal rendering takes over.
     pub fn set_startup_logo(&mut self, bitmap: StartupLogo) -> Result<(), Error> {
         let bitmap = bitmap.bitmap();
         let span = u32::try_from(bitmap.bytes().len())
@@ -503,104 +825,257 @@ impl VisionUi {
         Ok(())
     }
 
+    /// Binds a raw backend driver handle.
+    ///
+    /// Prefer [`VisionUi::bind_driver`] when you already have a type that
+    /// implements [`driver::RawHandle`].
+    ///
+    /// Parameters:
+    /// - `handle`: backend-specific opaque driver pointer expected by the C runtime.
+    ///
+    /// Behavior:
+    /// - The pointer is stored by the native UI and later passed into driver hooks.
+    /// - The caller must guarantee that the handle remains valid for the UI's lifetime.
     pub unsafe fn bind_driver_raw(&mut self, handle: NonNull<c_void>) {
         raw::vision_ui_driver_bind(self.raw_mut_ptr(), handle.as_ptr());
     }
 
+    /// Binds a backend driver handle through the Rust driver adapter trait.
+    ///
+    /// Parameters:
+    /// - `driver`: backend object that can expose a stable raw driver handle.
+    ///
+    /// Behavior:
+    /// - The native UI stores the backend handle by pointer.
+    /// - The handle must remain valid for as long as the UI may call driver hooks.
     pub fn bind_driver<D: driver::RawHandle>(&mut self, driver: &mut D) {
         unsafe {
             raw::vision_ui_driver_bind(self.raw_mut_ptr(), driver.as_raw_handle());
         }
     }
 
+    /// Reads the current high-level input action from the bound driver.
+    ///
+    /// Returns:
+    /// - `Ok(Action)` when the driver reports a valid Vision UI action.
+    /// - `Err(ActionError::Invalid(_))` when the reported action code is unknown.
     pub fn action(&self) -> Result<Action, ActionError> {
         self.ui().action()
     }
 
+    /// Returns the driver's monotonic tick counter as a [`Duration`].
+    ///
+    /// Returns:
+    /// - the current driver tick value interpreted as milliseconds.
     pub fn ticks(&self) -> Duration {
         self.ui().ticks()
     }
 
+    /// Delays for roughly the requested duration through the bound driver.
+    ///
+    /// Parameters:
+    /// - `duration`: target delay forwarded to the backend in milliseconds.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the duration fits in Vision UI's integer range.
+    /// - `Err(Error::DurationOverflow(_))` when the duration is too large.
     pub fn delay(&self, duration: Duration) -> Result<(), Error> {
         self.ui().delay(duration)
     }
 
+    /// Returns whether the UI has completed its exit flow.
+    ///
+    /// Returns:
+    /// - `true` when the native UI reports that it has exited.
     pub fn is_closed(&self) -> bool {
         self.ui().is_closed()
     }
 
+    /// Returns whether background interaction should be paused behind the UI.
+    ///
+    /// Returns:
+    /// - `true` when Vision UI wants background activity to remain frozen.
     pub fn freezes_background(&self) -> bool {
         self.ui().freezes_background()
     }
 
+    /// Sets the small utility font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor forwarded to the native UI state.
     pub fn set_mini_font(&mut self, font: Font) {
         self.ui().set_mini_font(font)
     }
 
+    /// Installs a custom allocator for subsequent library-managed allocations.
+    ///
+    /// Type parameters:
+    /// - `A`: allocator implementation used for future constructor-created items and their destruction.
+    ///
+    /// Behavior:
+    /// - This does not move or reallocate the `VisionUi` instance itself.
+    /// - It affects subsequent native allocations owned by the UI runtime.
     pub fn set_allocator<A: Allocator>(&mut self) {
         unsafe { raw::vision_ui_allocator_set(self.raw_mut_ptr(), Some(allocator_trampoline::<A>)) }
     }
 
+    /// Installs a raw native allocator callback.
+    ///
+    /// Prefer [`VisionUi::set_allocator`] unless you need direct ABI parity.
+    ///
+    /// Parameters:
+    /// - `allocator`: raw allocator callback following the native C ABI.
+    ///
+    /// Behavior:
+    /// - This replaces the current allocator hook used for subsequent library-managed allocations.
     pub unsafe fn set_allocator_raw(&mut self, allocator: raw::vision_ui_allocator_t) {
         unsafe { raw::vision_ui_allocator_set(self.raw_mut_ptr(), allocator) }
     }
 
+    /// Restores the default allocator behavior.
+    ///
+    /// Behavior:
+    /// - Future native allocations fall back to Vision UI's built-in allocator path.
     pub fn clear_allocator(&mut self) {
         unsafe { raw::vision_ui_allocator_set(self.raw_mut_ptr(), None) }
     }
 
+    /// Sets the main body font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor used for standard content rows.
     pub fn set_body_font(&mut self, font: Font) {
         self.ui().set_body_font(font)
     }
 
+    /// Sets the title font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor used for primary titles.
     pub fn set_title_font(&mut self, font: Font) {
         self.ui().set_title_font(font)
     }
 
+    /// Sets the subtitle font.
+    ///
+    /// Parameters:
+    /// - `font`: font descriptor used for subtitle text.
     pub fn set_subtitle_font(&mut self, font: Font) {
         self.ui().set_subtitle_font(font)
     }
 
+    /// Returns the current small utility font.
+    ///
+    /// Returns:
+    /// - the font currently used for compact utility text.
     pub fn mini_font(&self) -> Font {
         self.ui().mini_font()
     }
 
+    /// Returns the current main body font.
+    ///
+    /// Returns:
+    /// - the font currently used for normal content rows.
     pub fn body_font(&self) -> Font {
         self.ui().body_font()
     }
 
+    /// Returns the current title font.
+    ///
+    /// Returns:
+    /// - the font currently used for primary titles.
     pub fn title_font(&self) -> Font {
         self.ui().title_font()
     }
 
+    /// Returns the current subtitle font.
+    ///
+    /// Returns:
+    /// - the font currently used for subtitle text.
     pub fn subtitle_font(&self) -> Font {
         self.ui().subtitle_font()
     }
 
+    /// Shows a temporary notification overlay for the requested duration.
+    ///
+    /// Parameters:
+    /// - `message`: static text borrowed by the native notification system.
+    /// - `duration`: how long the notification should remain visible.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the duration fits in Vision UI's `u16` millisecond range.
+    /// - `Err(Error::DurationOverflow(_))` when the duration is too large to represent.
     pub fn notify(&mut self, message: Text, duration: Duration) -> Result<(), Error> {
         self.ui().notify(message, duration)
     }
 
+    /// Shows a centered alert overlay for the requested duration.
+    ///
+    /// Parameters:
+    /// - `message`: static text borrowed by the native alert system.
+    /// - `duration`: how long the alert should remain visible.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the duration fits in Vision UI's `u16` millisecond range.
+    /// - `Err(Error::DurationOverflow(_))` when the duration is too large to represent.
     pub fn alert(&mut self, message: Text, duration: Duration) -> Result<(), Error> {
         self.ui().alert(message, duration)
     }
 
+    /// Creates a plain list container that can hold child items.
+    ///
+    /// Parameters:
+    /// - `title`: static label stored by the native item.
+    /// - `capacity`: maximum number of direct children this list can hold.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item or its child array could not be allocated.
     pub fn list(&mut self, title: Text, capacity: usize) -> Result<Item, Error> {
         wrap_item(unsafe {
             raw::vision_ui_list_item_new(self.raw_ptr(), capacity, false, title.as_ptr())
         })
     }
 
+    /// Creates an icon-view list container that accepts icon items as children.
+    ///
+    /// Parameters:
+    /// - `title`: static label stored by the native item.
+    /// - `capacity`: maximum number of direct children this icon-view list can hold.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item or its child array could not be allocated.
     pub fn icon_list(&mut self, title: Text, capacity: usize) -> Result<Item, Error> {
         wrap_item(unsafe {
             raw::vision_ui_list_item_new(self.raw_ptr(), capacity, true, title.as_ptr())
         })
     }
 
+    /// Creates a non-interactive title row.
+    ///
+    /// Parameters:
+    /// - `text`: static title text stored by the native item.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
     pub fn title(&mut self, text: Text) -> Result<Item, Error> {
         wrap_item(unsafe { raw::vision_ui_list_title_item_new(self.raw_ptr(), text.as_ptr()) })
     }
 
+    /// Creates a selectable icon card, optionally with child items.
+    ///
+    /// Parameters:
+    /// - `title`: static title text stored by the native item.
+    /// - `description`: optional static description text.
+    /// - `icon`: optional monochrome bitmap validated against the configured icon size.
+    /// - `capacity`: maximum number of direct children this icon item can hold.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item or its child array could not be allocated.
+    /// - `Err(Error::BitmapDimensionsMismatch { .. })` when the bitmap size does not match the configured icon size.
     pub fn icon(
         &mut self,
         title: Text,
@@ -632,6 +1107,15 @@ impl VisionUi {
         wrap_item(raw)
     }
 
+    /// Creates a switch row without a callback.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `initial`: initial switch state.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
     pub fn switch(&mut self, label: Text, initial: bool) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_switch_item_new(
@@ -645,6 +1129,16 @@ impl VisionUi {
         wrap_item(raw)
     }
 
+    /// Creates a switch row with a static callback binding.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `initial`: initial switch state.
+    /// - `binding`: static callback binding invoked when the value changes.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
     pub fn switch_with<T: 'static>(
         &mut self,
         label: Text,
@@ -666,6 +1160,20 @@ impl VisionUi {
     }
 
     #[cfg(feature = "alloc")]
+    /// Creates a switch row with a closure callback.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `initial`: initial switch state.
+    /// - `on_changed`: closure invoked when the switch value changes.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds and callback storage is retained successfully.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
+    ///
+    /// Behavior:
+    /// - This convenience API requires the `alloc` feature.
+    /// - The closure is retained inside the Rust wrapper for as long as the UI value lives.
     pub fn switch_with_closure<F>(
         &mut self,
         label: Text,
@@ -695,6 +1203,17 @@ impl VisionUi {
         Ok(item)
     }
 
+    /// Creates a numeric slider row without a callback.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `initial`: initial slider value.
+    /// - `step`: step size applied by the native UI when the slider changes.
+    /// - `range`: inclusive minimum and maximum slider bounds.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
     pub fn slider(
         &mut self,
         label: Text,
@@ -719,6 +1238,18 @@ impl VisionUi {
         wrap_item(raw)
     }
 
+    /// Creates a numeric slider row with a static callback binding.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `initial`: initial slider value.
+    /// - `step`: step size applied by the native UI when the slider changes.
+    /// - `range`: inclusive minimum and maximum slider bounds.
+    /// - `binding`: static callback binding invoked when the value changes.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
     pub fn slider_with<T: 'static>(
         &mut self,
         label: Text,
@@ -747,6 +1278,22 @@ impl VisionUi {
     }
 
     #[cfg(feature = "alloc")]
+    /// Creates a numeric slider row with a closure callback.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `initial`: initial slider value.
+    /// - `step`: step size applied by the native UI when the slider changes.
+    /// - `range`: inclusive minimum and maximum slider bounds.
+    /// - `on_changed`: closure invoked when the slider value changes.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds and callback storage is retained successfully.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
+    ///
+    /// Behavior:
+    /// - This convenience API requires the `alloc` feature.
+    /// - The closure is retained inside the Rust wrapper for as long as the UI value lives.
     pub fn slider_with_closure<F>(
         &mut self,
         label: Text,
@@ -783,6 +1330,14 @@ impl VisionUi {
         Ok(item)
     }
 
+    /// Creates a custom full-screen scene item without callbacks.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
     pub fn scene(&mut self, label: Text) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_user_item_new(
@@ -797,6 +1352,15 @@ impl VisionUi {
         wrap_item(raw)
     }
 
+    /// Creates a custom full-screen scene item with static callbacks.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `bindings`: static callback set invoked when the scene becomes active, renders, and exits.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
     pub fn scene_with<T: 'static>(
         &mut self,
         label: Text,
@@ -818,6 +1382,21 @@ impl VisionUi {
     }
 
     #[cfg(feature = "alloc")]
+    /// Creates a custom full-screen scene item with closure callbacks.
+    ///
+    /// Parameters:
+    /// - `label`: static label text stored by the native item.
+    /// - `init`: optional closure invoked once when entering the scene.
+    /// - `render`: optional closure invoked while the scene remains active.
+    /// - `exit`: optional closure invoked once when leaving the scene.
+    ///
+    /// Returns:
+    /// - `Ok(Item)` when allocation succeeds and callback storage is retained successfully.
+    /// - `Err(Error::AllocationFailed(_))` when the native item could not be allocated.
+    ///
+    /// Behavior:
+    /// - This convenience API requires the `alloc` feature.
+    /// - Any provided closures are retained inside the Rust wrapper for as long as the UI value lives.
     pub fn scene_with_closure<FI, FR, FE>(
         &mut self,
         label: Text,
@@ -862,22 +1441,55 @@ impl VisionUi {
         Ok(item)
     }
 
+    /// Attaches the root list shown by the UI.
+    ///
+    /// Parameters:
+    /// - `item`: list container to use as the top-level root.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the root was accepted.
+    /// - `Err(SetRootError::ItemInvalid)` when the supplied handle is invalid.
     pub fn set_root(&mut self, item: Item) -> Result<(), SetRootError> {
         self.ui().set_root(item)
     }
 
+    /// Returns the current root item, if one has been attached.
+    ///
+    /// Returns:
+    /// - `Some(Item)` when a root item is attached.
+    /// - `None` when no root item has been set yet.
     pub fn root(&self) -> Option<Item> {
         self.ui().root()
     }
 
+    /// Appends a child item to a parent list or icon-view container.
+    ///
+    /// Parameters:
+    /// - `parent`: destination list or icon-view item.
+    /// - `child`: child item appended directly under `parent`.
+    ///
+    /// Returns:
+    /// - `Ok(())` when the child was appended successfully.
+    /// - `Err(PushItemError::ItemInvalid)` when either handle is invalid.
+    /// - `Err(PushItemError::ParentFull)` when the parent is already at capacity.
+    /// - `Err(PushItemError::MaxLayerExceeded)` when the maximum nesting depth would be exceeded.
+    /// - `Err(PushItemError::IconViewChildMismatch)` when an icon-view parent receives a non-icon child.
     pub fn push(&mut self, parent: Item, child: Item) -> Result<(), PushItemError> {
         self.ui().push(parent, child)
     }
 
+    /// Replaces the renderer's current list icon pack.
+    ///
+    /// Parameters:
+    /// - `icon_pack`: icon pack descriptor used by list rendering.
     pub fn set_icon_pack(&mut self, icon_pack: IconPack) {
         self.ui().set_icon_pack(icon_pack)
     }
 
+    /// Returns the current list icon pack.
+    ///
+    /// Returns:
+    /// - the icon pack currently active in the native renderer.
     pub fn icon_pack(&self) -> IconPack {
         self.ui().icon_pack()
     }
