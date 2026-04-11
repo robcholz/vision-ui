@@ -225,7 +225,8 @@ typedef struct vision_ui_driver_ops_t {
      * @param y Top position in pixels.
      * @param w Bitmap width in pixels.
      * @param h Bitmap height in pixels.
-     * @param bit_map Borrowed bitmap data pointer. The pointed-to bitmap should remain valid for the duration of the draw call.
+     * @param bit_map Borrowed bitmap data pointer. The pointed-to bitmap should remain valid for the duration of the
+     * draw call.
      */
     void (*bmp_draw)(void* context, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* bit_map);
     /**
@@ -278,9 +279,9 @@ typedef struct vision_ui_driver_ops_t {
      * Returns a readable pointer to the full-size frame buffer used by transition and blur effects.
      *
      * @param context Backend-owned driver context installed on the UI instance. Must not be `NULL`.
-     * @return A pointer to the readable full-size frame buffer when the backend exposes one. Backends that cannot expose a
-     * readable full buffer may return `NULL` or another unusable pointer for transition/blur effects, in which case those
-     * effects are not fully supported.
+     * @return A pointer to the readable full-size frame buffer when the backend exposes one. Backends that cannot
+     * expose a readable full buffer may return `NULL` or another unusable pointer for transition/blur effects, in which
+     * case those effects are not fully supported.
      *
      * @attention this should be a full size buffer
      */
@@ -329,7 +330,12 @@ static inline vision_ui_font_t vision_ui_driver_font_get(const vision_ui_t* ui) 
     return ui->driver.ops->font_get(ui->driver.context);
 }
 
-static inline void vision_ui_driver_str_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const char* str) {
+static inline void vision_ui_driver_str_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const char* str
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->str_draw != NULL);
@@ -390,14 +396,24 @@ static inline void vision_ui_driver_pixel_draw(const vision_ui_t* ui, const uint
     ui->driver.ops->pixel_draw(ui->driver.context, x, y);
 }
 
-static inline void vision_ui_driver_circle_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t r) {
+static inline void vision_ui_driver_circle_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t r
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->circle_draw != NULL);
     ui->driver.ops->circle_draw(ui->driver.context, x, y, r);
 }
 
-static inline void vision_ui_driver_disc_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t r) {
+static inline void vision_ui_driver_disc_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t r
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->disc_draw != NULL);
@@ -418,14 +434,26 @@ static inline void vision_ui_driver_box_r_draw(
     ui->driver.ops->box_r_draw(ui->driver.context, x, y, w, h, r);
 }
 
-static inline void vision_ui_driver_box_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h) {
+static inline void vision_ui_driver_box_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->box_draw != NULL);
     ui->driver.ops->box_draw(ui->driver.context, x, y, w, h);
 }
 
-static inline void vision_ui_driver_frame_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h) {
+static inline void vision_ui_driver_frame_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->frame_draw != NULL);
@@ -446,14 +474,24 @@ static inline void vision_ui_driver_frame_r_draw(
     ui->driver.ops->frame_r_draw(ui->driver.context, x, y, w, h, r);
 }
 
-static inline void vision_ui_driver_line_h_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t l) {
+static inline void vision_ui_driver_line_h_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t l
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->line_h_draw != NULL);
     ui->driver.ops->line_h_draw(ui->driver.context, x, y, l);
 }
 
-static inline void vision_ui_driver_line_v_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t h) {
+static inline void vision_ui_driver_line_v_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t h
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->line_v_draw != NULL);
@@ -473,14 +511,24 @@ static inline void vision_ui_driver_line_draw(
     ui->driver.ops->line_draw(ui->driver.context, x1, y1, x2, y2);
 }
 
-static inline void vision_ui_driver_line_h_dotted_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t l) {
+static inline void vision_ui_driver_line_h_dotted_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t l
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->line_h_dotted_draw != NULL);
     ui->driver.ops->line_h_dotted_draw(ui->driver.context, x, y, l);
 }
 
-static inline void vision_ui_driver_line_v_dotted_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t h) {
+static inline void vision_ui_driver_line_v_dotted_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t h
+) {
     assert(ui != NULL);
     assert(ui->driver.ops != NULL);
     assert(ui->driver.ops->line_v_dotted_draw != NULL);

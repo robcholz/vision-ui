@@ -166,7 +166,13 @@ static void mock_driver_box_r_draw(
     }
 }
 
-static void mock_driver_box_draw(void* context, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h) {
+static void mock_driver_box_draw(
+        void* context,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+) {
     mock_driver_t* driver = (mock_driver_t*) context;
     driver->box_draw_count++;
     driver->last_x = x;
@@ -180,7 +186,13 @@ static void mock_driver_box_draw(void* context, const uint16_t x, const uint16_t
     }
 }
 
-static void mock_driver_frame_draw(void* context, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h) {
+static void mock_driver_frame_draw(
+        void* context,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+) {
     mock_driver_t* driver = (mock_driver_t*) context;
     driver->frame_draw_count++;
     driver->last_x = x;
@@ -241,7 +253,13 @@ static void mock_driver_line_v_draw(void* context, const uint16_t x, const uint1
     }
 }
 
-static void mock_driver_line_draw(void* context, const uint16_t x1, const uint16_t y1, const uint16_t x2, const uint16_t y2) {
+static void mock_driver_line_draw(
+        void* context,
+        const uint16_t x1,
+        const uint16_t y1,
+        const uint16_t x2,
+        const uint16_t y2
+) {
     mock_driver_t* driver = (mock_driver_t*) context;
     driver->line_draw_count++;
     driver->last_x = x1;
