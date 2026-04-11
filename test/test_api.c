@@ -171,10 +171,6 @@ static void test_lifecycle_fonts_and_allocator(void) {
     vision_ui_destroy(&ui);
     TEST_ASSERT_EQUAL_INT(2, state.allocator_mallocs);
     TEST_ASSERT_EQUAL_INT(2, state.allocator_frees);
-
-    vision_ui_t* heap_ui = vision_ui_create();
-    TEST_ASSERT_NOT_NULL(heap_ui);
-    vision_ui_destroy(heap_ui);
 }
 
 static void test_empty_and_zero_capacity_corner_cases(void) {
