@@ -103,28 +103,32 @@ void vision_ui_allocator_set(vision_ui_t* ui, const vision_ui_allocator_t alloca
 
 void vision_ui_minifont_set(vision_ui_t* ui, const vision_ui_font_t font) {
     assert(ui != NULL);
-    if (memcmp(&font, &ui->minifont, sizeof(vision_ui_font_t)) != 0) {
+    if (font.font != ui->minifont.font || font.top_compensation != ui->minifont.top_compensation ||
+        font.bottom_compensation != ui->minifont.bottom_compensation) {
         ui->minifont = font;
     }
 }
 
 void vision_ui_font_set(vision_ui_t* ui, const vision_ui_font_t font) {
     assert(ui != NULL);
-    if (memcmp(&font, &ui->font, sizeof(vision_ui_font_t)) != 0) {
+    if (font.font != ui->font.font || font.top_compensation != ui->font.top_compensation ||
+        font.bottom_compensation != ui->font.bottom_compensation) {
         ui->font = font;
     }
 }
 
 void vision_ui_font_set_title(vision_ui_t* ui, const vision_ui_font_t font) {
     assert(ui != NULL);
-    if (memcmp(&font, &ui->title_font, sizeof(vision_ui_font_t)) != 0) {
+    if (font.font != ui->title_font.font || font.top_compensation != ui->title_font.top_compensation ||
+        font.bottom_compensation != ui->title_font.bottom_compensation) {
         ui->title_font = font;
     }
 }
 
 void vision_ui_font_set_subtitle(vision_ui_t* ui, const vision_ui_font_t font) {
     assert(ui != NULL);
-    if (memcmp(&font, &ui->subtitle_font, sizeof(vision_ui_font_t)) != 0) {
+    if (font.font != ui->subtitle_font.font || font.top_compensation != ui->subtitle_font.top_compensation ||
+        font.bottom_compensation != ui->subtitle_font.bottom_compensation) {
         ui->subtitle_font = font;
     }
 }
