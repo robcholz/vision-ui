@@ -176,6 +176,36 @@ static void test_lifecycle_fonts_and_allocator(void) {
     vision_ui_destroy(heap_ui);
 }
 
+static void test_empty_and_zero_capacity_corner_cases(void) {
+    vision_ui_t ui;
+    mock_driver_t driver;
+
+    init_ui_with_driver(&ui, &driver);
+
+    vision_ui_list_item_t* empty_root = vision_ui_list_item_new(&ui, 0, false, "empty");
+    vision_ui_list_item_t* zero_icon = vision_ui_list_icon_item_new(&ui, 0, (const uint8_t*) "i", "icon", "desc");
+    TEST_ASSERT_NOT_NULL(empty_root);
+    TEST_ASSERT_NOT_NULL(zero_icon);
+    TEST_ASSERT_FALSE(empty_root->owns_child_list);
+    TEST_ASSERT_NULL(empty_root->child_list_item);
+    TEST_ASSERT_FALSE(zero_icon->owns_child_list);
+    TEST_ASSERT_NULL(zero_icon->child_list_item);
+
+    TEST_ASSERT_EQUAL_INT(VisionUiRootItemSetOk, vision_ui_root_item_set(&ui, empty_root));
+    TEST_ASSERT_EQUAL_INT(VisionUiCoreInitOk, vision_ui_core_init(&ui));
+    TEST_ASSERT_NULL(vision_ui_selector_instance_get(&ui)->selected_item);
+
+    vision_ui_render_init(&ui);
+    mock_driver_advance_time(&driver, 16);
+    vision_ui_step_render(&ui);
+    TEST_ASSERT_EQUAL_UINT32(1, driver.action_get_count);
+    TEST_ASSERT_FALSE(vision_ui_is_exited(&ui));
+
+    TEST_ASSERT_EQUAL_INT(VisionUiListPushItemParentFull, vision_ui_list_push_item(&ui, empty_root, zero_icon));
+
+    vision_ui_destroy(&ui);
+}
+
 static void test_item_constructors_and_push_validations(void) {
     vision_ui_t ui;
     mock_driver_t driver;
@@ -247,6 +277,26 @@ static void test_item_constructors_and_push_validations(void) {
     vision_ui_destroy(&ui);
 }
 
+static void test_root_first_push_auto_binds_selector(void) {
+    vision_ui_t ui;
+    mock_driver_t driver;
+
+    init_ui_with_driver(&ui, &driver);
+
+    vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 2, false, "root");
+    vision_ui_list_item_t* child_a = vision_ui_list_switch_item_new(&ui, "a", false, NULL, NULL);
+    vision_ui_list_item_t* child_b = vision_ui_list_switch_item_new(&ui, "b", true, NULL, NULL);
+
+    TEST_ASSERT_EQUAL_INT(VisionUiRootItemSetOk, vision_ui_root_item_set(&ui, root));
+    TEST_ASSERT_EQUAL_INT(VisionUiListPushItemOk, vision_ui_list_push_item(&ui, root, child_a));
+    TEST_ASSERT_EQUAL_PTR(child_a, vision_ui_selector_instance_get(&ui)->selected_item);
+    TEST_ASSERT_EQUAL_PTR(&ui.selector, vision_ui_camera_instance_get(&ui)->selector);
+    TEST_ASSERT_EQUAL_INT(VisionUiListPushItemOk, vision_ui_list_push_item(&ui, root, child_b));
+    TEST_ASSERT_EQUAL_PTR(child_a, vision_ui_selector_instance_get(&ui)->selected_item);
+
+    vision_ui_destroy(&ui);
+}
+
 static void test_selector_navigation_switch_slider_and_wrap(void) {
     vision_ui_t ui;
     mock_driver_t driver;
@@ -286,6 +336,44 @@ static void test_selector_navigation_switch_slider_and_wrap(void) {
     TEST_ASSERT_EQUAL_INT(3, state.last_slider_value);
     vision_ui_selector_jump_to_selected_item(&ui);
     TEST_ASSERT_FALSE(vision_ui_to_list_slider_item(selector->selected_item)->is_confirmed);
+
+    vision_ui_destroy(&ui);
+}
+
+static void test_slider_boundaries_and_title_exit_behavior(void) {
+    vision_ui_t ui;
+    mock_driver_t driver;
+    callback_state_t state = {0};
+
+    init_ui_with_driver(&ui, &driver);
+    vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 2, false, "root");
+    vision_ui_list_item_t* slider =
+            vision_ui_list_slider_item_new(&ui, "slider", 0, 4, 0, 10, slider_changed_cb, &state);
+    vision_ui_list_item_t* title = vision_ui_list_title_item_new(&ui, "title");
+
+    TEST_ASSERT_EQUAL_INT(VisionUiRootItemSetOk, vision_ui_root_item_set(&ui, root));
+    TEST_ASSERT_EQUAL_INT(VisionUiListPushItemOk, vision_ui_list_push_item(&ui, root, slider));
+    TEST_ASSERT_EQUAL_INT(VisionUiListPushItemOk, vision_ui_list_push_item(&ui, root, title));
+    TEST_ASSERT_EQUAL_INT(VisionUiCoreInitOk, vision_ui_core_init(&ui));
+    vision_ui_render_init(&ui);
+
+    vision_ui_selector_jump_to_selected_item(&ui);
+    TEST_ASSERT_TRUE(vision_ui_to_list_slider_item(slider)->is_confirmed);
+    vision_ui_selector_go_prev_item(&ui);
+    TEST_ASSERT_EQUAL_INT(1, state.slider_changed_calls);
+    TEST_ASSERT_EQUAL_INT(0, state.last_slider_value);
+    vision_ui_selector_go_next_item(&ui);
+    vision_ui_selector_go_next_item(&ui);
+    vision_ui_selector_go_next_item(&ui);
+    TEST_ASSERT_EQUAL_INT(10, state.last_slider_value);
+    TEST_ASSERT_EQUAL_INT(4, state.slider_changed_calls);
+    vision_ui_selector_exit_current_item(&ui);
+    TEST_ASSERT_FALSE(vision_ui_to_list_slider_item(slider)->is_confirmed);
+
+    vision_ui_selector_go_next_item(&ui);
+    TEST_ASSERT_EQUAL_PTR(title, vision_ui_selector_instance_get(&ui)->selected_item);
+    vision_ui_selector_jump_to_selected_item(&ui);
+    TEST_ASSERT_FALSE(vision_ui_is_exited(&ui));
 
     vision_ui_destroy(&ui);
 }
@@ -407,6 +495,42 @@ static void test_notifications_alerts_and_widget_render(void) {
     vision_ui_destroy(&ui);
 }
 
+static void test_notification_queue_replacement_corner_cases(void) {
+    vision_ui_t ui;
+    mock_driver_t driver;
+    callback_state_t state = {0};
+
+    prepare_basic_list_ui(&ui, &driver, &state);
+
+    TEST_ASSERT_EQUAL_INT(VisionUiNotificationPushOk, vision_ui_notification_push(&ui, "first", 50));
+    TEST_ASSERT_EQUAL_INT(VisionUiNotificationPushOk, vision_ui_notification_push(&ui, "second", 60));
+    TEST_ASSERT_EQUAL_INT(VisionUiNotificationPushOk, vision_ui_notification_push(&ui, "third", 70));
+    TEST_ASSERT_TRUE(vision_ui_notification_instance_get(&ui)->has_pending);
+    TEST_ASSERT_EQUAL_STRING("third", vision_ui_notification_instance_get(&ui)->pending_content);
+    TEST_ASSERT_EQUAL_UINT16(70, vision_ui_notification_instance_get(&ui)->pending_span);
+
+    vision_ui_notification_mutable_instance_get(&ui)->y_notification =
+            vision_ui_notification_instance_get(&ui)->y_notification_trg;
+    mock_driver_advance_time(&driver, VISION_UI_NOTIFICATION_DISMISS_DURATION_MS + 1);
+    vision_ui_widget_render(&ui);
+    TEST_ASSERT_EQUAL_STRING("third", vision_ui_notification_instance_get(&ui)->content);
+    TEST_ASSERT_FALSE(vision_ui_notification_instance_get(&ui)->has_pending);
+
+    vision_ui_notification_mutable_instance_get(&ui)->y_notification =
+            vision_ui_notification_instance_get(&ui)->y_notification_trg;
+    mock_driver_advance_time(&driver, 71);
+    vision_ui_widget_render(&ui);
+    TEST_ASSERT_TRUE(vision_ui_notification_instance_get(&ui)->is_dismissing);
+    vision_ui_notification_mutable_instance_get(&ui)->y_notification =
+            vision_ui_notification_instance_get(&ui)->y_notification_trg;
+    mock_driver_advance_time(&driver, VISION_UI_NOTIFICATION_DISMISS_DURATION_MS + 1);
+    vision_ui_widget_render(&ui);
+    TEST_ASSERT_FALSE(vision_ui_notification_instance_get(&ui)->is_running);
+    TEST_ASSERT_NULL(vision_ui_notification_instance_get(&ui)->pending_content);
+
+    vision_ui_destroy(&ui);
+}
+
 static void test_list_icon_and_renderer_entry_points(void) {
     vision_ui_t ui;
     mock_driver_t driver;
@@ -485,6 +609,9 @@ static void test_animation_helpers_and_driver_contract(void) {
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, vision_ui_smoothstep(2.0f));
 
     float pos = 0.0f;
+    vision_ui_animation_s_curve(&pos, 0.4f, 90.0f, 0.0f);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 0.4f, pos);
+    pos = 0.0f;
     for (int i = 0; i < 32; ++i) {
         vision_ui_animation_s_curve(&pos, 10.0f, 90.0f, 16.0f);
     }
@@ -529,12 +656,19 @@ static void test_animation_helpers_and_driver_contract(void) {
     vision_ui_driver_line_v_dotted_draw(&ui, 14, 0, 6);
     vision_ui_driver_bmp_draw(&ui, 0, 0, 2, 2, (const uint8_t*) "bm");
     vision_ui_driver_color_draw(&ui, 2);
+    vision_ui_driver_buffer_clear(&ui);
+    vision_ui_driver_color_draw(&ui, 1);
     vision_ui_driver_clip_window_set(&ui, 0, 0, 10, 10);
+    vision_ui_driver_pixel_draw(&ui, 200, 200);
+    vision_ui_driver_pixel_draw(&ui, 5, 5);
+    TEST_ASSERT_TRUE((driver.buffer[((5u >> 3u) * VISION_UI_SCREEN_WIDTH) + 5u] & (1u << (5u & 0x7u))) != 0u);
+    TEST_ASSERT_TRUE((driver.buffer[((200u >> 3u) * VISION_UI_SCREEN_WIDTH) + 200u] & (1u << (200u & 0x7u))) == 0u);
     vision_ui_driver_clip_window_reset(&ui);
     vision_ui_driver_buffer_area_send(&ui, 0, 0, 10, 10);
     vision_ui_driver_buffer_send(&ui);
     TEST_ASSERT_NOT_NULL(vision_ui_driver_buffer_pointer_get(&ui));
     vision_ui_driver_buffer_clear(&ui);
+    TEST_ASSERT_TRUE((driver.buffer[((5u >> 3u) * VISION_UI_SCREEN_WIDTH) + 5u] & (1u << (5u & 0x7u))) == 0u);
 
     TEST_ASSERT_EQUAL_UINT32(1, driver.font_mode_set_count);
     TEST_ASSERT_EQUAL_UINT32(1, driver.font_direction_set_count);
@@ -552,18 +686,22 @@ static void test_animation_helpers_and_driver_contract(void) {
     TEST_ASSERT_EQUAL_UINT32(1, driver.bmp_draw_count);
     TEST_ASSERT_EQUAL_UINT32(1, driver.buffer_area_send_count);
     TEST_ASSERT_EQUAL_UINT32(1, driver.buffer_send_count);
-    TEST_ASSERT_EQUAL_UINT32(1, driver.buffer_clear_count);
+    TEST_ASSERT_EQUAL_UINT32(2, driver.buffer_clear_count);
 
     vision_ui_destroy(&ui);
 }
 
 extern void run_all_tests(void) {
     RUN_TEST(test_lifecycle_fonts_and_allocator);
+    RUN_TEST(test_empty_and_zero_capacity_corner_cases);
     RUN_TEST(test_item_constructors_and_push_validations);
+    RUN_TEST(test_root_first_push_auto_binds_selector);
     RUN_TEST(test_selector_navigation_switch_slider_and_wrap);
+    RUN_TEST(test_slider_boundaries_and_title_exit_behavior);
     RUN_TEST(test_nested_navigation_and_user_item_transitions);
     RUN_TEST(test_icon_view_direct_user_item_flow);
     RUN_TEST(test_notifications_alerts_and_widget_render);
+    RUN_TEST(test_notification_queue_replacement_corner_cases);
     RUN_TEST(test_list_icon_and_renderer_entry_points);
     RUN_TEST(test_step_render_logo_actions_and_freeze);
     RUN_TEST(test_animation_helpers_and_driver_contract);
