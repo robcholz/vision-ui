@@ -1,7 +1,5 @@
-use std::cell::RefCell;
-use std::ffi::{c_void, CString, NulError};
+use std::ffi::{c_void, CStr};
 use std::ptr::NonNull;
-use std::rc::{Rc, Weak};
 use std::time::Duration;
 use thiserror::Error;
 
@@ -80,8 +78,6 @@ pub enum PushItemError {
 pub enum Error {
     #[error("allocation failed for {0}")]
     AllocationFailed(&'static str),
-    #[error("string contains interior NUL: {0}")]
-    InteriorNul(NulError),
     #[error("bitmap length {0} exceeds u32::MAX")]
     BitmapTooLarge(usize),
     #[error("bitmap length {actual} does not match {width}x{height} XBM payload size {expected}")]
@@ -102,12 +98,6 @@ pub enum Error {
     DurationOverflow(Duration),
 }
 
-impl From<NulError> for Error {
-    fn from(value: NulError) -> Self {
-        Self::InteriorNul(value)
-    }
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Item(NonNull<raw::vision_ui_list_item_t>);
 
@@ -119,6 +109,39 @@ impl Item {
     pub fn as_non_null(self) -> NonNull<raw::vision_ui_list_item_t> {
         self.0
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Text(&'static CStr);
+
+impl Text {
+    pub const fn new(value: &'static CStr) -> Self {
+        Self(value)
+    }
+
+    pub fn as_ptr(self) -> *const std::os::raw::c_char {
+        self.0.as_ptr()
+    }
+
+    pub fn as_c_str(self) -> &'static CStr {
+        self.0
+    }
+}
+
+impl From<&'static CStr> for Text {
+    fn from(value: &'static CStr) -> Self {
+        Self::new(value)
+    }
+}
+
+#[macro_export]
+macro_rules! text {
+    ($lit:literal) => {{
+        $crate::Text::new(
+            ::std::ffi::CStr::from_bytes_with_nul(concat!($lit, "\0").as_bytes())
+                .expect("text!() requires a string literal without interior NUL"),
+        )
+    }};
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -172,62 +195,87 @@ impl StartupLogo {
     }
 }
 
-type ToggleFn = dyn FnMut(UiRef, bool);
-type SlideFn = dyn FnMut(UiRef, i16);
-type SceneFn = dyn FnMut(UiRef);
-
-struct ToggleCallback {
-    state: Weak<RefCell<State>>,
-    handler: Box<ToggleFn>,
+pub struct ToggleBinding<T: 'static> {
+    context: &'static T,
+    handler: fn(UiRef, bool, &'static T),
 }
 
-struct SlideCallback {
-    state: Weak<RefCell<State>>,
-    handler: Box<SlideFn>,
-}
-
-struct SceneCallbackSet {
-    state: Weak<RefCell<State>>,
-    init: Option<Box<SceneFn>>,
-    render: Option<Box<SceneFn>>,
-    exit: Option<Box<SceneFn>>,
-}
-
-struct State {
-    raw: NonNull<raw::vision_ui_t>,
-    retained_strings: Vec<CString>,
-    toggle_callbacks: Vec<Box<ToggleCallback>>,
-    slide_callbacks: Vec<Box<SlideCallback>>,
-    scene_callbacks: Vec<Box<SceneCallbackSet>>,
-}
-
-impl State {
-    fn retain_c_string(&mut self, value: &str) -> Result<*const std::os::raw::c_char, Error> {
-        let string = CString::new(value)?;
-        let ptr = string.as_ptr();
-        self.retained_strings.push(string);
-        Ok(ptr)
+impl<T: 'static> ToggleBinding<T> {
+    pub const fn new(context: &'static T, handler: fn(UiRef, bool, &'static T)) -> Self {
+        Self { context, handler }
     }
+}
 
-    fn wrap_item(&self, ptr: *mut raw::vision_ui_list_item_t) -> Result<Item, Error> {
-        NonNull::new(ptr)
-            .map(Item)
-            .ok_or(Error::AllocationFailed("vision_ui_list_item_t"))
+pub struct SlideBinding<T: 'static> {
+    context: &'static T,
+    handler: fn(UiRef, i16, &'static T),
+}
+
+impl<T: 'static> SlideBinding<T> {
+    pub const fn new(context: &'static T, handler: fn(UiRef, i16, &'static T)) -> Self {
+        Self { context, handler }
     }
+}
+
+pub struct SceneBindings<T: 'static> {
+    context: &'static T,
+    init: Option<fn(UiRef, &'static T)>,
+    render: Option<fn(UiRef, &'static T)>,
+    exit: Option<fn(UiRef, &'static T)>,
+}
+
+impl<T: 'static> SceneBindings<T> {
+    pub const fn new(
+        context: &'static T,
+        init: Option<fn(UiRef, &'static T)>,
+        render: Option<fn(UiRef, &'static T)>,
+        exit: Option<fn(UiRef, &'static T)>,
+    ) -> Self {
+        Self {
+            context,
+            init,
+            render,
+            exit,
+        }
+    }
+}
+
+#[cfg(feature = "alloc")]
+type ToggleClosureFn = dyn FnMut(UiRef, bool);
+#[cfg(feature = "alloc")]
+type SlideClosureFn = dyn FnMut(UiRef, i16);
+#[cfg(feature = "alloc")]
+type SceneClosureFn = dyn FnMut(UiRef);
+
+#[cfg(feature = "alloc")]
+struct ToggleClosure {
+    handler: Box<ToggleClosureFn>,
+}
+
+#[cfg(feature = "alloc")]
+struct SlideClosure {
+    handler: Box<SlideClosureFn>,
+}
+
+#[cfg(feature = "alloc")]
+struct SceneClosureBindings {
+    init: Option<Box<SceneClosureFn>>,
+    render: Option<Box<SceneClosureFn>>,
+    exit: Option<Box<SceneClosureFn>>,
 }
 
 #[derive(Clone)]
 pub struct UiRef {
-    state: Rc<RefCell<State>>,
+    raw: NonNull<raw::vision_ui_t>,
 }
 
 impl UiRef {
     pub fn raw_ptr(&self) -> *const raw::vision_ui_t {
-        self.state.borrow().raw.as_ptr()
+        self.raw.as_ptr()
     }
 
     pub fn raw_mut_ptr(&self) -> *mut raw::vision_ui_t {
-        self.state.borrow().raw.as_ptr()
+        self.raw.as_ptr()
     }
 
     pub fn action(&self) -> Result<Action, ActionError> {
@@ -286,19 +334,15 @@ impl UiRef {
         unsafe { raw::vision_ui_font_get_subtitle(self.raw_ptr()) }
     }
 
-    pub fn notify(&self, message: impl AsRef<str>, duration: Duration) -> Result<(), Error> {
+    pub fn notify(&self, message: Text, duration: Duration) -> Result<(), Error> {
         let span = duration_millis_u16(duration)?;
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(message.as_ref())?;
-        unsafe { raw::vision_ui_notification_push(state.raw.as_ptr(), ptr, span) };
+        unsafe { raw::vision_ui_notification_push(self.raw.as_ptr(), message.as_ptr(), span) };
         Ok(())
     }
 
-    pub fn alert(&self, message: impl AsRef<str>, duration: Duration) -> Result<(), Error> {
+    pub fn alert(&self, message: Text, duration: Duration) -> Result<(), Error> {
         let span = duration_millis_u16(duration)?;
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(message.as_ref())?;
-        unsafe { raw::vision_ui_alert_push(state.raw.as_ptr(), ptr, span) };
+        unsafe { raw::vision_ui_alert_push(self.raw.as_ptr(), message.as_ptr(), span) };
         Ok(())
     }
 
@@ -347,7 +391,13 @@ impl UiRef {
 }
 
 pub struct VisionUi {
-    state: Rc<RefCell<State>>,
+    raw: NonNull<raw::vision_ui_t>,
+    #[cfg(feature = "alloc")]
+    toggle_closures: Vec<Box<ToggleClosure>>,
+    #[cfg(feature = "alloc")]
+    slide_closures: Vec<Box<SlideClosure>>,
+    #[cfg(feature = "alloc")]
+    scene_closures: Vec<Box<SceneClosureBindings>>,
 }
 
 impl VisionUi {
@@ -355,28 +405,26 @@ impl VisionUi {
         let raw = NonNull::new(unsafe { raw::vision_ui_create() })
             .ok_or(Error::AllocationFailed("vision_ui_t"))?;
         Ok(Self {
-            state: Rc::new(RefCell::new(State {
-                raw,
-                retained_strings: Vec::new(),
-                toggle_callbacks: Vec::new(),
-                slide_callbacks: Vec::new(),
-                scene_callbacks: Vec::new(),
-            })),
+            raw,
+            #[cfg(feature = "alloc")]
+            toggle_closures: Vec::new(),
+            #[cfg(feature = "alloc")]
+            slide_closures: Vec::new(),
+            #[cfg(feature = "alloc")]
+            scene_closures: Vec::new(),
         })
     }
 
     pub fn ui(&self) -> UiRef {
-        UiRef {
-            state: Rc::clone(&self.state),
-        }
+        UiRef { raw: self.raw }
     }
 
     pub fn raw_ptr(&self) -> *const raw::vision_ui_t {
-        self.state.borrow().raw.as_ptr()
+        self.raw.as_ptr()
     }
 
     pub fn raw_mut_ptr(&mut self) -> *mut raw::vision_ui_t {
-        self.state.borrow().raw.as_ptr()
+        self.raw.as_ptr()
     }
 
     pub fn initialize_runtime(&mut self) -> Result<(), InitError> {
@@ -401,8 +449,7 @@ impl VisionUi {
         let bitmap = bitmap.bitmap();
         let span = u32::try_from(bitmap.bytes().len())
             .map_err(|_| Error::BitmapTooLarge(bitmap.bytes().len()))?;
-        let raw = self.state.borrow().raw;
-        unsafe { raw::vision_ui_start_logo_set(raw.as_ptr(), bitmap.bytes().as_ptr(), span) };
+        unsafe { raw::vision_ui_start_logo_set(self.raw.as_ptr(), bitmap.bytes().as_ptr(), span) };
         Ok(())
     }
 
@@ -468,45 +515,40 @@ impl VisionUi {
         self.ui().subtitle_font()
     }
 
-    pub fn notify(&mut self, message: impl AsRef<str>, duration: Duration) -> Result<(), Error> {
+    pub fn notify(&mut self, message: Text, duration: Duration) -> Result<(), Error> {
         self.ui().notify(message, duration)
     }
 
-    pub fn alert(&mut self, message: impl AsRef<str>, duration: Duration) -> Result<(), Error> {
+    pub fn alert(&mut self, message: Text, duration: Duration) -> Result<(), Error> {
         self.ui().alert(message, duration)
     }
 
-    pub fn list(&mut self, title: impl AsRef<str>, capacity: usize) -> Result<Item, Error> {
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(title.as_ref())?;
-        let raw = unsafe { raw::vision_ui_list_item_new(state.raw.as_ptr(), capacity, false, ptr) };
-        state.wrap_item(raw)
+    pub fn list(&mut self, title: Text, capacity: usize) -> Result<Item, Error> {
+        wrap_item(unsafe {
+            raw::vision_ui_list_item_new(self.raw.as_ptr(), capacity, false, title.as_ptr())
+        })
     }
 
-    pub fn icon_list(&mut self, title: impl AsRef<str>, capacity: usize) -> Result<Item, Error> {
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(title.as_ref())?;
-        let raw = unsafe { raw::vision_ui_list_item_new(state.raw.as_ptr(), capacity, true, ptr) };
-        state.wrap_item(raw)
+    pub fn icon_list(&mut self, title: Text, capacity: usize) -> Result<Item, Error> {
+        wrap_item(unsafe {
+            raw::vision_ui_list_item_new(self.raw.as_ptr(), capacity, true, title.as_ptr())
+        })
     }
 
-    pub fn title(&mut self, text: impl AsRef<str>) -> Result<Item, Error> {
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(text.as_ref())?;
-        state.wrap_item(unsafe { raw::vision_ui_list_title_item_new(state.raw.as_ptr(), ptr) })
+    pub fn title(&mut self, text: Text) -> Result<Item, Error> {
+        wrap_item(unsafe { raw::vision_ui_list_title_item_new(self.raw.as_ptr(), text.as_ptr()) })
     }
 
     pub fn icon(
         &mut self,
-        title: impl AsRef<str>,
-        description: Option<impl AsRef<str>>,
+        title: Text,
+        description: Option<Text>,
         icon: Option<MonoBitmap>,
         capacity: usize,
     ) -> Result<Item, Error> {
-        let mut state = self.state.borrow_mut();
-        let title_ptr = state.retain_c_string(title.as_ref())?;
+        let title_ptr = title.as_ptr();
         let description_ptr = match description {
-            Some(text) => state.retain_c_string(text.as_ref())?,
+            Some(text) => text.as_ptr(),
             None => std::ptr::null(),
         };
         let icon_ptr = match icon {
@@ -518,79 +560,92 @@ impl VisionUi {
         };
         let raw = unsafe {
             raw::vision_ui_list_icon_item_new(
-                state.raw.as_ptr(),
+                self.raw.as_ptr(),
                 capacity,
                 icon_ptr,
                 title_ptr,
                 description_ptr,
             )
         };
-        state.wrap_item(raw)
+        wrap_item(raw)
     }
 
-    pub fn switch(&mut self, label: impl AsRef<str>, initial: bool) -> Result<Item, Error> {
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(label.as_ref())?;
+    pub fn switch(&mut self, label: Text, initial: bool) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_switch_item_new(
-                state.raw.as_ptr(),
-                ptr,
+                self.raw.as_ptr(),
+                label.as_ptr(),
                 initial,
                 None,
                 std::ptr::null_mut(),
             )
         };
-        state.wrap_item(raw)
+        wrap_item(raw)
     }
 
-    pub fn switch_with<F>(
+    pub fn switch_with<T: 'static>(
         &mut self,
-        label: impl AsRef<str>,
+        label: Text,
+        initial: bool,
+        binding: &'static ToggleBinding<T>,
+    ) -> Result<Item, Error> {
+        let raw = unsafe {
+            raw::vision_ui_list_switch_item_new(
+                self.raw.as_ptr(),
+                label.as_ptr(),
+                initial,
+                Some(toggle_trampoline::<T>),
+                (binding as *const ToggleBinding<T>)
+                    .cast_mut()
+                    .cast::<c_void>(),
+            )
+        };
+        wrap_item(raw)
+    }
+
+    #[cfg(feature = "alloc")]
+    pub fn switch_with_closure<F>(
+        &mut self,
+        label: Text,
         initial: bool,
         on_changed: F,
     ) -> Result<Item, Error>
     where
         F: FnMut(UiRef, bool) + 'static,
     {
-        let callback = Box::new(ToggleCallback {
-            state: Rc::downgrade(&self.state),
+        let callback = Box::new(ToggleClosure {
             handler: Box::new(on_changed),
         });
-        let user_data = (&*callback as *const ToggleCallback)
+        let user_data = (&*callback as *const ToggleClosure)
             .cast_mut()
             .cast::<c_void>();
-
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(label.as_ref())?;
         let raw = unsafe {
             raw::vision_ui_list_switch_item_new(
-                state.raw.as_ptr(),
-                ptr,
+                self.raw.as_ptr(),
+                label.as_ptr(),
                 initial,
-                Some(toggle_trampoline),
+                Some(toggle_closure_trampoline),
                 user_data,
             )
         };
-        let item = state.wrap_item(raw)?;
-        state.toggle_callbacks.push(callback);
+        let item = wrap_item(raw)?;
+        self.toggle_closures.push(callback);
         Ok(item)
     }
 
     pub fn slider(
         &mut self,
-        label: impl AsRef<str>,
+        label: Text,
         initial: i16,
         step: u8,
         range: std::ops::RangeInclusive<i16>,
     ) -> Result<Item, Error> {
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(label.as_ref())?;
         let min = *range.start();
         let max = *range.end();
         let raw = unsafe {
             raw::vision_ui_list_slider_item_new(
-                state.raw.as_ptr(),
-                ptr,
+                self.raw.as_ptr(),
+                label.as_ptr(),
                 initial,
                 step,
                 min,
@@ -599,12 +654,40 @@ impl VisionUi {
                 std::ptr::null_mut(),
             )
         };
-        state.wrap_item(raw)
+        wrap_item(raw)
     }
 
-    pub fn slider_with<F>(
+    pub fn slider_with<T: 'static>(
         &mut self,
-        label: impl AsRef<str>,
+        label: Text,
+        initial: i16,
+        step: u8,
+        range: std::ops::RangeInclusive<i16>,
+        binding: &'static SlideBinding<T>,
+    ) -> Result<Item, Error> {
+        let min = *range.start();
+        let max = *range.end();
+        let raw = unsafe {
+            raw::vision_ui_list_slider_item_new(
+                self.raw.as_ptr(),
+                label.as_ptr(),
+                initial,
+                step,
+                min,
+                max,
+                Some(slide_trampoline::<T>),
+                (binding as *const SlideBinding<T>)
+                    .cast_mut()
+                    .cast::<c_void>(),
+            )
+        };
+        wrap_item(raw)
+    }
+
+    #[cfg(feature = "alloc")]
+    pub fn slider_with_closure<F>(
+        &mut self,
+        label: Text,
         initial: i16,
         step: u8,
         range: std::ops::RangeInclusive<i16>,
@@ -613,54 +696,69 @@ impl VisionUi {
     where
         F: FnMut(UiRef, i16) + 'static,
     {
-        let callback = Box::new(SlideCallback {
-            state: Rc::downgrade(&self.state),
+        let callback = Box::new(SlideClosure {
             handler: Box::new(on_changed),
         });
-        let user_data = (&*callback as *const SlideCallback)
+        let user_data = (&*callback as *const SlideClosure)
             .cast_mut()
             .cast::<c_void>();
-
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(label.as_ref())?;
         let min = *range.start();
         let max = *range.end();
         let raw = unsafe {
             raw::vision_ui_list_slider_item_new(
-                state.raw.as_ptr(),
-                ptr,
+                self.raw.as_ptr(),
+                label.as_ptr(),
                 initial,
                 step,
                 min,
                 max,
-                Some(slide_trampoline),
+                Some(slide_closure_trampoline),
                 user_data,
             )
         };
-        let item = state.wrap_item(raw)?;
-        state.slide_callbacks.push(callback);
+        let item = wrap_item(raw)?;
+        self.slide_closures.push(callback);
         Ok(item)
     }
 
-    pub fn scene(&mut self, label: impl AsRef<str>) -> Result<Item, Error> {
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(label.as_ref())?;
+    pub fn scene(&mut self, label: Text) -> Result<Item, Error> {
         let raw = unsafe {
             raw::vision_ui_list_user_item_new(
-                state.raw.as_ptr(),
-                ptr,
+                self.raw.as_ptr(),
+                label.as_ptr(),
                 None,
                 None,
                 None,
                 std::ptr::null_mut(),
             )
         };
-        state.wrap_item(raw)
+        wrap_item(raw)
     }
 
-    pub fn scene_with<FI, FR, FE>(
+    pub fn scene_with<T: 'static>(
         &mut self,
-        label: impl AsRef<str>,
+        label: Text,
+        bindings: &'static SceneBindings<T>,
+    ) -> Result<Item, Error> {
+        let raw = unsafe {
+            raw::vision_ui_list_user_item_new(
+                self.raw.as_ptr(),
+                label.as_ptr(),
+                bindings.init.map(|_| scene_init_trampoline::<T> as _),
+                bindings.render.map(|_| scene_render_trampoline::<T> as _),
+                bindings.exit.map(|_| scene_exit_trampoline::<T> as _),
+                (bindings as *const SceneBindings<T>)
+                    .cast_mut()
+                    .cast::<c_void>(),
+            )
+        };
+        wrap_item(raw)
+    }
+
+    #[cfg(feature = "alloc")]
+    pub fn scene_with_closure<FI, FR, FE>(
+        &mut self,
+        label: Text,
         init: Option<FI>,
         render: Option<FR>,
         exit: Option<FE>,
@@ -670,33 +768,35 @@ impl VisionUi {
         FR: FnMut(UiRef) + 'static,
         FE: FnMut(UiRef) + 'static,
     {
-        let callback = Box::new(SceneCallbackSet {
-            state: Rc::downgrade(&self.state),
-            init: init.map(|f| Box::new(f) as Box<SceneFn>),
-            render: render.map(|f| Box::new(f) as Box<SceneFn>),
-            exit: exit.map(|f| Box::new(f) as Box<SceneFn>),
+        let bindings = Box::new(SceneClosureBindings {
+            init: init.map(|f| Box::new(f) as Box<SceneClosureFn>),
+            render: render.map(|f| Box::new(f) as Box<SceneClosureFn>),
+            exit: exit.map(|f| Box::new(f) as Box<SceneClosureFn>),
         });
-        let user_data = (&*callback as *const SceneCallbackSet)
+        let user_data = (&*bindings as *const SceneClosureBindings)
             .cast_mut()
             .cast::<c_void>();
-
-        let mut state = self.state.borrow_mut();
-        let ptr = state.retain_c_string(label.as_ref())?;
         let raw = unsafe {
             raw::vision_ui_list_user_item_new(
-                state.raw.as_ptr(),
-                ptr,
-                callback.init.as_ref().map(|_| scene_init_trampoline as _),
-                callback
+                self.raw.as_ptr(),
+                label.as_ptr(),
+                bindings
+                    .init
+                    .as_ref()
+                    .map(|_| scene_init_closure_trampoline as _),
+                bindings
                     .render
                     .as_ref()
-                    .map(|_| scene_render_trampoline as _),
-                callback.exit.as_ref().map(|_| scene_exit_trampoline as _),
+                    .map(|_| scene_render_closure_trampoline as _),
+                bindings
+                    .exit
+                    .as_ref()
+                    .map(|_| scene_exit_closure_trampoline as _),
                 user_data,
             )
         };
-        let item = state.wrap_item(raw)?;
-        state.scene_callbacks.push(callback);
+        let item = wrap_item(raw)?;
+        self.scene_closures.push(bindings);
         Ok(item)
     }
 
@@ -727,58 +827,154 @@ impl Drop for VisionUi {
     }
 }
 
-unsafe extern "C" fn toggle_trampoline(
-    _ui: *mut raw::vision_ui_t,
+unsafe extern "C" fn toggle_trampoline<T: 'static>(
+    ui: *mut raw::vision_ui_t,
     value: bool,
     user_data: *mut c_void,
 ) {
-    let callback = unsafe { &mut *user_data.cast::<ToggleCallback>() };
-    let Some(state) = callback.state.upgrade() else {
-        return;
-    };
-    (callback.handler)(UiRef { state }, value);
+    let binding = unsafe { &*user_data.cast::<ToggleBinding<T>>() };
+    (binding.handler)(
+        UiRef {
+            raw: NonNull::new_unchecked(ui),
+        },
+        value,
+        binding.context,
+    );
 }
 
-unsafe extern "C" fn slide_trampoline(
-    _ui: *mut raw::vision_ui_t,
+unsafe extern "C" fn slide_trampoline<T: 'static>(
+    ui: *mut raw::vision_ui_t,
     value: i16,
     user_data: *mut c_void,
 ) {
-    let callback = unsafe { &mut *user_data.cast::<SlideCallback>() };
-    let Some(state) = callback.state.upgrade() else {
-        return;
-    };
-    (callback.handler)(UiRef { state }, value);
+    let binding = unsafe { &*user_data.cast::<SlideBinding<T>>() };
+    (binding.handler)(
+        UiRef {
+            raw: NonNull::new_unchecked(ui),
+        },
+        value,
+        binding.context,
+    );
 }
 
-unsafe extern "C" fn scene_init_trampoline(_ui: *mut raw::vision_ui_t, user_data: *mut c_void) {
-    let callback = unsafe { &mut *user_data.cast::<SceneCallbackSet>() };
-    let Some(state) = callback.state.upgrade() else {
-        return;
-    };
-    if let Some(handler) = callback.init.as_mut() {
-        handler(UiRef { state });
+unsafe extern "C" fn scene_init_trampoline<T: 'static>(
+    ui: *mut raw::vision_ui_t,
+    user_data: *mut c_void,
+) {
+    let bindings = unsafe { &*user_data.cast::<SceneBindings<T>>() };
+    if let Some(handler) = bindings.init {
+        handler(
+            UiRef {
+                raw: NonNull::new_unchecked(ui),
+            },
+            bindings.context,
+        );
     }
 }
 
-unsafe extern "C" fn scene_render_trampoline(_ui: *mut raw::vision_ui_t, user_data: *mut c_void) {
-    let callback = unsafe { &mut *user_data.cast::<SceneCallbackSet>() };
-    let Some(state) = callback.state.upgrade() else {
-        return;
-    };
-    if let Some(handler) = callback.render.as_mut() {
-        handler(UiRef { state });
+unsafe extern "C" fn scene_render_trampoline<T: 'static>(
+    ui: *mut raw::vision_ui_t,
+    user_data: *mut c_void,
+) {
+    let bindings = unsafe { &*user_data.cast::<SceneBindings<T>>() };
+    if let Some(handler) = bindings.render {
+        handler(
+            UiRef {
+                raw: NonNull::new_unchecked(ui),
+            },
+            bindings.context,
+        );
     }
 }
 
-unsafe extern "C" fn scene_exit_trampoline(_ui: *mut raw::vision_ui_t, user_data: *mut c_void) {
-    let callback = unsafe { &mut *user_data.cast::<SceneCallbackSet>() };
-    let Some(state) = callback.state.upgrade() else {
-        return;
-    };
-    if let Some(handler) = callback.exit.as_mut() {
-        handler(UiRef { state });
+unsafe extern "C" fn scene_exit_trampoline<T: 'static>(
+    _ui: *mut raw::vision_ui_t,
+    user_data: *mut c_void,
+) {
+    let bindings = unsafe { &*user_data.cast::<SceneBindings<T>>() };
+    if let Some(handler) = bindings.exit {
+        handler(
+            UiRef {
+                raw: NonNull::new_unchecked(_ui),
+            },
+            bindings.context,
+        );
     }
+}
+
+#[cfg(feature = "alloc")]
+unsafe extern "C" fn toggle_closure_trampoline(
+    ui: *mut raw::vision_ui_t,
+    value: bool,
+    user_data: *mut c_void,
+) {
+    let callback = unsafe { &mut *user_data.cast::<ToggleClosure>() };
+    (callback.handler)(
+        UiRef {
+            raw: NonNull::new_unchecked(ui),
+        },
+        value,
+    );
+}
+
+#[cfg(feature = "alloc")]
+unsafe extern "C" fn slide_closure_trampoline(
+    ui: *mut raw::vision_ui_t,
+    value: i16,
+    user_data: *mut c_void,
+) {
+    let callback = unsafe { &mut *user_data.cast::<SlideClosure>() };
+    (callback.handler)(
+        UiRef {
+            raw: NonNull::new_unchecked(ui),
+        },
+        value,
+    );
+}
+
+#[cfg(feature = "alloc")]
+unsafe extern "C" fn scene_init_closure_trampoline(
+    ui: *mut raw::vision_ui_t,
+    user_data: *mut c_void,
+) {
+    let bindings = unsafe { &mut *user_data.cast::<SceneClosureBindings>() };
+    if let Some(handler) = bindings.init.as_mut() {
+        handler(UiRef {
+            raw: NonNull::new_unchecked(ui),
+        });
+    }
+}
+
+#[cfg(feature = "alloc")]
+unsafe extern "C" fn scene_render_closure_trampoline(
+    ui: *mut raw::vision_ui_t,
+    user_data: *mut c_void,
+) {
+    let bindings = unsafe { &mut *user_data.cast::<SceneClosureBindings>() };
+    if let Some(handler) = bindings.render.as_mut() {
+        handler(UiRef {
+            raw: NonNull::new_unchecked(ui),
+        });
+    }
+}
+
+#[cfg(feature = "alloc")]
+unsafe extern "C" fn scene_exit_closure_trampoline(
+    ui: *mut raw::vision_ui_t,
+    user_data: *mut c_void,
+) {
+    let bindings = unsafe { &mut *user_data.cast::<SceneClosureBindings>() };
+    if let Some(handler) = bindings.exit.as_mut() {
+        handler(UiRef {
+            raw: NonNull::new_unchecked(ui),
+        });
+    }
+}
+
+fn wrap_item(ptr: *mut raw::vision_ui_list_item_t) -> Result<Item, Error> {
+    NonNull::new(ptr)
+        .map(Item)
+        .ok_or(Error::AllocationFailed("vision_ui_list_item_t"))
 }
 
 fn duration_millis_u16(duration: Duration) -> Result<u16, Error> {

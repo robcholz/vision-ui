@@ -36,6 +36,7 @@ Available preset features:
 
 Other build features:
 
+- `alloc` to enable closure-based callback helpers (`switch_with_closure`, `slider_with_closure`, `scene_with_closure`)
 - `debug-overlay` to compile the native C renderer with `DEBUG`, which draws helper outlines for key UI regions
 
 Compile-time config can be overridden from Cargo with environment variables, for example:
@@ -77,18 +78,30 @@ The grouped Rust config surface then reflects those values through:
 use vision_ui as vui;
 use std::time::Duration;
 
-let mut ui = vui::VisionUi::new()?;
-let root = ui.list("VisionUI", 8)?;
-let toggle = ui.switch_with("Backlight", true, |ui, enabled| {
-    let message = if enabled { "Backlight on" } else { "Backlight off" };
+struct BacklightState;
+
+fn on_backlight_changed(ui: vui::UiRef, enabled: bool, _state: &'static BacklightState) {
+    let message = if enabled {
+        vui::text!("Backlight on")
+    } else {
+        vui::text!("Backlight off")
+    };
     let _ = ui.notify(message, Duration::from_millis(800));
-})?;
+}
+
+static BACKLIGHT_STATE: BacklightState = BacklightState;
+static BACKLIGHT_BINDING: vui::ToggleBinding<BacklightState> =
+    vui::ToggleBinding::new(&BACKLIGHT_STATE, on_backlight_changed);
+
+let mut ui = vui::VisionUi::new()?;
+let root = ui.list(vui::text!("VisionUI"), 8)?;
+let toggle = ui.switch_with(vui::text!("Backlight"), true, &BACKLIGHT_BINDING)?;
 
 ui.push(root, toggle);
 ui.set_root(root);
 ui.initialize_runtime();
 ui.initialize_rendering();
-ui.notify("Hello", Duration::from_millis(1200))?;
+ui.notify(vui::text!("Hello"), Duration::from_millis(1200))?;
 # Ok::<(), vui::Error>(())
 ```
 
@@ -102,8 +115,9 @@ ui.notify("Hello", Duration::from_millis(1200))?;
 
 - The top-level API uses Rust-style names and `Duration` instead of C-style setters and raw integer spans.
 - Bitmap inputs are validated with typed wrappers such as `MonoBitmap` and `StartupLogo`.
-- Item callbacks are closure-based through `switch_with`, `slider_with`, and `scene_with`.
-- The wrapper retains strings and bitmap buffers that the C API borrows.
+- Item callbacks use static bindings through `ToggleBinding`, `SlideBinding`, and `SceneBindings` by default.
+- Enable the `alloc` feature for closure-based convenience helpers.
+- Long-lived text and bitmap assets are passed as static borrowed data instead of being copied into hidden heap storage.
 - Advanced or unsupported operations are still available through `vision_ui::raw`.
 - `native/` is the packaged copy of the core C sources. Refresh it from the repo root with `bindings/rust/scripts/sync-native.sh`.
 - The crate links the bundled Vision UI core automatically, but driver implementations remain outside this crate.
