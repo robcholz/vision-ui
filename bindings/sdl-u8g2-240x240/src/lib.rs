@@ -21,7 +21,6 @@ unsafe extern "C" {
     fn u8g2_DrawUTF8(u8g2: *mut c_void, x: u16, y: u16, text: *const c_char) -> u16;
     fn u8g2_GetStrWidth(u8g2: *mut c_void, text: *const c_char) -> u16;
     fn u8g2_GetUTF8Width(u8g2: *mut c_void, text: *const c_char) -> u16;
-    fn u8g2_GetMaxCharHeight(u8g2: *mut c_void) -> i16;
     fn u8g2_SetFontMode(u8g2: *mut c_void, mode: u8);
     fn u8g2_SetFontDirection(u8g2: *mut c_void, direction: u8);
     fn u8g2_DrawPixel(u8g2: *mut c_void, x: u16, y: u16);
@@ -41,7 +40,6 @@ unsafe extern "C" {
     fn u8g2_ClearBuffer(u8g2: *mut c_void);
     fn u8g2_SendBuffer(u8g2: *mut c_void);
     fn u8g2_UpdateDisplayArea(u8g2: *mut c_void, tx: u8, ty: u8, tw: u8, th: u8);
-    static mut U8G2_BUFFER: [u8; BUFFER_SIZE];
     static u8g2_font_fub42_tf: [u8; 0];
 }
 
@@ -49,6 +47,8 @@ const BUFFER_SIZE: usize = (SCREEN_WIDTH as usize * SCREEN_HEIGHT as usize) / 8;
 const U8G2_DRAW_ALL: u8 = 0x0F;
 const KEY_SPACE: i32 = b' ' as i32;
 const KEY_Q: i32 = b'q' as i32;
+
+static mut U8G2_BUFFER: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
 
 static MY_FONT: [u8; 2372] = *b"\x92\x00\x03\x02\x04\x04\x04\x04\x05\x0b\x0d\x00\xfe\x08\xfe\x0a\xff\x01d\x02\xd9\x04$ \x05\x00\x98\x16!\x07\x91\x8a\
 \x16\xa7\x00\"\x074\xf9\x16\x91)#\x0e\x96\x887Q\xcb\xb0D\xbd\x0cK\xd4\x02$\x0f\xa5xV\xd9RQ\x62QK\x94\xca\x16\x01%\x10\x96x\x66Q\xd2EK\xc2\x64\x89\x92.Z\
@@ -203,11 +203,25 @@ impl DriverText for Simulator240x240 {
     }
 
     fn draw_text(&mut self, x: u16, y: u16, text: &CStr) {
-        unsafe { u8g2_DrawStr(self.as_raw_handle(), x, self.adjusted_baseline(y), text.as_ptr()) };
+        unsafe {
+            u8g2_DrawStr(
+                self.as_raw_handle(),
+                x,
+                self.adjusted_baseline(y),
+                text.as_ptr(),
+            )
+        };
     }
 
     fn draw_utf8(&mut self, x: u16, y: u16, text: &CStr) {
-        unsafe { u8g2_DrawUTF8(self.as_raw_handle(), x, self.adjusted_baseline(y), text.as_ptr()) };
+        unsafe {
+            u8g2_DrawUTF8(
+                self.as_raw_handle(),
+                x,
+                self.adjusted_baseline(y),
+                text.as_ptr(),
+            )
+        };
     }
 
     fn text_width(&self, text: &CStr) -> u16 {
@@ -219,7 +233,8 @@ impl DriverText for Simulator240x240 {
     }
 
     fn text_height(&self) -> u16 {
-        let height = i32::from(unsafe { u8g2_GetMaxCharHeight(self.raw_handle_const()) });
+        let raw = self.storage.as_ptr().cast::<sim::u8g2_t>();
+        let height = i32::from(unsafe { (*raw).font_info.max_char_height });
         let adjusted = height + i32::from(self.current_font.top_compensation);
         adjusted.clamp(0, i32::from(u16::MAX)) as u16
     }

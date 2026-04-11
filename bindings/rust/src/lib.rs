@@ -11,6 +11,7 @@ use core::ffi::{c_char, c_void, CStr};
 use core::mem::MaybeUninit;
 use core::ops::RangeInclusive;
 use core::ptr::{self, NonNull};
+use core::slice;
 use core::time::Duration;
 use thiserror::Error;
 
@@ -674,6 +675,8 @@ impl UiRef {
 pub struct VisionUi<D> {
     raw: raw::vision_ui_t,
     driver: D,
+    driver_desc: raw::vision_ui_driver_t,
+    driver_ops: raw::vision_ui_driver_ops_t,
     #[cfg(feature = "alloc")]
     toggle_closures: Vec<Box<ToggleClosure>>,
     #[cfg(feature = "alloc")]
@@ -682,7 +685,7 @@ pub struct VisionUi<D> {
     scene_closures: Vec<Box<SceneClosureBindings>>,
 }
 
-impl<D: driver::RawHandle> VisionUi<D> {
+impl<D: driver::Driver> VisionUi<D> {
     /// Creates a new inline-owned UI instance with an attached driver.
     ///
     /// Parameters:
@@ -702,6 +705,11 @@ impl<D: driver::RawHandle> VisionUi<D> {
         let mut ui = Self {
             raw: unsafe { raw.assume_init() },
             driver,
+            driver_desc: raw::vision_ui_driver_t {
+                context: ptr::null_mut(),
+                ops: ptr::null(),
+            },
+            driver_ops: driver_ops::<D>(),
             #[cfg(feature = "alloc")]
             toggle_closures: Vec::new(),
             #[cfg(feature = "alloc")]
@@ -754,9 +762,9 @@ impl<D: driver::RawHandle> VisionUi<D> {
     }
 
     fn sync_driver_binding(&mut self) {
-        unsafe {
-            raw::vision_ui_driver_bind(self.raw_mut_ptr(), self.driver.as_raw_handle());
-        }
+        self.driver_desc.context = (&mut self.driver as *mut D).cast();
+        self.driver_desc.ops = ptr::from_ref(&self.driver_ops);
+        self.raw.driver = self.driver_desc;
     }
 
     /// Initializes selector, camera, and list runtime state after the tree is built.
@@ -1440,6 +1448,329 @@ impl<D> Drop for VisionUi<D> {
     fn drop(&mut self) {
         unsafe { raw::vision_ui_destroy(&mut self.raw as *mut raw::vision_ui_t) }
     }
+}
+
+const EMPTY_CSTR_BYTES: &[u8; 1] = b"\0";
+
+#[inline]
+fn driver_ops<D: driver::Driver>() -> raw::vision_ui_driver_ops_t {
+    raw::vision_ui_driver_ops_t {
+        action_get: Some(hosted_action_get::<D>),
+        ticks_ms_get: Some(hosted_ticks_ms_get::<D>),
+        delay: Some(hosted_delay::<D>),
+        font_set: Some(hosted_font_set::<D>),
+        font_get: Some(hosted_font_get::<D>),
+        str_draw: Some(hosted_str_draw::<D>),
+        str_utf8_draw: Some(hosted_str_utf8_draw::<D>),
+        str_width_get: Some(hosted_str_width_get::<D>),
+        str_utf8_width_get: Some(hosted_str_utf8_width_get::<D>),
+        str_height_get: Some(hosted_str_height_get::<D>),
+        font_mode_set: Some(hosted_font_mode_set::<D>),
+        font_direction_set: Some(hosted_font_direction_set::<D>),
+        pixel_draw: Some(hosted_pixel_draw::<D>),
+        circle_draw: Some(hosted_circle_draw::<D>),
+        disc_draw: Some(hosted_disc_draw::<D>),
+        box_r_draw: Some(hosted_box_r_draw::<D>),
+        box_draw: Some(hosted_box_draw::<D>),
+        frame_draw: Some(hosted_frame_draw::<D>),
+        frame_r_draw: Some(hosted_frame_r_draw::<D>),
+        line_h_draw: Some(hosted_line_h_draw::<D>),
+        line_v_draw: Some(hosted_line_v_draw::<D>),
+        line_draw: Some(hosted_line_draw::<D>),
+        line_h_dotted_draw: Some(hosted_line_h_dotted_draw::<D>),
+        line_v_dotted_draw: Some(hosted_line_v_dotted_draw::<D>),
+        bmp_draw: Some(hosted_bmp_draw::<D>),
+        color_draw: Some(hosted_color_draw::<D>),
+        clip_window_set: Some(hosted_clip_window_set::<D>),
+        clip_window_reset: Some(hosted_clip_window_reset::<D>),
+        buffer_clear: Some(hosted_buffer_clear::<D>),
+        buffer_send: Some(hosted_buffer_send::<D>),
+        buffer_area_send: Some(hosted_buffer_area_send::<D>),
+        buffer_pointer_get: Some(hosted_buffer_pointer_get::<D>),
+    }
+}
+
+#[inline]
+unsafe fn driver_mut<'a, D>(state: *mut c_void) -> &'a mut D {
+    unsafe { &mut *state.cast::<D>() }
+}
+
+#[inline]
+unsafe fn driver_ref<'a, D>(state: *mut c_void) -> &'a D {
+    unsafe { &*state.cast::<D>() }
+}
+
+#[inline]
+unsafe fn cstr_from_ptr<'a>(value: *const c_char) -> &'a CStr {
+    if value.is_null() {
+        unsafe { CStr::from_bytes_with_nul_unchecked(EMPTY_CSTR_BYTES) }
+    } else {
+        unsafe { CStr::from_ptr(value) }
+    }
+}
+
+#[inline]
+unsafe fn bitmap_from_ptr<'a>(bit_map: *const u8, width: u16, height: u16) -> &'a [u8] {
+    if bit_map.is_null() {
+        &[]
+    } else {
+        unsafe { slice::from_raw_parts(bit_map, bitmap_len(width, height)) }
+    }
+}
+
+#[inline]
+fn action_into_raw(action: Action) -> raw::vision_ui_action_t {
+    match action {
+        Action::None => raw::vision_ui_action_t_UiActionNone,
+        Action::Previous => raw::vision_ui_action_t_UiActionGoPrev,
+        Action::Next => raw::vision_ui_action_t_UiActionGoNext,
+        Action::Enter => raw::vision_ui_action_t_UiActionEnter,
+        Action::Exit => raw::vision_ui_action_t_UiActionExit,
+    }
+}
+
+unsafe extern "C" fn hosted_action_get<D: driver::Driver>(
+    state: *mut c_void,
+) -> raw::vision_ui_action_t {
+    action_into_raw(driver::Input::action(unsafe { driver_mut::<D>(state) }))
+}
+
+unsafe extern "C" fn hosted_ticks_ms_get<D: driver::Driver>(state: *mut c_void) -> u32 {
+    driver::Timing::ticks(unsafe { driver_mut::<D>(state) })
+        .as_millis()
+        .min(u128::from(u32::MAX)) as u32
+}
+
+unsafe extern "C" fn hosted_delay<D: driver::Driver>(state: *mut c_void, ms: u32) {
+    driver::Timing::delay(
+        unsafe { driver_mut::<D>(state) },
+        Duration::from_millis(u64::from(ms)),
+    );
+}
+
+unsafe extern "C" fn hosted_font_set<D: driver::Driver>(state: *mut c_void, font: Font) {
+    driver::Text::set_font(unsafe { driver_mut::<D>(state) }, font);
+}
+
+unsafe extern "C" fn hosted_font_get<D: driver::Driver>(state: *mut c_void) -> Font {
+    driver::Text::font(unsafe { driver_ref::<D>(state) })
+}
+
+unsafe extern "C" fn hosted_str_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    str_: *const c_char,
+) {
+    driver::Text::draw_text(unsafe { driver_mut::<D>(state) }, x, y, unsafe {
+        cstr_from_ptr(str_)
+    });
+}
+
+unsafe extern "C" fn hosted_str_utf8_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    str_: *const c_char,
+) {
+    driver::Text::draw_utf8(unsafe { driver_mut::<D>(state) }, x, y, unsafe {
+        cstr_from_ptr(str_)
+    });
+}
+
+unsafe extern "C" fn hosted_str_width_get<D: driver::Driver>(
+    state: *mut c_void,
+    str_: *const c_char,
+) -> u16 {
+    driver::Text::text_width(unsafe { driver_ref::<D>(state) }, unsafe {
+        cstr_from_ptr(str_)
+    })
+}
+
+unsafe extern "C" fn hosted_str_utf8_width_get<D: driver::Driver>(
+    state: *mut c_void,
+    str_: *const c_char,
+) -> u16 {
+    driver::Text::utf8_width(unsafe { driver_ref::<D>(state) }, unsafe {
+        cstr_from_ptr(str_)
+    })
+}
+
+unsafe extern "C" fn hosted_str_height_get<D: driver::Driver>(state: *mut c_void) -> u16 {
+    driver::Text::text_height(unsafe { driver_ref::<D>(state) })
+}
+
+unsafe extern "C" fn hosted_pixel_draw<D: driver::Driver>(state: *mut c_void, x: u16, y: u16) {
+    driver::Draw::pixel(unsafe { driver_mut::<D>(state) }, x, y);
+}
+
+unsafe extern "C" fn hosted_circle_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    r: u16,
+) {
+    driver::Draw::circle(unsafe { driver_mut::<D>(state) }, x, y, r);
+}
+
+unsafe extern "C" fn hosted_disc_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    r: u16,
+) {
+    driver::Draw::disc(unsafe { driver_mut::<D>(state) }, x, y, r);
+}
+
+unsafe extern "C" fn hosted_box_r_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    w: u16,
+    h: u16,
+    r: u16,
+) {
+    driver::Draw::fill_rounded_rect(unsafe { driver_mut::<D>(state) }, x, y, w, h, r);
+}
+
+unsafe extern "C" fn hosted_box_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    w: u16,
+    h: u16,
+) {
+    driver::Draw::fill_rect(unsafe { driver_mut::<D>(state) }, x, y, w, h);
+}
+
+unsafe extern "C" fn hosted_frame_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    w: u16,
+    h: u16,
+) {
+    driver::Draw::stroke_rect(unsafe { driver_mut::<D>(state) }, x, y, w, h);
+}
+
+unsafe extern "C" fn hosted_frame_r_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    w: u16,
+    h: u16,
+    r: u16,
+) {
+    driver::Draw::stroke_rounded_rect(unsafe { driver_mut::<D>(state) }, x, y, w, h, r);
+}
+
+unsafe extern "C" fn hosted_line_h_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    l: u16,
+) {
+    driver::Draw::hline(unsafe { driver_mut::<D>(state) }, x, y, l);
+}
+
+unsafe extern "C" fn hosted_line_v_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    h: u16,
+) {
+    driver::Draw::vline(unsafe { driver_mut::<D>(state) }, x, y, h);
+}
+
+unsafe extern "C" fn hosted_line_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x1: u16,
+    y1: u16,
+    x2: u16,
+    y2: u16,
+) {
+    driver::Draw::line(unsafe { driver_mut::<D>(state) }, x1, y1, x2, y2);
+}
+
+unsafe extern "C" fn hosted_line_h_dotted_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    l: u16,
+) {
+    driver::Draw::dotted_hline(unsafe { driver_mut::<D>(state) }, x, y, l);
+}
+
+unsafe extern "C" fn hosted_line_v_dotted_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    h: u16,
+) {
+    driver::Draw::dotted_vline(unsafe { driver_mut::<D>(state) }, x, y, h);
+}
+
+unsafe extern "C" fn hosted_bmp_draw<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    w: u16,
+    h: u16,
+    bit_map: *const u8,
+) {
+    driver::Draw::bitmap(unsafe { driver_mut::<D>(state) }, x, y, w, h, unsafe {
+        bitmap_from_ptr(bit_map, w, h)
+    });
+}
+
+unsafe extern "C" fn hosted_color_draw<D: driver::Driver>(state: *mut c_void, color: u8) {
+    driver::Draw::set_color(unsafe { driver_mut::<D>(state) }, color);
+}
+
+unsafe extern "C" fn hosted_font_mode_set<D: driver::Driver>(state: *mut c_void, mode: u8) {
+    driver::Text::set_font_mode(unsafe { driver_mut::<D>(state) }, mode);
+}
+
+unsafe extern "C" fn hosted_font_direction_set<D: driver::Driver>(state: *mut c_void, dir: u8) {
+    driver::Text::set_font_direction(unsafe { driver_mut::<D>(state) }, dir);
+}
+
+unsafe extern "C" fn hosted_clip_window_set<D: driver::Driver>(
+    state: *mut c_void,
+    x0: i16,
+    y0: i16,
+    x1: i16,
+    y1: i16,
+) {
+    driver::Draw::clip_rect(unsafe { driver_mut::<D>(state) }, x0, y0, x1, y1);
+}
+
+unsafe extern "C" fn hosted_clip_window_reset<D: driver::Driver>(state: *mut c_void) {
+    driver::Draw::reset_clip(unsafe { driver_mut::<D>(state) });
+}
+
+unsafe extern "C" fn hosted_buffer_clear<D: driver::Driver>(state: *mut c_void) {
+    driver::Buffer::clear(unsafe { driver_mut::<D>(state) });
+}
+
+unsafe extern "C" fn hosted_buffer_send<D: driver::Driver>(state: *mut c_void) {
+    driver::Buffer::present(unsafe { driver_mut::<D>(state) });
+}
+
+unsafe extern "C" fn hosted_buffer_area_send<D: driver::Driver>(
+    state: *mut c_void,
+    x: u16,
+    y: u16,
+    w: u16,
+    h: u16,
+) {
+    driver::Buffer::present_area(unsafe { driver_mut::<D>(state) }, x, y, w, h);
+}
+
+unsafe extern "C" fn hosted_buffer_pointer_get<D: driver::Driver>(
+    state: *mut c_void,
+) -> *mut c_void {
+    driver::Buffer::buffer_ptr(unsafe { driver_ref::<D>(state) }).unwrap_or(ptr::null_mut())
 }
 
 unsafe extern "C" fn toggle_trampoline<T: 'static>(

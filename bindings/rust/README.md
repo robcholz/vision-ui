@@ -27,6 +27,9 @@ The safe wrapper covers the documented public APIs in `docs/api.md`, including:
 vision-ui = { path = "bindings/rust" }
 ```
 
+Example driver implementation using `embedded-graphics` lives at
+`examples/embedded_graphics_driver.rs`.
+
 By default the crate builds the bundled Vision UI core with the `preset-240x240` native configuration.
 
 Available preset features:

@@ -63,7 +63,7 @@ fn main() {
     let manifest_dir =
         PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("missing CARGO_MANIFEST_DIR"));
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("missing OUT_DIR"));
-    let native_dir = manifest_dir.join("native");
+    let source_dir = manifest_dir.join("../..");
     let selected = load_selected_config();
     let clang_args = selected_clang_args(&selected);
 
@@ -71,11 +71,12 @@ fn main() {
         println!("cargo:rerun-if-env-changed={name}");
     }
     println!("cargo:rerun-if-env-changed=VISION_UI_DEBUG");
-    rerun_if_changed(&native_dir);
+    rerun_if_changed(&source_dir.join("include"));
+    rerun_if_changed(&source_dir.join("src"));
 
     generate_selected_config(&out_dir, &selected, debug_enabled());
-    generate_raw_bindings(&native_dir, &out_dir, &clang_args);
-    compile_native(&native_dir, &clang_args);
+    generate_raw_bindings(&source_dir, &out_dir, &clang_args);
+    compile_native(&source_dir, &clang_args);
 }
 
 fn load_selected_config() -> Vec<(&'static str, u32)> {
@@ -181,8 +182,8 @@ fn generate_selected_config(out_dir: &Path, selected: &[(&str, u32)], debug: boo
         .expect("failed to write selected config");
 }
 
-fn generate_raw_bindings(native_dir: &Path, out_dir: &Path, clang_args: &[String]) {
-    let header = native_dir.join("include/vision/vision_ui.h");
+fn generate_raw_bindings(source_dir: &Path, out_dir: &Path, clang_args: &[String]) {
+    let header = source_dir.join("include/vision/vision_ui.h");
     let bindings = bindgen::Builder::default()
         .header(header.display().to_string())
         .allowlist_function("vision_ui_.*")
@@ -192,7 +193,7 @@ fn generate_raw_bindings(native_dir: &Path, out_dir: &Path, clang_args: &[String
         )
         .merge_extern_blocks(true)
         .use_core()
-        .clang_arg(format!("-I{}", native_dir.join("include").display()))
+        .clang_arg(format!("-I{}", source_dir.join("include").display()))
         .clang_args(clang_args.iter().map(String::as_str))
         .generate()
         .expect("failed to generate raw bindings");
@@ -202,12 +203,12 @@ fn generate_raw_bindings(native_dir: &Path, out_dir: &Path, clang_args: &[String
         .expect("failed to write raw bindings");
 }
 
-fn compile_native(native_dir: &Path, clang_args: &[String]) {
+fn compile_native(source_dir: &Path, clang_args: &[String]) {
     let mut build = cc::Build::new();
     build
-        .include(native_dir.join("include"))
-        .include(native_dir.join("include/vision"))
-        .include(native_dir.join("src"))
+        .include(source_dir.join("include"))
+        .include(source_dir.join("include/vision"))
+        .include(source_dir.join("src"))
         .std("c99");
 
     for arg in clang_args {
@@ -228,7 +229,7 @@ fn compile_native(native_dir: &Path, clang_args: &[String]) {
         "src/vision_ui_item.c",
         "src/vision_ui_renderer.c",
     ] {
-        build.file(native_dir.join(source));
+        build.file(source_dir.join(source));
     }
 
     build.compile("vision_ui_native");

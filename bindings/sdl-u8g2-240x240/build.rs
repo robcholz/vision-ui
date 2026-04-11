@@ -87,7 +87,6 @@ fn compile_simulator_240x240(layout: &BuildLayout) {
         }
     }
 
-    build.file(layout.driver_dir.join("u8g2.c"));
     build.file(layout.driver_dir.join("u8g2_240x240.c"));
     build.file(layout.sdl_common_dir.join("u8x8_sdl_key.c"));
 
