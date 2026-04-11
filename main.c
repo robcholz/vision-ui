@@ -425,7 +425,10 @@ int main() {
             &ui,
             root,
             vision_ui_list_switch_item_new(
-                    &ui, "Test Alert Notification Test 2 Notification Test 2 Notification Test 2", false, alert_test,
+                    &ui,
+                    "Test Alert Notification Test 2 Notification Test 2 Notification Test 2",
+                    false,
+                    alert_test,
                     NULL
             )
     );
