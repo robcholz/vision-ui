@@ -399,7 +399,7 @@ impl VisionUi {
         }
     }
 
-    pub fn show(&mut self) {
+    pub fn initialize_rendering(&mut self) {
         unsafe { raw::vision_ui_render_init(self.raw_mut_ptr()) }
     }
 

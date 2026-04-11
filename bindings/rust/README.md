@@ -87,7 +87,7 @@ let toggle = ui.switch_with("Backlight", true, |ui, enabled| {
 ui.push(root, toggle);
 ui.set_root(root);
 ui.initialize_runtime();
-ui.show();
+ui.initialize_rendering();
 ui.notify("Hello", Duration::from_millis(1200))?;
 # Ok::<(), vui::Error>(())
 ```
