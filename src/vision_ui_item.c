@@ -464,8 +464,6 @@ void vision_ui_selector_exit_current_item(vision_ui_t* ui) {
         vision_ui_user_item_t* selected_user_item = vision_ui_to_list_user_item(selector->selected_item);
         selected_user_item->entering_user_item = false;
         selected_user_item->exiting_user_item = true;
-        selected_user_item->user_item_inited = false;
-        selected_user_item->user_item_looping = false;
         return;
     }
 

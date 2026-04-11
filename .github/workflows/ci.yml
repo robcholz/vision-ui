@@ -23,20 +23,20 @@ jobs:
             .xmake-cache
             .xmake
             build
-          key: ${{ runner.os }}-xmake-${{ hashFiles('xmake.lua', '.github/workflows/ci.yml', 'src/**/*.c', 'include/**/*.h', 'main.c') }}
+          key: ${{ runner.os }}-xmake-${{ hashFiles('xmake.lua', '.github/workflows/ci.yml', 'src/**/*.c', 'include/**/*.h', 'test/**/*.c', 'test/**/*.h', 'test/**/*.sh', 'main.c') }}
           restore-keys: |
             ${{ runner.os }}-xmake-
 
       - name: Cache apt packages
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: clang clang-tidy clang-format libsdl2-dev
+          packages: clang clang-tidy clang-format libsdl2-dev valgrind
           version: 1.0
 
       - name: Install shell dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl bash
+          sudo apt-get install -y curl bash valgrind
 
       - name: Install xmake
         run: |
@@ -66,6 +66,15 @@ jobs:
 
       - name: Build
         run: xmake
+
+      - name: Public API tests
+        run: bash test/run_tests.sh
+
+      - name: Coverage snapshot
+        run: bash test/run_coverage.sh
+
+      - name: Leak check
+        run: bash test/run_leak_check.sh
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
