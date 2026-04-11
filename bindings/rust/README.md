@@ -1,6 +1,6 @@
 # vision-ui
 
-Idiomatic Rust bindings for the Vision UI C library.
+Idiomatic Rust crate for Vision UI, with the C core built by Cargo.
 
 ## Coverage
 
@@ -8,6 +8,7 @@ This crate provides:
 
 - `vision_ui::VisionUi`: a safe, Rust-style wrapper around a `vision_ui_t` instance.
 - `vision_ui::UiRef`: a callback-safe handle for closures invoked by the UI runtime.
+- `vision_ui::config`: grouped Rust config for the compile-time knobs the native code actually uses.
 - `vision_ui::raw`: the generated raw `bindgen` layer for low-level or advanced use.
 - `vision_ui::driver`: Rust-native driver traits inspired by `embedded-hal`.
 
@@ -25,6 +26,52 @@ The safe wrapper covers the documented public APIs in `docs/api.md`, including:
 [dependencies]
 vision-ui = { path = "bindings/rust" }
 ```
+
+By default the crate builds the bundled Vision UI core with the `preset-240x240` native configuration.
+
+Available preset features:
+
+- `preset-240x240` (default)
+- `preset-128x64`
+
+Other build features:
+
+- `debug-overlay` to compile the native C renderer with `DEBUG`, which draws helper outlines for key UI regions
+
+Compile-time config can be overridden from Cargo with environment variables, for example:
+
+```sh
+VISION_UI_SCREEN_WIDTH=128 \
+VISION_UI_SCREEN_HEIGHT=64 \
+cargo build
+```
+
+Precedence is:
+
+1. explicit environment variables
+2. selected preset feature
+3. header defaults in the bundled native source
+
+For the debug overlay, either enable the Cargo feature:
+
+```sh
+cargo build --features debug-overlay
+```
+
+or set:
+
+```sh
+VISION_UI_DEBUG=1 cargo build
+```
+
+The grouped Rust config surface then reflects those values through:
+
+- `vision_ui::config::DISPLAY`
+- `vision_ui::config::SYSTEM`
+- `vision_ui::config::NOTIFICATION`
+- `vision_ui::config::ALERT`
+- `vision_ui::config::LIST_VIEW`
+- `vision_ui::config::ICON_VIEW`
 
 ```rust
 use vision_ui as vui;
@@ -45,26 +92,18 @@ ui.notify("Hello", Duration::from_millis(1200))?;
 # Ok::<(), vui::Error>(())
 ```
 
-## Regeneration
+## Native Build
 
-From `bindings/rust`:
-
-```sh
-bindgen ../../include/vision/vision_ui.h \
-  --raw-line '#![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]' \
-  --allowlist-function 'vision_ui_.*' \
-  --allowlist-type 'vision_.*' \
-  --allowlist-var 'IS_IN_VISION_UI|DEFAULT_LIST_ICON|UiAction.*|ListItem|TitleItem|IconItem|SwitchItem|SliderItem|UserItem|VisionAlloc.*' \
-  --merge-extern-blocks \
-  --rust-edition 2021 \
-  -o src/bindings.rs \
-  -- -I../../include
-```
+- `build.rs` generates the raw FFI module and config constants into `OUT_DIR`.
+- `build.rs` compiles the bundled Vision UI core sources under `native/`.
+- The crate does not bundle a specific driver implementation.
 
 ## Notes
 
 - The top-level API uses Rust-style names and `Duration` instead of C-style setters and raw integer spans.
+- Bitmap inputs are validated with typed wrappers such as `MonoBitmap` and `StartupLogo`.
 - Item callbacks are closure-based through `switch_with`, `slider_with`, and `scene_with`.
 - The wrapper retains strings and bitmap buffers that the C API borrows.
 - Advanced or unsupported operations are still available through `vision_ui::raw`.
-- Your application still needs to link against the Vision UI C library.
+- `native/` is the packaged copy of the core C sources. Refresh it from the repo root with `bindings/rust/scripts/sync-native.sh`.
+- The crate links the bundled Vision UI core automatically, but driver implementations remain outside this crate.

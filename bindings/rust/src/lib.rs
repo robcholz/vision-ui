@@ -5,18 +5,16 @@ use std::rc::{Rc, Weak};
 use std::time::Duration;
 use thiserror::Error;
 
-#[path = "config_bindings.rs"]
-mod config;
+pub mod config;
 pub mod driver;
-#[path = "bindings.rs"]
 pub mod raw;
 
+pub use config::{
+    ALERT, ALLOW_EXIT_BY_USER, DEBUG_OVERLAY, DISPLAY, ICON_SIZE, ICON_VIEW, LIST_VIEW,
+    NOTIFICATION, SCREEN_HEIGHT, SCREEN_WIDTH, SYSTEM,
+};
 pub use raw::vision_ui_font_t as Font;
 pub use raw::vision_ui_icon_t as IconPack;
-
-pub const SCREEN_WIDTH: u16 = config::VISION_UI_SCREEN_WIDTH as u16;
-pub const SCREEN_HEIGHT: u16 = config::VISION_UI_SCREEN_HEIGHT as u16;
-pub const ICON_SIZE: u16 = config::VISION_UI_ICON_VIEW_ICON_SIZE as u16;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
