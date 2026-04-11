@@ -1,6 +1,16 @@
-use std::ffi::{c_void, CStr};
-use std::ptr::NonNull;
-use std::time::Duration;
+#![no_std]
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+use core::ffi::{c_char, c_void, CStr};
+use core::ops::RangeInclusive;
+use core::ptr::{self, NonNull};
+use core::time::Duration;
 use thiserror::Error;
 
 pub mod config;
@@ -42,6 +52,43 @@ impl TryFrom<raw::vision_ui_action_t> for Action {
             other => Err(ActionError::Invalid(other)),
         }
     }
+}
+
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
+pub enum AllocOpError {
+    #[error("unexpected allocation op code {0}")]
+    Invalid(u32),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AllocOp {
+    Malloc,
+    Calloc,
+    Free,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AllocRequest {
+    Malloc { size: usize },
+    Calloc { size: usize, count: usize },
+    Free { ptr: *mut c_void },
+}
+
+impl TryFrom<raw::vision_alloc_op_t> for AllocOp {
+    type Error = AllocOpError;
+
+    fn try_from(value: raw::vision_alloc_op_t) -> Result<Self, Self::Error> {
+        match value {
+            raw::vision_alloc_op_t_VisionAllocMalloc => Ok(Self::Malloc),
+            raw::vision_alloc_op_t_VisionAllocCalloc => Ok(Self::Calloc),
+            raw::vision_alloc_op_t_VisionAllocFree => Ok(Self::Free),
+            other => Err(AllocOpError::Invalid(other)),
+        }
+    }
+}
+
+pub unsafe trait Allocator {
+    fn allocate(request: AllocRequest) -> *mut c_void;
 }
 
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
@@ -119,7 +166,7 @@ impl Text {
         Self(value)
     }
 
-    pub fn as_ptr(self) -> *const std::os::raw::c_char {
+    pub fn as_ptr(self) -> *const c_char {
         self.0.as_ptr()
     }
 
@@ -138,7 +185,7 @@ impl From<&'static CStr> for Text {
 macro_rules! text {
     ($lit:literal) => {{
         $crate::Text::new(
-            ::std::ffi::CStr::from_bytes_with_nul(concat!($lit, "\0").as_bytes())
+            ::core::ffi::CStr::from_bytes_with_nul(concat!($lit, "\0").as_bytes())
                 .expect("text!() requires a string literal without interior NUL"),
         )
     }};
@@ -487,6 +534,18 @@ impl VisionUi {
         self.ui().set_mini_font(font)
     }
 
+    pub fn set_allocator<A: Allocator>(&mut self) {
+        unsafe { raw::vision_ui_allocator_set(self.raw.as_ptr(), Some(allocator_trampoline::<A>)) }
+    }
+
+    pub unsafe fn set_allocator_raw(&mut self, allocator: raw::vision_ui_allocator_t) {
+        unsafe { raw::vision_ui_allocator_set(self.raw.as_ptr(), allocator) }
+    }
+
+    pub fn clear_allocator(&mut self) {
+        unsafe { raw::vision_ui_allocator_set(self.raw.as_ptr(), None) }
+    }
+
     pub fn set_body_font(&mut self, font: Font) {
         self.ui().set_body_font(font)
     }
@@ -549,14 +608,14 @@ impl VisionUi {
         let title_ptr = title.as_ptr();
         let description_ptr = match description {
             Some(text) => text.as_ptr(),
-            None => std::ptr::null(),
+            None => ptr::null(),
         };
         let icon_ptr = match icon {
             Some(bitmap) => {
                 ensure_icon_bitmap(bitmap)?;
                 bitmap.bytes().as_ptr()
             }
-            None => std::ptr::null(),
+            None => ptr::null(),
         };
         let raw = unsafe {
             raw::vision_ui_list_icon_item_new(
@@ -577,7 +636,7 @@ impl VisionUi {
                 label.as_ptr(),
                 initial,
                 None,
-                std::ptr::null_mut(),
+                ptr::null_mut(),
             )
         };
         wrap_item(raw)
@@ -638,7 +697,7 @@ impl VisionUi {
         label: Text,
         initial: i16,
         step: u8,
-        range: std::ops::RangeInclusive<i16>,
+        range: RangeInclusive<i16>,
     ) -> Result<Item, Error> {
         let min = *range.start();
         let max = *range.end();
@@ -651,7 +710,7 @@ impl VisionUi {
                 min,
                 max,
                 None,
-                std::ptr::null_mut(),
+                ptr::null_mut(),
             )
         };
         wrap_item(raw)
@@ -662,7 +721,7 @@ impl VisionUi {
         label: Text,
         initial: i16,
         step: u8,
-        range: std::ops::RangeInclusive<i16>,
+        range: RangeInclusive<i16>,
         binding: &'static SlideBinding<T>,
     ) -> Result<Item, Error> {
         let min = *range.start();
@@ -690,7 +749,7 @@ impl VisionUi {
         label: Text,
         initial: i16,
         step: u8,
-        range: std::ops::RangeInclusive<i16>,
+        range: RangeInclusive<i16>,
         on_changed: F,
     ) -> Result<Item, Error>
     where
@@ -729,7 +788,7 @@ impl VisionUi {
                 None,
                 None,
                 None,
-                std::ptr::null_mut(),
+                ptr::null_mut(),
             )
         };
         wrap_item(raw)
@@ -975,6 +1034,21 @@ fn wrap_item(ptr: *mut raw::vision_ui_list_item_t) -> Result<Item, Error> {
     NonNull::new(ptr)
         .map(Item)
         .ok_or(Error::AllocationFailed("vision_ui_list_item_t"))
+}
+
+unsafe extern "C" fn allocator_trampoline<A: Allocator>(
+    op: raw::vision_alloc_op_t,
+    size: usize,
+    count: usize,
+    ptr: *mut c_void,
+) -> *mut c_void {
+    let request = match op {
+        raw::vision_alloc_op_t_VisionAllocMalloc => AllocRequest::Malloc { size },
+        raw::vision_alloc_op_t_VisionAllocCalloc => AllocRequest::Calloc { size, count },
+        raw::vision_alloc_op_t_VisionAllocFree => AllocRequest::Free { ptr },
+        _ => return ptr::null_mut(),
+    };
+    A::allocate(request)
 }
 
 fn duration_millis_u16(duration: Duration) -> Result<u16, Error> {
