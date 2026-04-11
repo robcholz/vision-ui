@@ -27,6 +27,11 @@ pub use raw::vision_ui_font_t as Font;
 /// Shared list icon pack used by the renderer.
 pub use raw::vision_ui_icon_t as IconPack;
 
+/// Returns the built-in list icon pack used by the native renderer defaults.
+pub fn default_icon_pack() -> IconPack {
+    unsafe { raw::DEFAULT_LIST_ICON }
+}
+
 /// High-level input action returned by the bound driver.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
@@ -436,7 +441,7 @@ struct SceneClosureBindings {
 ///
 /// This is passed into item callbacks so they can interact with the running UI
 /// without exposing low-level callback ABI details.
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct UiRef {
     raw: NonNull<raw::vision_ui_t>,
 }
@@ -456,50 +461,6 @@ impl UiRef {
     /// - a mutable pointer to the active native `vision_ui_t`.
     pub fn raw_mut_ptr(&self) -> *mut raw::vision_ui_t {
         self.raw.as_ptr()
-    }
-
-    /// Reads the current high-level input action from the bound driver.
-    ///
-    /// Returns:
-    /// - `Ok(Action)` when the driver reports a valid Vision UI action.
-    /// - `Err(ActionError::Invalid(_))` when the driver reports an unknown action code.
-    ///
-    /// Behavior:
-    /// - This is a thin safe wrapper over `vision_ui_driver_action_get(...)`.
-    /// - The result reflects the driver's current input state at the time of the call.
-    pub fn action(&self) -> Result<Action, ActionError> {
-        unsafe { raw::vision_ui_driver_action_get(self.raw_ptr()).try_into() }
-    }
-
-    /// Returns the driver's monotonic tick counter as a [`Duration`].
-    ///
-    /// Returns:
-    /// - the current driver tick value interpreted as milliseconds.
-    ///
-    /// Behavior:
-    /// - This is a thin safe wrapper over `vision_ui_driver_ticks_ms_get(...)`.
-    pub fn ticks(&self) -> Duration {
-        Duration::from_millis(u64::from(unsafe {
-            raw::vision_ui_driver_ticks_ms_get(self.raw_ptr())
-        }))
-    }
-
-    /// Delays for roughly the requested duration through the bound driver.
-    ///
-    /// Parameters:
-    /// - `duration`: target delay forwarded to the bound driver in milliseconds.
-    ///
-    /// Returns:
-    /// - `Ok(())` when the duration fits in Vision UI's `u32` millisecond range.
-    /// - `Err(Error::DurationOverflow(_))` when the duration is too large to represent.
-    ///
-    /// Behavior:
-    /// - This forwards to `vision_ui_driver_delay(...)`.
-    /// - The exact sleep or yield behavior depends on the bound backend.
-    pub fn delay(&self, duration: Duration) -> Result<(), Error> {
-        let ms = duration_millis_u32(duration)?;
-        unsafe { raw::vision_ui_driver_delay(self.raw_ptr(), ms) }
-        Ok(())
     }
 
     /// Returns whether the UI has completed its exit flow.
@@ -843,6 +804,7 @@ impl<D: driver::RawHandle> VisionUi<D> {
     ///
     /// Parameters:
     /// - `bitmap`: startup logo validated against the configured screen size.
+    /// - `duration`: how long the logo should remain visible before normal UI rendering begins.
     ///
     /// Returns:
     /// - `Ok(())` when the logo length fits in Vision UI's `u32` byte-count range.
@@ -851,44 +813,15 @@ impl<D: driver::RawHandle> VisionUi<D> {
     /// Behavior:
     /// - The bitmap bytes are borrowed, not copied.
     /// - The logo is shown by the native runtime before normal rendering takes over.
-    pub fn set_startup_logo(&mut self, bitmap: StartupLogo) -> Result<(), Error> {
+    pub fn set_startup_logo(
+        &mut self,
+        bitmap: StartupLogo,
+        duration: Duration,
+    ) -> Result<(), Error> {
         let bitmap = bitmap.bitmap();
-        let span = u32::try_from(bitmap.bytes().len())
-            .map_err(|_| Error::BitmapTooLarge(bitmap.bytes().len()))?;
+        let span = duration_millis_u32(duration)?;
         unsafe { raw::vision_ui_start_logo_set(self.raw_mut_ptr(), bitmap.bytes().as_ptr(), span) };
         Ok(())
-    }
-
-    /// Reads the current high-level input action from the bound driver.
-    ///
-    /// Returns:
-    /// - `Ok(Action)` when the driver reports a valid Vision UI action.
-    /// - `Err(ActionError::Invalid(_))` when the reported action code is unknown.
-    pub fn action(&mut self) -> Result<Action, ActionError> {
-        self.sync_driver_binding();
-        self.ui().action()
-    }
-
-    /// Returns the driver's monotonic tick counter as a [`Duration`].
-    ///
-    /// Returns:
-    /// - the current driver tick value interpreted as milliseconds.
-    pub fn ticks(&mut self) -> Duration {
-        self.sync_driver_binding();
-        self.ui().ticks()
-    }
-
-    /// Delays for roughly the requested duration through the bound driver.
-    ///
-    /// Parameters:
-    /// - `duration`: target delay forwarded to the backend in milliseconds.
-    ///
-    /// Returns:
-    /// - `Ok(())` when the duration fits in Vision UI's integer range.
-    /// - `Err(Error::DurationOverflow(_))` when the duration is too large.
-    pub fn delay(&mut self, duration: Duration) -> Result<(), Error> {
-        self.sync_driver_binding();
-        self.ui().delay(duration)
     }
 
     /// Returns whether the UI has completed its exit flow.

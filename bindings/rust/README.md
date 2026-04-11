@@ -110,7 +110,9 @@ ui.notify(vui::text!("Hello"), Duration::from_millis(1200)) ?;
 
 - `build.rs` generates the raw FFI module and config constants into `OUT_DIR`.
 - `build.rs` compiles the bundled Vision UI core sources under `native/`.
-- The crate does not bundle a specific driver implementation.
+- Driver implementations live outside this crate.
+- The bundled SDL + `u8g2` simulator now lives in the separate crate
+  `bindings/rust-simulator-240x240`.
 
 ## Notes
 
@@ -122,4 +124,4 @@ ui.notify(vui::text!("Hello"), Duration::from_millis(1200)) ?;
 - Advanced or unsupported operations are still available through `vision_ui::raw`.
 - `native/` is the packaged copy of the core C sources. Refresh it from the repo root with
   `bindings/rust/scripts/sync-native.sh`.
-- The crate links the bundled Vision UI core automatically, but driver implementations remain outside this crate.
+- The crate links the bundled Vision UI core automatically.
