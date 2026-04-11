@@ -179,7 +179,13 @@ void vision_ui_driver_box_r_draw(
     }
 }
 
-void vision_ui_driver_box_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h) {
+void vision_ui_driver_box_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+) {
     mock_driver_t* driver = mock_driver_get(ui);
     driver->box_draw_count++;
     driver->last_x = x;
@@ -193,7 +199,13 @@ void vision_ui_driver_box_draw(const vision_ui_t* ui, const uint16_t x, const ui
     }
 }
 
-void vision_ui_driver_frame_draw(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h) {
+void vision_ui_driver_frame_draw(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+) {
     mock_driver_t* driver = mock_driver_get(ui);
     driver->frame_draw_count++;
     driver->last_x = x;
@@ -355,7 +367,13 @@ void vision_ui_driver_buffer_send(const vision_ui_t* ui) {
     mock_driver_get(ui)->buffer_send_count++;
 }
 
-void vision_ui_driver_buffer_area_send(const vision_ui_t* ui, const uint16_t x, const uint16_t y, const uint16_t w, const uint16_t h) {
+void vision_ui_driver_buffer_area_send(
+        const vision_ui_t* ui,
+        const uint16_t x,
+        const uint16_t y,
+        const uint16_t w,
+        const uint16_t h
+) {
     mock_driver_t* driver = mock_driver_get(ui);
     driver->buffer_area_send_count++;
     driver->last_x = x;

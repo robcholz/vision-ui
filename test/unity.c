@@ -66,15 +66,7 @@ void UnityAssertEqualLong(
 ) {
     if (expected != actual) {
         char message[256];
-        snprintf(
-                message,
-                sizeof(message),
-                "expected %s=%ld but %s=%ld",
-                expected_expr,
-                expected,
-                actual_expr,
-                actual
-        );
+        snprintf(message, sizeof(message), "expected %s=%ld but %s=%ld", expected_expr, expected, actual_expr, actual);
         UnityFail(message, file, line_number);
     }
 }
@@ -89,15 +81,7 @@ void UnityAssertEqualUnsignedLong(
 ) {
     if (expected != actual) {
         char message[256];
-        snprintf(
-                message,
-                sizeof(message),
-                "expected %s=%lu but %s=%lu",
-                expected_expr,
-                expected,
-                actual_expr,
-                actual
-        );
+        snprintf(message, sizeof(message), "expected %s=%lu but %s=%lu", expected_expr, expected, actual_expr, actual);
         UnityFail(message, file, line_number);
     }
 }
@@ -112,15 +96,7 @@ void UnityAssertEqualPtr(
 ) {
     if (expected != actual) {
         char message[256];
-        snprintf(
-                message,
-                sizeof(message),
-                "expected %s=%p but %s=%p",
-                expected_expr,
-                expected,
-                actual_expr,
-                actual
-        );
+        snprintf(message, sizeof(message), "expected %s=%p but %s=%p", expected_expr, expected, actual_expr, actual);
         UnityFail(message, file, line_number);
     }
 }

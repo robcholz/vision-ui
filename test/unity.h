@@ -55,19 +55,21 @@ extern int UnityCurrentTestFailed(void);
 #define TEST_ASSERT_FALSE(condition) UnityAssertTrue((condition) == 0, #condition, __FILE__, __LINE__)
 #define TEST_ASSERT_NULL(value) UnityAssertEqualPtr(NULL, (value), "NULL", #value, __FILE__, __LINE__)
 #define TEST_ASSERT_NOT_NULL(value) UnityAssertTrue((value) != NULL, #value " != NULL", __FILE__, __LINE__)
-#define TEST_ASSERT_EQUAL_INT(expected, actual) \
+#define TEST_ASSERT_EQUAL_INT(expected, actual)                                                                        \
     UnityAssertEqualLong((long) (expected), (long) (actual), #expected, #actual, __FILE__, __LINE__)
-#define TEST_ASSERT_EQUAL_UINT(expected, actual) \
-    UnityAssertEqualUnsignedLong((unsigned long) (expected), (unsigned long) (actual), #expected, #actual, __FILE__, __LINE__)
+#define TEST_ASSERT_EQUAL_UINT(expected, actual)                                                                       \
+    UnityAssertEqualUnsignedLong(                                                                                      \
+            (unsigned long) (expected), (unsigned long) (actual), #expected, #actual, __FILE__, __LINE__               \
+    )
 #define TEST_ASSERT_EQUAL_UINT8(expected, actual) TEST_ASSERT_EQUAL_UINT((expected), (actual))
 #define TEST_ASSERT_EQUAL_UINT16(expected, actual) TEST_ASSERT_EQUAL_UINT((expected), (actual))
 #define TEST_ASSERT_EQUAL_UINT32(expected, actual) TEST_ASSERT_EQUAL_UINT((expected), (actual))
 #define TEST_ASSERT_EQUAL_SIZE_T(expected, actual) TEST_ASSERT_EQUAL_UINT((expected), (actual))
-#define TEST_ASSERT_EQUAL_PTR(expected, actual) \
+#define TEST_ASSERT_EQUAL_PTR(expected, actual)                                                                        \
     UnityAssertEqualPtr((expected), (actual), #expected, #actual, __FILE__, __LINE__)
-#define TEST_ASSERT_EQUAL_FLOAT(expected, actual) \
+#define TEST_ASSERT_EQUAL_FLOAT(expected, actual)                                                                      \
     UnityAssertEqualFloat((expected), (actual), 0.0001f, #expected, #actual, __FILE__, __LINE__)
-#define TEST_ASSERT_FLOAT_WITHIN(delta, expected, actual) \
+#define TEST_ASSERT_FLOAT_WITHIN(delta, expected, actual)                                                              \
     UnityAssertEqualFloat((expected), (actual), (delta), #expected, #actual, __FILE__, __LINE__)
 #define TEST_ASSERT_EQUAL_STRING(expected, actual) UnityAssertString((expected), (actual), __FILE__, __LINE__)
 #define TEST_FAIL_MESSAGE(message) UnityFail((message), __FILE__, __LINE__)

@@ -1,8 +1,8 @@
 #include "mock_driver.h"
 #include "unity.h"
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <vision_ui_config.h>
@@ -224,7 +224,9 @@ static void test_item_constructors_and_push_validations(void) {
     artificial_parent.capacity = 1;
     artificial_parent.layer = VISION_UI_MAX_LIST_LAYER;
     artificial_parent.child_list_item = &title;
-    TEST_ASSERT_EQUAL_INT(VisionUiListPushItemMaxLayerExceeded, vision_ui_list_push_item(&ui, &artificial_parent, title));
+    TEST_ASSERT_EQUAL_INT(
+            VisionUiListPushItemMaxLayerExceeded, vision_ui_list_push_item(&ui, &artificial_parent, title)
+    );
 
     TEST_ASSERT_EQUAL_PTR((vision_ui_switch_item_t*) switch_item, vision_ui_to_list_switch_item(switch_item));
     TEST_ASSERT_EQUAL_PTR((vision_ui_slider_item_t*) slider_item, vision_ui_to_list_slider_item(slider_item));
@@ -296,7 +298,8 @@ static void test_nested_navigation_and_user_item_transitions(void) {
     init_ui_with_driver(&ui, &driver);
     vision_ui_list_item_t* root = vision_ui_list_item_new(&ui, 2, false, "root");
     vision_ui_list_item_t* submenu = vision_ui_list_item_new(&ui, 1, false, "submenu");
-    vision_ui_list_item_t* sub_switch = vision_ui_list_switch_item_new(&ui, "sub-switch", false, switch_changed_cb, &state);
+    vision_ui_list_item_t* sub_switch =
+            vision_ui_list_switch_item_new(&ui, "sub-switch", false, switch_changed_cb, &state);
     vision_ui_list_item_t* user =
             vision_ui_list_user_item_new(&ui, "user", user_init_cb, user_loop_cb, user_exit_cb, &state);
 

@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <vision_ui_config.h>
 #include <vision/vision_ui.h>
+#include <vision_ui_config.h>
 
 #define MOCK_DRIVER_BUFFER_SIZE (VISION_UI_SCREEN_WIDTH * (VISION_UI_SCREEN_HEIGHT / 8))
 
