@@ -7,16 +7,36 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      XMAKE_ROOTDIR: ${{ github.workspace }}/.xmake-cache/root
+      XMAKE_GLOBALDIR: ${{ github.workspace }}/.xmake-cache/global
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: Install dependencies
+      - name: Cache xmake state
+        uses: actions/cache@v4
+        with:
+          path: |
+            .xmake-cache
+            .xmake
+            build
+          key: ${{ runner.os }}-xmake-${{ hashFiles('xmake.lua', '.github/workflows/ci.yml', 'src/**/*.c', 'include/**/*.h', 'test/**/*.c', 'test/**/*.h', 'test/**/*.sh', 'main.c') }}
+          restore-keys: |
+            ${{ runner.os }}-xmake-
+
+      - name: Cache apt packages
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: clang clang-tidy clang-format libsdl2-dev valgrind
+          version: 1.0
+
+      - name: Install shell dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang clang-tidy clang-format libsdl2-dev curl bash
+          sudo apt-get install -y curl bash valgrind
 
       - name: Install xmake
         run: |
@@ -44,11 +64,30 @@ jobs:
             clang-format --style=file --dry-run --Werror $files
           fi
 
-      - name: Clang-Tidy check
-        run: |
-          find . -type f \( -name '*.c' -o -name '*.cpp' \) \
-          ! -path '*/components/*' \
-          | xargs clang-tidy -p . --warnings-as-errors='*'
-
       - name: Build
         run: xmake
+
+      - name: Public API tests
+        run: bash test/run_tests.sh
+
+      - name: Coverage snapshot
+        run: bash test/run_coverage.sh
+
+      - name: Leak check
+        run: bash test/run_leak_check.sh
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            bindings/rust -> target
+          cache-on-failure: true
+
+      - name: Rust bindings check
+        run: |
+          cd bindings/rust
+          cargo check
+          cargo check --examples

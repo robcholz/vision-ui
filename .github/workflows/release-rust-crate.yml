@@ -1,0 +1,50 @@
+name: Release Rust Crate
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish-rust-crate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: bindings/rust
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            bindings/rust -> target
+          cache-on-failure: true
+
+      - name: Sync packaged native sources
+        run: bash scripts/sync-native.sh
+
+      - name: Rust format check
+        run: cargo fmt --check
+
+      - name: Rust lint (preset-240x240)
+        run: cargo clippy --all-targets --features alloc,debug-overlay,preset-240x240 -- -D warnings
+
+      - name: Rust lint (preset-128x64)
+        run: cargo clippy --all-targets --no-default-features --features alloc,debug-overlay,preset-128x64 -- -D warnings
+
+      - name: Rust build
+        run: cargo build --locked
+
+      - name: Publish crate
+        run: cargo publish --locked

@@ -1,0 +1,107 @@
+[package]
+name = "vision-ui"
+version = "0.1.1"
+edition = "2024"
+authors = ["Finn Sheng"]
+categories = ["gui", "embedded", "api-bindings", "no-std", "rendering::graphics-api"]
+license = "GPL-3.0-only"
+description = "Idiomatic Rust crate for Vision UI"
+repository = "https://github.com/robcholz/vision-ui"
+build = "build.rs"
+include = [
+    "Cargo.toml",
+    "README.md",
+    "build.rs",
+    "examples/**",
+    "scripts/**",
+    "src/**",
+    "native/**",
+]
+
+[lib]
+name = "vision_ui"
+path = "src/lib.rs"
+
+[features]
+default = ["preset-240x240"]
+alloc = []
+debug-overlay = []
+preset-240x240 = []
+preset-128x64 = []
+sdl-example = []
+
+[dependencies]
+thiserror = "2"
+
+[dev-dependencies]
+embedded-graphics = "0.8"
+minifb = "0.28"
+# local only
+# sdl-u8g2-240x240 = { path = "../sdl-u8g2-240x240" }
+
+[build-dependencies]
+bindgen = "0.72"
+cc = "1"
+
+[[example]]
+name = "sdl"
+required-features = ["sdl-example"]
+
+[workspace.lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "deny", priority = -1 }
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "deny"
+unimplemented = "deny"
+todo = "warn"
+dbg_macro = "warn"
+clone_on_ref_ptr = "warn"
+rc_clone_in_vec_init = "warn"
+large_stack_arrays = "warn"
+large_const_arrays = "warn"
+async_yields_async = "deny"
+mutex_atomic = "deny"
+mutex_integer = "deny"
+rc_mutex = "deny"
+unused_async = "deny"
+await_holding_lock = "deny"
+large_futures = "deny"
+future_not_send = "deny"
+redundant_else = "deny"
+needless_continue = "deny"
+needless_raw_string_hashes = "deny"
+or_fun_call = "deny"
+cognitive_complexity = "deny"
+useless_let_if_seq = "deny"
+use_self = "deny"
+tuple_array_conversions = "deny"
+trait_duplication_in_bounds = "deny"
+suspicious_operation_groupings = "deny"
+string_lit_as_bytes = "deny"
+significant_drop_tightening = "deny"
+significant_drop_in_scrutinee = "deny"
+redundant_clone = "deny"
+# option_if_let_else = "deny"
+needless_pass_by_ref_mut = "deny"
+needless_collect = "deny"
+missing_const_for_fn = "deny"
+iter_with_drain = "deny"
+iter_on_single_items = "deny"
+iter_on_empty_collections = "deny"
+# fallible_impl_from = "deny"
+equatable_if_let = "deny"
+collection_is_never_read = "deny"
+branches_sharing_code = "deny"
+pathbuf_init_then_push = "deny"
+option_as_ref_cloned = "deny"
+large_types_passed_by_value = "deny"
+# implicit_clone = "deny"
+expl_impl_clone_on_copy = "deny"
+copy_iterator = "deny"
+cloned_instead_of_copied = "deny"
+# self_only_used_in_recursion = "deny" // Since 1.92.0
+unnecessary_self_imports = "deny"
+unused_trait_names = "deny"
+wildcard_imports = "deny"
+unnecessary_wraps = "deny"

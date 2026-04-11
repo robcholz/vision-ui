@@ -45,6 +45,7 @@ before integrating the library into firmware.
 - [`docs/api.md`](docs/api.md): public API reference grouped by task.
 - [`docs/config.md`](docs/config.md): configuration reference for layout, spacing, and animation constants.
 - [`docs/project-layout.md`](docs/project-layout.md): repository structure and where each major piece lives.
+- [`bindings/rust/README.md`](bindings/rust/README.md): safe Rust `vision-ui` bindings for the core C API.
 
 For a concrete desktop integration, see the simulator demo in [`main.cpp`](main.cpp).
 

@@ -6,7 +6,8 @@
 
 - 使用编译宏，例如 `-DCONFIG_VISION_UI_SCREEN_WIDTH=128`，覆盖默认值。
 - 优先从屏幕尺寸开始，再调列表行高，然后调间距。
-- 除非你明确想让选择器看起来和列表框高度不同，否则让 `VISION_UI_LIST_SELECTOR_FIXED_HEIGHT` 等于 `VISION_UI_LIST_FRAME_FIXED_HEIGHT`。
+- 除非你明确想让选择器看起来和列表框高度不同，否则让 `VISION_UI_LIST_SELECTOR_FIXED_HEIGHT` 等于
+  `VISION_UI_LIST_FRAME_FIXED_HEIGHT`。
 - 头文件底部标注为 `DO NOT EDIT` 的那一块应视为内部实现。
 
 ## 布局示意
@@ -85,14 +86,14 @@ target_compile_definitions(vision_ui PUBLIC
 
 这些值影响整个 UI：
 
-| 宏                                        | 默认值 | 作用 |
-|-------------------------------------------|--------|------|
-| `VISION_UI_SCREEN_HEIGHT`                 | `240`  | 屏幕高度，单位像素。 |
-| `VISION_UI_SCREEN_WIDTH`                  | `240`  | 屏幕宽度，单位像素。 |
-| `VISION_UI_ALLOW_EXIT_BY_USER`            | `0`    | 是否允许用户从顶层列表退出 UI。 |
-| `VISION_UI_MAX_LIST_LAYER`                | `10`   | 列表容器的最大嵌套层数。 |
-| `VISION_UI_EXIT_ANIMATION_DURATION_MS`    | `180`  | 退出过渡时长。 |
-| `VISION_UI_ENTER_ANIMATION_DURATION_MS`   | `200`  | 进入过渡时长。 |
+| 宏                                       | 默认值   | 作用                |
+|-----------------------------------------|-------|-------------------|
+| `VISION_UI_SCREEN_HEIGHT`               | `240` | 屏幕高度，单位像素。        |
+| `VISION_UI_SCREEN_WIDTH`                | `240` | 屏幕宽度，单位像素。        |
+| `VISION_UI_ALLOW_EXIT_BY_USER`          | `0`   | 是否允许用户从顶层列表退出 UI。 |
+| `VISION_UI_MAX_LIST_LAYER`              | `10`  | 列表容器的最大嵌套层数。      |
+| `VISION_UI_EXIT_ANIMATION_DURATION_MS`  | `180` | 退出过渡时长。           |
+| `VISION_UI_ENTER_ANIMATION_DURATION_MS` | `200` | 进入过渡时长。           |
 
 说明：
 
@@ -104,13 +105,13 @@ target_compile_definitions(vision_ui PUBLIC
 
 这些值控制叠加在当前页面上的临时提示：
 
-| 宏                                            | 默认值 | 作用 |
-|-----------------------------------------------|--------|------|
-| `VISION_UI_NOTIFICATION_HEIGHT`               | `15`   | 通知条高度。 |
-| `VISION_UI_NOTIFICATION_WIDTH`                | `20`   | 通知文本左右额外留白。 |
-| `VISION_UI_NOTIFICATION_DISMISS_DURATION_MS`  | `1500` | 通知开始消失前停留的时长。 |
-| `VISION_UI_ALERT_HEIGHT`                      | `20`   | 居中警告的高度。 |
-| `VISION_UI_ALERT_WIDTH`                       | `20`   | 警告文本左右额外留白。 |
+| 宏                                            | 默认值    | 作用            |
+|----------------------------------------------|--------|---------------|
+| `VISION_UI_NOTIFICATION_HEIGHT`              | `15`   | 通知条高度。        |
+| `VISION_UI_NOTIFICATION_WIDTH`               | `20`   | 通知文本左右额外留白。   |
+| `VISION_UI_NOTIFICATION_DISMISS_DURATION_MS` | `1500` | 通知开始消失前停留的时长。 |
+| `VISION_UI_ALERT_HEIGHT`                     | `20`   | 居中警告的高度。      |
+| `VISION_UI_ALERT_WIDTH`                      | `20`   | 警告文本左右额外留白。   |
 
 实用建议：
 
@@ -122,14 +123,14 @@ target_compile_definitions(vision_ui PUBLIC
 
 这些值控制普通列表视图里各行在垂直方向上的位置：
 
-| 宏                                             | 默认值 | 作用 |
-|------------------------------------------------|--------|------|
-| `VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING`  | `0`    | 第一条标题或第一行距顶部的留白。 |
-| `VISION_UI_LIST_TITLE_TO_FRAME_PADDING`        | `4`    | 标题行与下一条可选中行之间的间距。 |
-| `VISION_UI_LIST_FRAME_BETWEEN_PADDING`         | `2`    | 普通列表行之间的间距。 |
-| `VISION_UI_LIST_FRAME_FIXED_HEIGHT`            | `15`   | 每一条列表行的高度。 |
-| `VISION_UI_LIST_SELECTOR_FIXED_HEIGHT`         | `15`   | 动画选择器的高度。 |
-| `VISION_UI_LIST_ENTRY_ANIMATION`               | `0`    | 进入列表时各行是否执行入场动画。 |
+| 宏                                             | 默认值  | 作用                |
+|-----------------------------------------------|------|-------------------|
+| `VISION_UI_LIST_TITLE_TO_DISPLAY_TOP_PADDING` | `0`  | 第一条标题或第一行距顶部的留白。  |
+| `VISION_UI_LIST_TITLE_TO_FRAME_PADDING`       | `4`  | 标题行与下一条可选中行之间的间距。 |
+| `VISION_UI_LIST_FRAME_BETWEEN_PADDING`        | `2`  | 普通列表行之间的间距。       |
+| `VISION_UI_LIST_FRAME_FIXED_HEIGHT`           | `15` | 每一条列表行的高度。        |
+| `VISION_UI_LIST_SELECTOR_FIXED_HEIGHT`        | `15` | 动画选择器的高度。         |
+| `VISION_UI_LIST_ENTRY_ANIMATION`              | `0`  | 进入列表时各行是否执行入场动画。  |
 
 它们的组合方式：
 
@@ -147,18 +148,18 @@ target_compile_definitions(vision_ui PUBLIC
 
 这些值主要对应 `layout.png` 里展示的那部分：
 
-| 宏                                                   | 默认值 | 作用 |
-|------------------------------------------------------|--------|------|
-| `VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING`      | `4`    | 屏幕左边缘到行头图标区域的距离。 |
-| `VISION_UI_LIST_HEADER_MAX_WIDTH`                    | `7`    | 头部图标区域保留宽度。 |
-| `VISION_UI_LIST_HEADER_MAX_HEIGHT`                   | `7`    | 头部图标区域保留高度。 |
-| `VISION_UI_LIST_HEADER_TO_TEXT_PADDING`              | `2`    | 图标区域到文本区域的间距。 |
-| `VISION_UI_LIST_FOOTER_MAX_WIDTH`                    | `19`   | 普通列表项右侧 footer 区域的保留宽度。 |
-| `VISION_UI_LIST_FOOTER_MAX_HEIGHT`                   | `11`   | footer 区域保留高度。 |
-| `VISION_UI_LIST_SLIDER_FOOTER_WIDTH`                 | `10`   | 滑块行专用的 footer 宽度。 |
-| `VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING`  | `10`   | footer 区域到滚动条之间的间距。 |
-| `VISION_UI_LIST_FOOTER_TO_LEFT_PADDING`              | `10`   | 文本区域和 footer 区域之间保留的最小间距。 |
-| `VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING`    | `3`    | 选择器边框与内部内容之间的内边距。 |
+| 宏                                                   | 默认值  | 作用                        |
+|-----------------------------------------------------|------|---------------------------|
+| `VISION_UI_LIST_HEADER_TO_LEFT_DISPLAY_PADDING`     | `4`  | 屏幕左边缘到行头图标区域的距离。          |
+| `VISION_UI_LIST_HEADER_MAX_WIDTH`                   | `7`  | 头部图标区域保留宽度。               |
+| `VISION_UI_LIST_HEADER_MAX_HEIGHT`                  | `7`  | 头部图标区域保留高度。               |
+| `VISION_UI_LIST_HEADER_TO_TEXT_PADDING`             | `2`  | 图标区域到文本区域的间距。             |
+| `VISION_UI_LIST_FOOTER_MAX_WIDTH`                   | `19` | 普通列表项右侧 footer 区域的保留宽度。   |
+| `VISION_UI_LIST_FOOTER_MAX_HEIGHT`                  | `11` | footer 区域保留高度。            |
+| `VISION_UI_LIST_SLIDER_FOOTER_WIDTH`                | `10` | 滑块行专用的 footer 宽度。         |
+| `VISION_UI_LIST_FOOTER_RIGHT_TO_SCROLL_BAR_PADDING` | `10` | footer 区域到滚动条之间的间距。       |
+| `VISION_UI_LIST_FOOTER_TO_LEFT_PADDING`             | `10` | 文本区域和 footer 区域之间保留的最小间距。 |
+| `VISION_UI_LIST_SELECTOR_TO_INNER_WIDGET_PADDING`   | `3`  | 选择器边框与内部内容之间的内边距。         |
 
 屏幕上的含义：
 
@@ -184,12 +185,12 @@ target_compile_definitions(vision_ui PUBLIC
 
 这些值用于调节列表行里的滚动行为：
 
-| 宏                                               | 默认值 | 作用 |
-|--------------------------------------------------|--------|------|
-| `VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S`          | `15`   | 过长列表标签的水平滚动速度。 |
-| `VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS`            | `1000` | 文本滚动到边缘时的停顿时间。 |
-| `VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S`  | `5`    | 过长滑块数值的滚动速度。 |
-| `VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS`    | `1500` | 滑块数值滚动到边缘时的停顿时间。 |
+| 宏                                               | 默认值    | 作用               |
+|-------------------------------------------------|--------|------------------|
+| `VISION_UI_LIST_TEXT_SCROLL_SPEED_PX_S`         | `15`   | 过长列表标签的水平滚动速度。   |
+| `VISION_UI_LIST_TEXT_SCROLL_PAUSE_MS`           | `1000` | 文本滚动到边缘时的停顿时间。   |
+| `VISION_UI_LIST_SLIDER_VALUE_SCROLL_SPEED_PX_S` | `5`    | 过长滑块数值的滚动速度。     |
+| `VISION_UI_LIST_SLIDER_VALUE_SCROLL_PAUSE_MS`   | `1500` | 滑块数值滚动到边缘时的停顿时间。 |
 
 实用建议：
 
@@ -201,21 +202,21 @@ target_compile_definitions(vision_ui PUBLIC
 
 这些值控制另一种图标式页面布局：
 
-| 宏                                                       | 默认值 | 作用 |
-|----------------------------------------------------------|--------|------|
-| `VISION_UI_ICON_VIEW_ITEM_SPACING`                       | `15`   | 图标之间的水平间距。 |
-| `VISION_UI_ICON_VIEW_ICON_SIZE`                          | `100`  | 图标盒子的像素尺寸。 |
-| `VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING`        | `5`    | 图标区到屏幕顶部的留白。 |
-| `VISION_UI_ICON_VIEW_ICON_TO_TITLE_AREA_PADDING`         | `10`   | 图标与下方标题区之间的间距。 |
-| `VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT`                  | `70`   | 标题区保留高度。 |
-| `VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING`  | `0`    | 垂直标题条左侧留白。 |
-| `VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH`                    | `9`    | 标题条宽度。 |
-| `VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING`         | `10`   | 标题条到标题文本的间距。 |
-| `VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING` | `15`   | 标题文本区域右侧最小留白。 |
-| `VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING`  | `20`   | 标题块与描述文本之间的间距。 |
-| `VISION_UI_ICON_VIEW_DESCRIPTION_AREA_HEIGHT`            | `35`   | 描述区保留高度。 |
-| `VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING` | `3`    | 描述文本左右最小留白。 |
-| `VISION_UI_ICON_VIEW_SCROLL_SPEED`                       | `85`   | 图标切换时的动画速度。 |
+| 宏                                                        | 默认值   | 作用             |
+|----------------------------------------------------------|-------|----------------|
+| `VISION_UI_ICON_VIEW_ITEM_SPACING`                       | `15`  | 图标之间的水平间距。     |
+| `VISION_UI_ICON_VIEW_ICON_SIZE`                          | `100` | 图标盒子的像素尺寸。     |
+| `VISION_UI_ICON_VIEW_ICON_TO_TOP_DISPLAY_PADDING`        | `5`   | 图标区到屏幕顶部的留白。   |
+| `VISION_UI_ICON_VIEW_ICON_TO_TITLE_AREA_PADDING`         | `10`  | 图标与下方标题区之间的间距。 |
+| `VISION_UI_ICON_VIEW_TITLE_AREA_HEIGHT`                  | `70`  | 标题区保留高度。       |
+| `VISION_UI_ICON_VIEW_TITLE_BAR_TO_LEFT_DISPLAY_PADDING`  | `0`   | 垂直标题条左侧留白。     |
+| `VISION_UI_ICON_VIEW_TITLE_BAR_WIDTH`                    | `9`   | 标题条宽度。         |
+| `VISION_UI_ICON_VIEW_TITLE_BAR_TO_TITLE_PADDING`         | `10`  | 标题条到标题文本的间距。   |
+| `VISION_UI_ICON_VIEW_TITLE_TO_RIGHT_DISPLAY_MIN_PADDING` | `15`  | 标题文本区域右侧最小留白。  |
+| `VISION_UI_ICON_VIEW_TITLE_AREA_TO_DESCRIPTION_PADDING`  | `20`  | 标题块与描述文本之间的间距。 |
+| `VISION_UI_ICON_VIEW_DESCRIPTION_AREA_HEIGHT`            | `35`  | 描述区保留高度。       |
+| `VISION_UI_ICON_VIEW_DESCRIPTION_TO_DISPLAY_MIN_SPACING` | `3`   | 描述文本左右最小留白。    |
+| `VISION_UI_ICON_VIEW_SCROLL_SPEED`                       | `85`  | 图标切换时的动画速度。    |
 
 推荐做法：
 
