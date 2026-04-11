@@ -280,7 +280,9 @@ void vision_ui_selector_go_next_item(vision_ui_t* ui) {
             selected_slider_item->value = selected_slider_item->value_max;
         }
         if (selected_slider_item->on_changed != NULL) {
-            selected_slider_item->on_changed(ui, selected_slider_item->value, selected_slider_item->on_changed_user_data);
+            selected_slider_item->on_changed(
+                    ui, selected_slider_item->value, selected_slider_item->on_changed_user_data
+            );
         }
         return;
     }
@@ -315,7 +317,9 @@ void vision_ui_selector_go_prev_item(vision_ui_t* ui) {
             selected_slider_item->value = selected_slider_item->value_min;
         }
         if (selected_slider_item->on_changed != NULL) {
-            selected_slider_item->on_changed(ui, selected_slider_item->value, selected_slider_item->on_changed_user_data);
+            selected_slider_item->on_changed(
+                    ui, selected_slider_item->value, selected_slider_item->on_changed_user_data
+            );
         }
         return;
     }
@@ -374,7 +378,9 @@ void vision_ui_selector_jump_to_selected_item(vision_ui_t* ui) {
         vision_ui_switch_item_t* selected_switch_item = vision_ui_to_list_switch_item(selector->selected_item);
         selected_switch_item->value = !selected_switch_item->value;
         if (selected_switch_item->on_changed != NULL) {
-            selected_switch_item->on_changed(ui, selected_switch_item->value, selected_switch_item->on_changed_user_data);
+            selected_switch_item->on_changed(
+                    ui, selected_switch_item->value, selected_switch_item->on_changed_user_data
+            );
         }
         return;
     }
