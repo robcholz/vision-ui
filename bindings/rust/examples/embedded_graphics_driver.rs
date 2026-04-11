@@ -45,21 +45,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     })
 }
 
+struct EmbeddedMonoFont {
+    mono: &'static MonoFont<'static>,
+}
+
+impl EmbeddedMonoFont {
+    const fn new(mono: &'static MonoFont<'static>) -> Self {
+        Self { mono }
+    }
+}
+
+static TITLE_FONT_FACE: EmbeddedMonoFont = EmbeddedMonoFont::new(&FONT_10X20);
+static SUBTITLE_FONT_FACE: EmbeddedMonoFont = EmbeddedMonoFont::new(&FONT_8X13_BOLD);
+static BODY_FONT_FACE: EmbeddedMonoFont = EmbeddedMonoFont::new(&FONT_6X10);
+
 fn title_font() -> Font {
-    font_handle(&FONT_10X20)
+    font_handle(&TITLE_FONT_FACE)
 }
 
 fn subtitle_font() -> Font {
-    font_handle(&FONT_8X13_BOLD)
+    font_handle(&SUBTITLE_FONT_FACE)
 }
 
 fn body_font() -> Font {
-    font_handle(&FONT_6X10)
+    font_handle(&BODY_FONT_FACE)
 }
 
-fn font_handle(font: &'static MonoFont<'static>) -> Font {
+fn font_handle(font: &'static EmbeddedMonoFont) -> Font {
     Font {
-        font: (font as *const MonoFont<'static>).cast(),
+        font: ptr::from_ref(font).cast::<c_void>(),
         top_compensation: 0,
         bottom_compensation: 0,
     }
@@ -71,6 +85,7 @@ struct WindowDisplay {
     pixels: Vec<BinaryColor>,
     frame: Vec<u32>,
     clip: Option<Rectangle>,
+    draw_mode: DrawMode,
     window: Window,
 }
 
@@ -104,12 +119,17 @@ impl WindowDisplay {
             pixels: vec![BinaryColor::Off; width_usize * height_usize],
             frame: vec![0x000000; width_usize * height_usize],
             clip: None,
+            draw_mode: DrawMode::Set,
             window,
         })
     }
 
     fn set_clip(&mut self, clip: Option<Rectangle>) {
         self.clip = clip;
+    }
+
+    fn set_draw_mode(&mut self, draw_mode: DrawMode) {
+        self.draw_mode = draw_mode;
     }
 
     fn clear(&mut self, color: BinaryColor) {
@@ -180,7 +200,13 @@ impl DrawTarget for WindowDisplay {
             }
 
             let index = self.pixel_index(point);
-            self.pixels[index] = color;
+            self.pixels[index] = match self.draw_mode {
+                DrawMode::Clear | DrawMode::Set => color,
+                DrawMode::Xor => match self.pixels[index] {
+                    BinaryColor::Off => BinaryColor::On,
+                    BinaryColor::On => BinaryColor::Off,
+                },
+            };
         }
 
         Ok(())
@@ -193,10 +219,17 @@ impl OriginDimensions for WindowDisplay {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum DrawMode {
+    Clear,
+    Set,
+    Xor,
+}
+
 struct EmbeddedGraphicsDriver {
     display: WindowDisplay,
     current_font: Font,
-    draw_color: BinaryColor,
+    draw_mode: DrawMode,
     font_mode: u8,
     font_direction: u8,
     clip: Option<Rectangle>,
@@ -208,7 +241,7 @@ impl EmbeddedGraphicsDriver {
         Self {
             display,
             current_font: body_font(),
-            draw_color: BinaryColor::On,
+            draw_mode: DrawMode::Set,
             font_mode: 0,
             font_direction: 0,
             clip: None,
@@ -216,32 +249,36 @@ impl EmbeddedGraphicsDriver {
         }
     }
 
-    fn sync_clip(&mut self) {
+    fn sync_state(&mut self) {
         self.display.set_clip(self.clip);
+        self.display.set_draw_mode(self.draw_mode);
     }
 
-    fn active_font(&self) -> &'static MonoFont<'static> {
-        let font_ptr = self.current_font.font;
+    fn draw_color(&self) -> BinaryColor {
+        match self.draw_mode {
+            DrawMode::Clear => BinaryColor::Off,
+            DrawMode::Set | DrawMode::Xor => BinaryColor::On,
+        }
+    }
 
-        if font_ptr == ptr::from_ref(&FONT_10X20).cast::<c_void>() {
-            &FONT_10X20
-        } else if font_ptr == ptr::from_ref(&FONT_8X13_BOLD).cast::<c_void>() {
-            &FONT_8X13_BOLD
+    fn active_font(&self) -> &'static EmbeddedMonoFont {
+        if self.current_font.font.is_null() {
+            &BODY_FONT_FACE
         } else {
-            &FONT_6X10
+            unsafe { &*self.current_font.font.cast::<EmbeddedMonoFont>() }
         }
     }
 
     fn text_style(&self) -> MonoTextStyle<'static, BinaryColor> {
         let builder = MonoTextStyleBuilder::new()
-            .font(self.active_font())
-            .text_color(self.draw_color);
+            .font(self.active_font().mono)
+            .text_color(self.draw_color());
 
         if self.font_mode == 0 {
             builder.build()
         } else {
             builder
-                .background_color(background_color(self.draw_color))
+                .background_color(background_color(self.draw_color()))
                 .build()
         }
     }
@@ -277,7 +314,7 @@ impl DriverText for EmbeddedGraphicsDriver {
     }
 
     fn draw_text(&mut self, x: u16, y: u16, text: &CStr) {
-        self.sync_clip();
+        self.sync_state();
 
         let value = text.to_str().unwrap_or_default();
         let position = Point::new(i32::from(x), self.adjusted_baseline(y));
@@ -306,7 +343,7 @@ impl DriverText for EmbeddedGraphicsDriver {
     }
 
     fn text_height(&self) -> u16 {
-        let font = self.active_font();
+        let font = self.active_font().mono;
         let adjusted = (font.character_size.height.min(i32::MAX as u32) as i32)
             + i32::from(self.current_font.top_compensation);
         adjusted.clamp(0, i32::from(u16::MAX)) as u16
@@ -323,13 +360,13 @@ impl DriverText for EmbeddedGraphicsDriver {
 
 impl Draw for EmbeddedGraphicsDriver {
     fn pixel(&mut self, x: u16, y: u16) {
-        self.sync_clip();
-        let _ =
-            Pixel(Point::new(i32::from(x), i32::from(y)), self.draw_color).draw(&mut self.display);
+        self.sync_state();
+        let _ = Pixel(Point::new(i32::from(x), i32::from(y)), self.draw_color())
+            .draw(&mut self.display);
     }
 
     fn circle(&mut self, x: u16, y: u16, radius: u16) {
-        self.sync_clip();
+        self.sync_state();
 
         let diameter = u32::from(radius) * 2;
         let top_left = Point::new(
@@ -337,12 +374,12 @@ impl Draw for EmbeddedGraphicsDriver {
             i32::from(y) - i32::from(radius),
         );
         let circle = Circle::new(top_left, diameter)
-            .into_styled(PrimitiveStyle::with_stroke(self.draw_color, 1));
+            .into_styled(PrimitiveStyle::with_stroke(self.draw_color(), 1));
         let _ = circle.draw(&mut self.display);
     }
 
     fn disc(&mut self, x: u16, y: u16, radius: u16) {
-        self.sync_clip();
+        self.sync_state();
 
         let diameter = u32::from(radius) * 2;
         let top_left = Point::new(
@@ -350,7 +387,7 @@ impl Draw for EmbeddedGraphicsDriver {
             i32::from(y) - i32::from(radius),
         );
         let circle =
-            Circle::new(top_left, diameter).into_styled(PrimitiveStyle::with_fill(self.draw_color));
+            Circle::new(top_left, diameter).into_styled(PrimitiveStyle::with_fill(self.draw_color()));
         let _ = circle.draw(&mut self.display);
     }
 
@@ -359,24 +396,24 @@ impl Draw for EmbeddedGraphicsDriver {
     }
 
     fn fill_rect(&mut self, x: u16, y: u16, width: u16, height: u16) {
-        self.sync_clip();
+        self.sync_state();
 
         let rect = Rectangle::new(
             Point::new(i32::from(x), i32::from(y)),
             Size::new(u32::from(width), u32::from(height)),
         )
-        .into_styled(PrimitiveStyle::with_fill(self.draw_color));
+        .into_styled(PrimitiveStyle::with_fill(self.draw_color()));
         let _ = rect.draw(&mut self.display);
     }
 
     fn stroke_rect(&mut self, x: u16, y: u16, width: u16, height: u16) {
-        self.sync_clip();
+        self.sync_state();
 
         let rect = Rectangle::new(
             Point::new(i32::from(x), i32::from(y)),
             Size::new(u32::from(width), u32::from(height)),
         )
-        .into_styled(PrimitiveStyle::with_stroke(self.draw_color, 1));
+        .into_styled(PrimitiveStyle::with_stroke(self.draw_color(), 1));
         let _ = rect.draw(&mut self.display);
     }
 
@@ -393,13 +430,13 @@ impl Draw for EmbeddedGraphicsDriver {
     }
 
     fn line(&mut self, x1: u16, y1: u16, x2: u16, y2: u16) {
-        self.sync_clip();
+        self.sync_state();
 
         let line = Line::new(
             Point::new(i32::from(x1), i32::from(y1)),
             Point::new(i32::from(x2), i32::from(y2)),
         )
-        .into_styled(PrimitiveStyle::with_stroke(self.draw_color, 1));
+        .into_styled(PrimitiveStyle::with_stroke(self.draw_color(), 1));
         let _ = line.draw(&mut self.display);
     }
 
@@ -416,7 +453,7 @@ impl Draw for EmbeddedGraphicsDriver {
     }
 
     fn bitmap(&mut self, x: u16, y: u16, width: u16, _height: u16, bitmap: &[u8]) {
-        self.sync_clip();
+        self.sync_state();
 
         let raw = ImageRaw::<BinaryColor>::new(bitmap, u32::from(width));
         let image = Image::new(&raw, Point::new(i32::from(x), i32::from(y)));
@@ -424,9 +461,11 @@ impl Draw for EmbeddedGraphicsDriver {
     }
 
     fn set_color(&mut self, color: u8) {
-        self.draw_color = match color {
-            0 => BinaryColor::Off,
-            _ => BinaryColor::On,
+        self.draw_mode = match color {
+            0 => DrawMode::Clear,
+            1 => DrawMode::Set,
+            2 => DrawMode::Xor,
+            _ => DrawMode::Set,
         };
     }
 

@@ -251,22 +251,22 @@ void vision_ui_allocator_set(
 
 ### 基础图元
 
-| 函数                                                                  | 作用         |
-|---------------------------------------------------------------------|------------|
-| `vision_ui_driver_pixel_draw(...)`                                  | 画一个像素。     |
-| `vision_ui_driver_circle_draw(...)`                                 | 画圆形轮廓。     |
-| `vision_ui_driver_disc_draw(...)`                                   | 画实心圆。      |
-| `vision_ui_driver_box_r_draw(...)`                                  | 画带圆角的实心矩形。 |
-| `vision_ui_driver_box_draw(...)`                                    | 画实心矩形。     |
-| `vision_ui_driver_frame_draw(...)`                                  | 画矩形边框。     |
-| `vision_ui_driver_frame_r_draw(...)`                                | 画圆角矩形边框。   |
-| `vision_ui_driver_line_h_draw(...)`                                 | 画水平线。      |
-| `vision_ui_driver_line_v_draw(...)`                                 | 画垂直线。      |
-| `vision_ui_driver_line_draw(...)`                                   | 画任意直线。     |
-| `vision_ui_driver_line_h_dotted_draw(...)`                          | 画水平虚线。     |
-| `vision_ui_driver_line_v_dotted_draw(...)`                          | 画垂直虚线。     |
-| `vision_ui_driver_bmp_draw(...)`                                    | 绘制位图。      |
-| `vision_ui_driver_color_draw(const vision_ui_t* ui, uint8_t color)` | 修改当前绘制颜色。  |
+| 函数                                                                  | 作用                                 |
+|---------------------------------------------------------------------|------------------------------------|
+| `vision_ui_driver_pixel_draw(...)`                                  | 画一个像素。                             |
+| `vision_ui_driver_circle_draw(...)`                                 | 画圆形轮廓。                             |
+| `vision_ui_driver_disc_draw(...)`                                   | 画实心圆。                              |
+| `vision_ui_driver_box_r_draw(...)`                                  | 画带圆角的实心矩形。                         |
+| `vision_ui_driver_box_draw(...)`                                    | 画实心矩形。                             |
+| `vision_ui_driver_frame_draw(...)`                                  | 画矩形边框。                             |
+| `vision_ui_driver_frame_r_draw(...)`                                | 画圆角矩形边框。                           |
+| `vision_ui_driver_line_h_draw(...)`                                 | 画水平线。                              |
+| `vision_ui_driver_line_v_draw(...)`                                 | 画垂直线。                              |
+| `vision_ui_driver_line_draw(...)`                                   | 画任意直线。                             |
+| `vision_ui_driver_line_h_dotted_draw(...)`                          | 画水平虚线。                             |
+| `vision_ui_driver_line_v_dotted_draw(...)`                          | 画垂直虚线。                             |
+| `vision_ui_driver_bmp_draw(...)`                                    | 绘制位图。                              |
+| `vision_ui_driver_color_draw(const vision_ui_t* ui, uint8_t color)` | 修改当前绘制模式：`0` 清除，`1` 置位，`2` 取反/XOR。 |
 
 ### 裁剪与缓冲区
 
@@ -281,6 +281,16 @@ void vision_ui_allocator_set(
 
 `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)` 主要用于过渡和模糊效果。如果你的后端要完整支持 Vision
 UI，它必须返回一个有效的整帧缓冲区指针。
+
+### 绘制颜色模式
+
+Vision UI 在默认渲染流程和 user item 回调里都使用同一套绘制颜色约定：
+
+- `0`：清除像素
+- `1`：设置像素
+- `2`：取反/XOR 像素
+
+后端应尽量在图元、位图和文本绘制中保持一致语义。如果后端无法精确支持 `2`，应明确说明自己的回退行为。
 
 ## 列表图标
 

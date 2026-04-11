@@ -120,7 +120,8 @@ Your backend must provide the primitives used by the renderer:
 - horizontal, vertical, and arbitrary lines
 - dotted lines
 - monochrome bitmap drawing
-- draw color switching
+- draw color switching:
+  `0` clears pixels, `1` sets pixels, `2` inverts/XORs pixels
 
 If the target graphics library does not support a primitive directly, emulate it inside the driver instead of changing
 the Vision UI core.
@@ -219,7 +220,9 @@ Check:
 
 - the backend handle was bound
 - `buffer_clear` and `buffer_send` affect the real display
+- draw color `0` really clears pixels in your backend
 - draw color `1` really means visible pixels in your backend
+- draw color `2` really inverts/XORs existing pixels, or your fallback is documented clearly
 
 ### Text width feels wrong
 

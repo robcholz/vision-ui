@@ -233,7 +233,12 @@ typedef struct vision_ui_driver_ops_t {
      * Changes the current draw color.
      *
      * @param context Backend-owned driver context installed on the UI instance. Must not be `NULL`.
-     * @param color Backend-specific draw color value.
+     * @param color Vision UI draw mode:
+     * - `0`: clear pixels in subsequent draw operations.
+     * - `1`: set pixels in subsequent draw operations.
+     * - `2`: invert/XOR pixels in subsequent draw operations.
+     *
+     * Backends that cannot support `2` exactly should document their fallback behavior.
      */
     void (*color_draw)(void* context, uint8_t color);
     /**

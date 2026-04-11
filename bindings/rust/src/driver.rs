@@ -167,7 +167,16 @@ pub trait Draw {
     /// Selects the current draw color.
     ///
     /// Parameters:
-    /// - `color`: backend-specific draw color index used by Vision UI.
+    /// - `color`: Vision UI draw mode used by subsequent drawing operations.
+    ///
+    /// Values:
+    /// - `0`: clear pixels.
+    /// - `1`: set pixels.
+    /// - `2`: invert/XOR pixels.
+    ///
+    /// Behavior:
+    /// - Implementations should preserve these semantics across primitives, bitmaps, and text.
+    /// - If the backend cannot support mode `2` exactly, it should document and apply a consistent fallback.
     fn set_color(&mut self, color: u8);
 
     /// Sets the active clip rectangle.

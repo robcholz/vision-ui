@@ -256,22 +256,22 @@ To run Vision UI on a new platform, provide a `vision_ui_driver_t` descriptor an
 
 ### Drawing primitives
 
-| Function                                                            | What it does                         |
-|---------------------------------------------------------------------|--------------------------------------|
-| `vision_ui_driver_pixel_draw(...)`                                  | Draws one pixel.                     |
-| `vision_ui_driver_circle_draw(...)`                                 | Draws a circle outline.              |
-| `vision_ui_driver_disc_draw(...)`                                   | Draws a filled circle.               |
-| `vision_ui_driver_box_r_draw(...)`                                  | Draws a rounded filled rectangle.    |
-| `vision_ui_driver_box_draw(...)`                                    | Draws a filled rectangle.            |
-| `vision_ui_driver_frame_draw(...)`                                  | Draws a rectangular outline.         |
-| `vision_ui_driver_frame_r_draw(...)`                                | Draws a rounded rectangular outline. |
-| `vision_ui_driver_line_h_draw(...)`                                 | Draws a horizontal line.             |
-| `vision_ui_driver_line_v_draw(...)`                                 | Draws a vertical line.               |
-| `vision_ui_driver_line_draw(...)`                                   | Draws an arbitrary line.             |
-| `vision_ui_driver_line_h_dotted_draw(...)`                          | Draws a dotted horizontal line.      |
-| `vision_ui_driver_line_v_dotted_draw(...)`                          | Draws a dotted vertical line.        |
-| `vision_ui_driver_bmp_draw(...)`                                    | Draws a bitmap.                      |
-| `vision_ui_driver_color_draw(const vision_ui_t* ui, uint8_t color)` | Changes the current draw color.      |
+| Function                                                            | What it does                                                       |
+|---------------------------------------------------------------------|--------------------------------------------------------------------|
+| `vision_ui_driver_pixel_draw(...)`                                  | Draws one pixel.                                                   |
+| `vision_ui_driver_circle_draw(...)`                                 | Draws a circle outline.                                            |
+| `vision_ui_driver_disc_draw(...)`                                   | Draws a filled circle.                                             |
+| `vision_ui_driver_box_r_draw(...)`                                  | Draws a rounded filled rectangle.                                  |
+| `vision_ui_driver_box_draw(...)`                                    | Draws a filled rectangle.                                          |
+| `vision_ui_driver_frame_draw(...)`                                  | Draws a rectangular outline.                                       |
+| `vision_ui_driver_frame_r_draw(...)`                                | Draws a rounded rectangular outline.                               |
+| `vision_ui_driver_line_h_draw(...)`                                 | Draws a horizontal line.                                           |
+| `vision_ui_driver_line_v_draw(...)`                                 | Draws a vertical line.                                             |
+| `vision_ui_driver_line_draw(...)`                                   | Draws an arbitrary line.                                           |
+| `vision_ui_driver_line_h_dotted_draw(...)`                          | Draws a dotted horizontal line.                                    |
+| `vision_ui_driver_line_v_dotted_draw(...)`                          | Draws a dotted vertical line.                                      |
+| `vision_ui_driver_bmp_draw(...)`                                    | Draws a bitmap.                                                    |
+| `vision_ui_driver_color_draw(const vision_ui_t* ui, uint8_t color)` | Changes the current draw mode: `0` clear, `1` set, `2` invert/XOR. |
 
 ### Clipping and buffers
 
@@ -287,6 +287,17 @@ To run Vision UI on a new platform, provide a `vision_ui_driver_t` descriptor an
 `vision_ui_driver_buffer_pointer_get(const vision_ui_t* ui)` is mainly used by transition and blur effects. If your
 backend supports Vision
 UI fully, this must point to a valid frame buffer.
+
+### Draw color modes
+
+Vision UI uses the same draw-color contract across the default renderer and user-item callbacks:
+
+- `0`: clear pixels
+- `1`: set pixels
+- `2`: invert/XOR pixels
+
+Backends should preserve these semantics for primitives, bitmaps, and text. If a backend cannot support invert/XOR
+exactly, it should document the fallback clearly.
 
 ## List Icon
 
