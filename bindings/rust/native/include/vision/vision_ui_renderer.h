@@ -7,6 +7,13 @@
 
 #include "vision_ui_types.h"
 
+typedef enum vision_ui_notification_push_result_t {
+    /// The notification was accepted successfully.
+    VisionUiNotificationPushOk = 0,
+    /// The notification content pointer was invalid.
+    VisionUiNotificationPushContentInvalid,
+} vision_ui_notification_push_result_t;
+
 extern void vision_ui_exit_animation_render(vision_ui_t* ui, float delta_ms);
 
 extern void vision_ui_enter_animation_render(vision_ui_t* ui, float delta_ms);
@@ -28,8 +35,14 @@ extern vision_ui_notification_t* vision_ui_notification_mutable_instance_get(vis
  * @param content Borrowed NUL-terminated message string used for layout and rendering. The pointed-to string should
  * remain valid while the notification is visible or pending.
  * @param span Display duration in milliseconds.
+ * @return `VisionUiNotificationPushOk` on success.
+ * @return `VisionUiNotificationPushContentInvalid` when `content` is `NULL`.
  */
-extern void vision_ui_notification_push(vision_ui_t* ui, const char* content, uint16_t span);
+extern vision_ui_notification_push_result_t vision_ui_notification_push(
+        vision_ui_t* ui,
+        const char* content,
+        uint16_t span
+);
 
 extern const vision_ui_alert_t* vision_ui_alert_instance_get(const vision_ui_t* ui);
 

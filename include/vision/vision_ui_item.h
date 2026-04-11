@@ -19,8 +19,6 @@ typedef enum vision_ui_list_push_item_result_t {
     VisionUiListPushItemOk = 0,
     /// The parent pointer or child pointer was invalid.
     VisionUiListPushItemItemInvalid,
-    /// A root item must be attached before children can be pushed into the tree.
-    VisionUiListPushItemRootItemNotSet,
     /// The target parent is already at capacity.
     VisionUiListPushItemParentFull,
     /// Adding the child would exceed the maximum supported nesting depth.
@@ -181,7 +179,6 @@ extern vision_ui_list_item_t* vision_ui_root_list_get(const vision_ui_t* ui);
  * @param child Child item to append by pointer.
  * @return `VisionUiListPushItemOk` on success.
  * @return `VisionUiListPushItemItemInvalid` when `parent` or `child` is `NULL`.
- * @return `VisionUiListPushItemRootItemNotSet` when no root item has been attached yet.
  * @return `VisionUiListPushItemParentFull` when `parent` is already full.
  * @return `VisionUiListPushItemMaxLayerExceeded` when the maximum nesting layer would be exceeded.
  * @return `VisionUiListPushItemIconViewChildMismatch` when an icon-view parent receives a non-icon child.

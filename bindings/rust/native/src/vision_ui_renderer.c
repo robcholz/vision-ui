@@ -133,8 +133,15 @@ vision_ui_notification_t* vision_ui_notification_mutable_instance_get(vision_ui_
     return &ui->notification;
 }
 
-void vision_ui_notification_push(vision_ui_t* ui, const char* content, const uint16_t span) {
+vision_ui_notification_push_result_t vision_ui_notification_push(
+        vision_ui_t* ui,
+        const char* content,
+        const uint16_t span
+) {
     assert(ui != NULL);
+    if (content == NULL) {
+        return VisionUiNotificationPushContentInvalid;
+    }
 
     vision_ui_notification_t* notification = &ui->notification;
     const uint32_t now = vision_ui_driver_ticks_ms_get(ui);
@@ -154,7 +161,7 @@ void vision_ui_notification_push(vision_ui_t* ui, const char* content, const uin
         vision_ui_font_set(ui, vision_ui_font_get(ui));
         notification->w_notification_trg =
                 vision_ui_driver_str_utf8_width_get(ui, notification->content) + VISION_UI_NOTIFICATION_WIDTH;
-        return;
+        return VisionUiNotificationPushOk;
     }
 
     notification->pending_content = content;
@@ -163,6 +170,7 @@ void vision_ui_notification_push(vision_ui_t* ui, const char* content, const uin
     notification->is_dismissing = true;
     notification->dismiss_start = now;
     notification->y_notification_trg = 0 - 2 * VISION_UI_NOTIFICATION_HEIGHT;
+    return VisionUiNotificationPushOk;
 }
 
 const vision_ui_alert_t* vision_ui_alert_instance_get(const vision_ui_t* ui) {

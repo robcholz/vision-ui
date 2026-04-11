@@ -7,6 +7,13 @@
 
 #include "vision_ui_types.h"
 
+typedef enum vision_ui_core_init_result_t {
+    /// The core runtime state was initialized successfully.
+    VisionUiCoreInitOk = 0,
+    /// Core initialization requires a root item to be attached first.
+    VisionUiCoreInitRootItemNotSet,
+} vision_ui_core_init_result_t;
+
 /**
  * Initializes a caller-owned UI instance before first use.
  *
@@ -44,8 +51,10 @@ extern void vision_ui_render_init(vision_ui_t* ui);
  * The root tree should already be attached with `vision_ui_root_item_set()` before this is called.
  *
  * @param ui UI instance to initialize. Must not be `NULL`.
+ * @return `VisionUiCoreInitOk` on success.
+ * @return `VisionUiCoreInitRootItemNotSet` when no root item has been attached yet.
  */
-extern void vision_ui_core_init(vision_ui_t* ui);
+extern vision_ui_core_init_result_t vision_ui_core_init(vision_ui_t* ui);
 
 /**
  * Shows a startup bitmap for a fixed duration before the normal UI loop takes over.

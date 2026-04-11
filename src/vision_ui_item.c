@@ -517,9 +517,6 @@ vision_ui_list_push_item_result_t vision_ui_list_push_item(
     if (parent == NULL || child == NULL) {
         return VisionUiListPushItemItemInvalid;
     }
-    if (ui->root_item == NULL) {
-        return VisionUiListPushItemRootItemNotSet;
-    }
     if (parent->child_num >= parent->capacity) {
         return VisionUiListPushItemParentFull;
     }

@@ -7,6 +7,26 @@
 
 #include "vision_ui_types.h"
 
+typedef enum vision_ui_root_item_set_result_t {
+    /// The root item was attached successfully.
+    VisionUiRootItemSetOk = 0,
+    /// The root item pointer was invalid.
+    VisionUiRootItemSetItemInvalid,
+} vision_ui_root_item_set_result_t;
+
+typedef enum vision_ui_list_push_item_result_t {
+    /// The child item was appended successfully.
+    VisionUiListPushItemOk = 0,
+    /// The parent pointer or child pointer was invalid.
+    VisionUiListPushItemItemInvalid,
+    /// The target parent is already at capacity.
+    VisionUiListPushItemParentFull,
+    /// Adding the child would exceed the maximum supported nesting depth.
+    VisionUiListPushItemMaxLayerExceeded,
+    /// Icon-view parents only accept icon items as direct children.
+    VisionUiListPushItemIconViewChildMismatch,
+} vision_ui_list_push_item_result_t;
+
 extern vision_ui_switch_item_t* vision_ui_to_list_switch_item(vision_ui_list_item_t* list_item);
 
 extern vision_ui_slider_item_t* vision_ui_to_list_slider_item(vision_ui_list_item_t* list_item);
@@ -136,13 +156,19 @@ extern vision_ui_list_item_t* vision_ui_list_user_item_new(
  *
  * @param ui UI instance to configure. Must not be `NULL`.
  * @param item Root list item to attach by pointer. The item is not copied.
- * @return `true` when `item` was accepted, or `false` when `item` is `NULL`.
+ * @return `VisionUiRootItemSetOk` on success, or `VisionUiRootItemSetItemInvalid` when `item` is `NULL`.
  *
  * @note If `item` was created with Vision UI item constructors for the same `ui`, `vision_ui_destroy()` will release
  * it later as part of the UI-owned item tree.
  */
-extern bool vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item);
+extern vision_ui_root_item_set_result_t vision_ui_root_item_set(vision_ui_t* ui, vision_ui_list_item_t* item);
 
+/**
+ * Returns the current root list pointer.
+ *
+ * @param ui UI instance to query. Must not be `NULL`.
+ * @return The attached root list pointer, or `NULL` when no root item has been set yet.
+ */
 extern vision_ui_list_item_t* vision_ui_root_list_get(const vision_ui_t* ui);
 
 /**
@@ -151,10 +177,17 @@ extern vision_ui_list_item_t* vision_ui_root_list_get(const vision_ui_t* ui);
  * @param ui UI instance whose selector/camera state may be updated. Must not be `NULL`.
  * @param parent Parent list container that will receive the child by pointer. The child is not copied.
  * @param child Child item to append by pointer.
- * @return `true` on success. Returns `false` when `parent` or `child` is `NULL`, when `parent` is already full, when
- * the maximum nesting layer would be exceeded, or when an icon-view parent receives a non-icon child.
+ * @return `VisionUiListPushItemOk` on success.
+ * @return `VisionUiListPushItemItemInvalid` when `parent` or `child` is `NULL`.
+ * @return `VisionUiListPushItemParentFull` when `parent` is already full.
+ * @return `VisionUiListPushItemMaxLayerExceeded` when the maximum nesting layer would be exceeded.
+ * @return `VisionUiListPushItemIconViewChildMismatch` when an icon-view parent receives a non-icon child.
  */
-extern bool vision_ui_list_push_item(vision_ui_t* ui, vision_ui_list_item_t* parent, vision_ui_list_item_t* child);
+extern vision_ui_list_push_item_result_t vision_ui_list_push_item(
+        vision_ui_t* ui,
+        vision_ui_list_item_t* parent,
+        vision_ui_list_item_t* child
+);
 
 extern const vision_ui_selector_t* vision_ui_selector_instance_get(const vision_ui_t* ui);
 

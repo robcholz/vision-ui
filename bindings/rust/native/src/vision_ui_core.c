@@ -263,8 +263,7 @@ static void vision_ui_widget_core_position_update(vision_ui_t* ui, const float d
     vision_ui_alert_update(ui, delta_ms);
 }
 
-static void vision_ui_list_init(vision_ui_t* ui) {
-    const vision_ui_list_item_t* root = vision_ui_root_list_get(ui);
+static void vision_ui_list_init(vision_ui_t* ui, const vision_ui_list_item_t* root) {
     vision_ui_selector_t* selector = vision_ui_selector_mutable_instance_get(ui);
 
     // Initialize animation-related state.
@@ -296,15 +295,20 @@ static void vision_ui_list_init(vision_ui_t* ui) {
     selector->h_selector_velocity = 0;
 }
 
-void vision_ui_core_init(vision_ui_t* ui) {
+vision_ui_core_init_result_t vision_ui_core_init(vision_ui_t* ui) {
     assert(ui != NULL);
 
-    vision_ui_list_init(ui);
     const vision_ui_list_item_t* root = vision_ui_root_list_get(ui);
+    if (root == NULL) {
+        return VisionUiCoreInitRootItemNotSet;
+    }
+
+    vision_ui_list_init(ui, root);
     if (root->child_num > 0) {
         vision_ui_selector_t_selector_bind_item(ui, root->child_list_item[0]);
     }
     vision_ui_camera_bind_selector(ui, vision_ui_selector_mutable_instance_get(ui));
+    return VisionUiCoreInitOk;
 }
 
 void vision_ui_start_logo_set(vision_ui_t* ui, const uint8_t* bmp, const uint32_t span) {

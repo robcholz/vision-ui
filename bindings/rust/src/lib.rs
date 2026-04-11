@@ -23,20 +23,57 @@ pub enum Action {
     Next,
     Enter,
     Exit,
+}
+
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
+pub enum ActionError {
+    #[error("unexpected action code {0}")]
+    Invalid(u32),
+}
+
+impl TryFrom<raw::vision_ui_action_t> for Action {
+    type Error = ActionError;
+
+    fn try_from(value: raw::vision_ui_action_t) -> Result<Self, Self::Error> {
+        match value {
+            raw::vision_ui_action_t_UiActionNone => Ok(Self::None),
+            raw::vision_ui_action_t_UiActionGoPrev => Ok(Self::Previous),
+            raw::vision_ui_action_t_UiActionGoNext => Ok(Self::Next),
+            raw::vision_ui_action_t_UiActionEnter => Ok(Self::Enter),
+            raw::vision_ui_action_t_UiActionExit => Ok(Self::Exit),
+            other => Err(ActionError::Invalid(other)),
+        }
+    }
+}
+
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
+pub enum InitError {
+    #[error("a root item must be attached before initializing the runtime")]
+    RootItemNotSet,
+    #[error("unexpected runtime initialization result code {0}")]
     Unknown(u32),
 }
 
-impl From<raw::vision_ui_action_t> for Action {
-    fn from(value: raw::vision_ui_action_t) -> Self {
-        match value {
-            raw::vision_ui_action_t_UiActionNone => Self::None,
-            raw::vision_ui_action_t_UiActionGoPrev => Self::Previous,
-            raw::vision_ui_action_t_UiActionGoNext => Self::Next,
-            raw::vision_ui_action_t_UiActionEnter => Self::Enter,
-            raw::vision_ui_action_t_UiActionExit => Self::Exit,
-            other => Self::Unknown(other),
-        }
-    }
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
+pub enum SetRootError {
+    #[error("the root item pointer was invalid")]
+    ItemInvalid,
+    #[error("unexpected root-item result code {0}")]
+    Unknown(u32),
+}
+
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
+pub enum PushItemError {
+    #[error("the parent item or child item pointer was invalid")]
+    ItemInvalid,
+    #[error("the parent item is already full")]
+    ParentFull,
+    #[error("pushing this child would exceed the maximum supported nesting depth")]
+    MaxLayerExceeded,
+    #[error("icon-view parents only accept icon items as direct children")]
+    IconViewChildMismatch,
+    #[error("unexpected list-push result code {0}")]
+    Unknown(u32),
 }
 
 #[derive(Debug, Error)]
@@ -202,8 +239,8 @@ impl UiRef {
         self.state.borrow().raw.as_ptr()
     }
 
-    pub fn action(&self) -> Action {
-        unsafe { raw::vision_ui_driver_action_get(self.raw_ptr()).into() }
+    pub fn action(&self) -> Result<Action, ActionError> {
+        unsafe { raw::vision_ui_driver_action_get(self.raw_ptr()).try_into() }
     }
 
     pub fn ticks(&self) -> Duration {
@@ -274,17 +311,38 @@ impl UiRef {
         Ok(())
     }
 
-    pub fn set_root(&self, item: Item) -> bool {
-        unsafe { raw::vision_ui_root_item_set(self.raw_mut_ptr(), item.as_ptr()) }
+    pub fn set_root(&self, item: Item) -> Result<(), SetRootError> {
+        match unsafe { raw::vision_ui_root_item_set(self.raw_mut_ptr(), item.as_ptr()) } {
+            raw::vision_ui_root_item_set_result_t_VisionUiRootItemSetOk => Ok(()),
+            raw::vision_ui_root_item_set_result_t_VisionUiRootItemSetItemInvalid => {
+                Err(SetRootError::ItemInvalid)
+            }
+            other => Err(SetRootError::Unknown(other)),
+        }
     }
 
     pub fn root(&self) -> Option<Item> {
         NonNull::new(unsafe { raw::vision_ui_root_list_get(self.raw_ptr()) }).map(Item)
     }
 
-    pub fn push(&self, parent: Item, child: Item) -> bool {
-        unsafe {
+    pub fn push(&self, parent: Item, child: Item) -> Result<(), PushItemError> {
+        match unsafe {
             raw::vision_ui_list_push_item(self.raw_mut_ptr(), parent.as_ptr(), child.as_ptr())
+        } {
+            raw::vision_ui_list_push_item_result_t_VisionUiListPushItemOk => Ok(()),
+            raw::vision_ui_list_push_item_result_t_VisionUiListPushItemItemInvalid => {
+                Err(PushItemError::ItemInvalid)
+            }
+            raw::vision_ui_list_push_item_result_t_VisionUiListPushItemParentFull => {
+                Err(PushItemError::ParentFull)
+            }
+            raw::vision_ui_list_push_item_result_t_VisionUiListPushItemMaxLayerExceeded => {
+                Err(PushItemError::MaxLayerExceeded)
+            }
+            raw::vision_ui_list_push_item_result_t_VisionUiListPushItemIconViewChildMismatch => {
+                Err(PushItemError::IconViewChildMismatch)
+            }
+            other => Err(PushItemError::Unknown(other)),
         }
     }
 
@@ -331,8 +389,14 @@ impl VisionUi {
         self.state.borrow().raw.as_ptr()
     }
 
-    pub fn initialize_runtime(&mut self) {
-        unsafe { raw::vision_ui_core_init(self.raw_mut_ptr()) }
+    pub fn initialize_runtime(&mut self) -> Result<(), InitError> {
+        match unsafe { raw::vision_ui_core_init(self.raw_mut_ptr()) } {
+            raw::vision_ui_core_init_result_t_VisionUiCoreInitOk => Ok(()),
+            raw::vision_ui_core_init_result_t_VisionUiCoreInitRootItemNotSet => {
+                Err(InitError::RootItemNotSet)
+            }
+            other => Err(InitError::Unknown(other)),
+        }
     }
 
     pub fn show(&mut self) {
@@ -365,7 +429,7 @@ impl VisionUi {
         }
     }
 
-    pub fn action(&self) -> Action {
+    pub fn action(&self) -> Result<Action, ActionError> {
         self.ui().action()
     }
 
@@ -649,7 +713,7 @@ impl VisionUi {
         Ok(item)
     }
 
-    pub fn set_root(&mut self, item: Item) -> bool {
+    pub fn set_root(&mut self, item: Item) -> Result<(), SetRootError> {
         self.ui().set_root(item)
     }
 
@@ -657,7 +721,7 @@ impl VisionUi {
         self.ui().root()
     }
 
-    pub fn push(&mut self, parent: Item, child: Item) -> bool {
+    pub fn push(&mut self, parent: Item, child: Item) -> Result<(), PushItemError> {
         self.ui().push(parent, child)
     }
 
